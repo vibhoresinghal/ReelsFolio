@@ -290,6 +290,172 @@
             height: 40px;
         }
 
+        /* Grid button at top */
+        .grid-btn {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: all 0.3s ease, opacity 0.3s ease, visibility 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .grid-btn.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .grid-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateX(-50%) scale(1.1);
+        }
+
+        .grid-btn svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        /* Grid Section - scrollable section before videos */
+        .grid-section {
+            height: 100vh;
+            width: 100vw;
+            scroll-snap-align: start;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: #1a1a2e;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            padding: 20px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            /* Entry animation - same as video frame */
+            opacity: 0.2;
+            transform: scale(0.9);
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+        }
+
+        .grid-section.active .grid-container {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .grid-item {
+            height: calc((80vh - 100px) / 2);
+            max-height: 280px;
+            border-radius: 16px;
+            overflow: hidden;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .grid-item:hover {
+            transform: scale(1.05);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .grid-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .grid-item .video-number {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .grid-title {
+            position: absolute;
+            top: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 24px;
+            font-weight: 600;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        .grid-section.active .grid-title {
+            opacity: 1;
+        }
+
+        .scroll-hint {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .grid-section.active .scroll-hint {
+            opacity: 1;
+        }
+
+        .scroll-hint svg {
+            width: 20px;
+            height: 20px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            20%,
+            50%,
+            80%,
+            100% {
+                transform: translateY(0);
+            }
+
+            40% {
+                transform: translateY(6px);
+            }
+
+            60% {
+                transform: translateY(3px);
+            }
+        }
+
         /* Hide on small screens */
         @media (max-width: 900px) {
 
@@ -306,8 +472,38 @@
     <div class="bg-layer" id="bgLayer"></div>
 
     <div class="video-container" id="feed">
+        <!-- Grid Section - First in feed -->
+        <div class="grid-section active" data-bg-color="#1a1a2e">
+            <div class="grid-title">Choose a Video</div>
+            <div class="grid-container">
+                <div class="grid-item" onclick="goToVideo(1)">
+                    <img src="https://img.youtube.com/vi/VmjOqPBag8A/maxresdefault.jpg" alt="Video 1">
+                    <span class="video-number">1</span>
+                </div>
+                <div class="grid-item" onclick="goToVideo(2)">
+                    <img src="https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg" alt="Video 2">
+                    <span class="video-number">2</span>
+                </div>
+                <div class="grid-item" onclick="goToVideo(3)">
+                    <img src="https://img.youtube.com/vi/FpBOQ3tAE6U/maxresdefault.jpg" alt="Video 3">
+                    <span class="video-number">3</span>
+                </div>
+                <div class="grid-item" onclick="goToVideo(4)">
+                    <img src="https://img.youtube.com/vi/9bZkp7q19f0/maxresdefault.jpg" alt="Video 4">
+                    <span class="video-number">4</span>
+                </div>
+            </div>
+            <div class="scroll-hint">
+                <span>Scroll down</span>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                </svg>
+            </div>
+        </div>
+
         <!-- Video 1 - Purple theme -->
-        <div class="video-section active" data-video-id="VmjOqPBag8A" data-bg-color="#3d2351">
+        <div class="video-section" data-video-id="VmjOqPBag8A" data-bg-color="#3d2351">
 
             <div class="info-bar left">
                 <div class="info-line long"></div>
@@ -494,6 +690,14 @@
         </div>
     </div>
 
+    <!-- Grid Button at Top -->
+    <button class="grid-btn hidden" id="gridBtn" onclick="goToVideo(0)">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+        </svg>
+    </button>
+
     <!-- Control Bar -->
     <div class="control-bar">
         <!-- Play/Stop Button -->
@@ -598,51 +802,88 @@
             }
         }
 
-        // Intersection Observer
+        // Unified Intersection Observer for all sections (grid + videos)
+        const gridBtn = document.getElementById('gridBtn');
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
-                const iframe = entry.target.querySelector('iframe');
-                if (!iframe) return;
+                const isGridSection = entry.target.classList.contains('grid-section');
 
-                const playerId = iframe.id;
-                const player = players[playerId];
-
-                if (!player || !playersReady[playerId]) return;
-
-                try {
-                    if (entry.isIntersecting) {
-                        currentPlayerId = playerId;
-                        entry.target.classList.add('active');
-
-                        // Change background color
-                        const bgColor = entry.target.getAttribute('data-bg-color');
+                if (entry.isIntersecting) {
+                    // Add active class and change background for ALL sections
+                    entry.target.classList.add('active');
+                    const bgColor = entry.target.getAttribute('data-bg-color');
+                    if (bgColor) {
                         bgLayer.style.backgroundColor = bgColor;
-
-                        // Reset play state and button
-                        isPlaying = true;
-                        document.getElementById('pauseIcon').style.display = 'block';
-                        document.getElementById('playIcon').style.display = 'none';
-
-                        player.seekTo(0);
-                        player.playVideo();
-
-                        if (!isMuted) {
-                            player.unMute();
-                            player.setVolume(100);
-                        } else {
-                            player.mute();
-                        }
-                    } else {
-                        entry.target.classList.remove('active');
-                        const videoId = entry.target.getAttribute('data-video-id');
-                        player.cueVideoById(videoId);
-                        player.mute();
                     }
-                } catch (e) {
-                    console.log('Player not ready yet:', playerId);
+
+                    // Show/hide grid button based on section
+                    if (isGridSection) {
+                        gridBtn.classList.add('hidden');
+                    } else {
+                        gridBtn.classList.remove('hidden');
+                    }
+
+                    // Video-specific logic
+                    if (!isGridSection) {
+                        const iframe = entry.target.querySelector('iframe');
+                        if (!iframe) return;
+
+                        const playerId = iframe.id;
+                        const player = players[playerId];
+
+                        if (!player || !playersReady[playerId]) return;
+
+                        try {
+                            currentPlayerId = playerId;
+
+                            // Reset play state and button
+                            isPlaying = true;
+                            document.getElementById('pauseIcon').style.display = 'block';
+                            document.getElementById('playIcon').style.display = 'none';
+
+                            player.seekTo(0);
+                            player.playVideo();
+
+                            if (!isMuted) {
+                                player.unMute();
+                                player.setVolume(100);
+                            } else {
+                                player.mute();
+                            }
+                        } catch (e) {
+                            console.log('Player not ready yet:', playerId);
+                        }
+                    }
+                } else {
+                    entry.target.classList.remove('active');
+
+                    // Video-specific cleanup
+                    if (!isGridSection) {
+                        const iframe = entry.target.querySelector('iframe');
+                        if (!iframe) return;
+
+                        const playerId = iframe.id;
+                        const player = players[playerId];
+
+                        if (player && playersReady[playerId]) {
+                            try {
+                                const videoId = entry.target.getAttribute('data-video-id');
+                                player.cueVideoById(videoId);
+                                player.mute();
+                            } catch (e) {
+                                console.log('Player not ready yet:', playerId);
+                            }
+                        }
+                    }
                 }
             });
         }, { threshold: 0.6 });
+
+        // Observe the grid section too
+        const gridSection = document.querySelector('.grid-section');
+        if (gridSection) {
+            observer.observe(gridSection);
+        }
 
         // Sound toggle
         function toggleSound() {
@@ -712,15 +953,15 @@
         document.addEventListener('keydown', (e) => {
             if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
                 e.preventDefault();
-                if (currentIndex < videoSections.length - 1) {
+                if (currentIndex < allSections.length - 1) {
                     currentIndex++;
-                    videoSections[currentIndex].scrollIntoView({ behavior: 'smooth' });
+                    allSections[currentIndex].scrollIntoView({ behavior: 'smooth' });
                 }
             } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
                 e.preventDefault();
                 if (currentIndex > 0) {
                     currentIndex--;
-                    videoSections[currentIndex].scrollIntoView({ behavior: 'smooth' });
+                    allSections[currentIndex].scrollIntoView({ behavior: 'smooth' });
                 }
             }
         });
@@ -732,6 +973,15 @@
             const sectionHeight = window.innerHeight;
             currentIndex = Math.round(scrollTop / sectionHeight);
         });
+
+        // All sections including grid
+        const allSections = document.querySelectorAll('.grid-section, .video-section');
+
+        // Go to grid/video from grid or grid button
+        function goToVideo(index) {
+            currentIndex = index;
+            allSections[index].scrollIntoView({ behavior: 'smooth' });
+        }
     </script>
 </body>
 

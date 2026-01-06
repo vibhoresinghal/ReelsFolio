@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReelsFolio</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body,
+        html {
+            height: 100%;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        /* Background layer that transitions colors */
+        .bg-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transition: background-color 0.6s ease-in-out;
+            z-index: -1;
+        }
+
+        /* The scroll container */
+        .video-container {
+            height: 100vh;
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .video-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Individual video sections */
+        .video-section {
+            height: 100vh;
+            width: 100vw;
+            scroll-snap-align: start;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        /* Video frame container - 9:16 aspect ratio (phone-like) */
+        .video-frame {
+            position: relative;
+            width: min(380px, 85vw);
+            aspect-ratio: 9/16;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.4);
+            opacity: 0.2;
+            transform: scale(0.9);
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+        }
+
+        .video-section.active .video-frame {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* YouTube iframe - stretched to hide UI */
+        .video-frame iframe {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300%;
+            height: 100%;
+            border: none;
+            pointer-events: none;
+        }
+
+        /* Decorative stickers */
+        .sticker {
+            position: absolute;
+            opacity: 0;
+            transform: scale(0.5);
+            transition: opacity 0.5s ease-in-out 0.1s, transform 0.5s ease-in-out 0.1s;
+            pointer-events: none;
+        }
+
+        .video-section.active .sticker {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* Heart sticker */
+        .sticker-heart {
+            top: 15%;
+            right: calc(50% - 280px);
+            font-size: 48px;
+        }
+
+        /* Star sticker */
+        .sticker-star {
+            top: 20%;
+            left: calc(50% - 300px);
+            width: 80px;
+            height: 80px;
+        }
+
+        /* Plus sticker */
+        .sticker-plus {
+            bottom: 35%;
+            left: calc(50% - 250px);
+            font-size: 40px;
+            color: #f0a0d0;
+        }
+
+        /* Sparkle sticker */
+        .sticker-sparkle {
+            bottom: 40%;
+            right: calc(50% - 280px);
+            font-size: 32px;
+        }
+
+        /* Squiggle sticker */
+        .sticker-squiggle {
+            bottom: 15%;
+            left: calc(50% - 280px);
+            width: 60px;
+        }
+
+        /* Info bars on the sides */
+        .info-bar {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            opacity: 0;
+            transform: translateX(-20px);
+            transition: opacity 0.5s ease-in-out 0.15s, transform 0.5s ease-in-out 0.15s;
+        }
+
+        .info-bar.right {
+            right: calc(50% - 420px);
+            top: 50%;
+            transform: translateY(-50%) translateX(20px);
+        }
+
+        .video-section.active .info-bar {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .video-section.active .info-bar.right {
+            transform: translateY(-50%) translateX(0);
+        }
+
+        .info-bar.left {
+            left: calc(50% - 420px);
+            top: 40%;
+        }
+
+        .info-line {
+            height: 12px;
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 6px;
+        }
+
+        .info-line.short {
+            width: 60px;
+        }
+
+        .info-line.medium {
+            width: 100px;
+        }
+
+        .info-line.long {
+            width: 140px;
+        }
+
+        .info-dot {
+            width: 28px;
+            height: 28px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+        }
+
+        .info-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* Toggle button design */
+        .toggle-btn {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 8px 16px;
+            border-radius: 25px;
+            gap: 12px;
+        }
+
+        .toggle-btn .line {
+            width: 50px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 4px;
+        }
+
+        .toggle-btn .circle {
+            width: 24px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+        }
+
+
+        /* Unmute button */
+        .unmute-btn {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 14px 28px;
+            border-radius: 50px;
+            font-size: 15px;
+            font-family: inherit;
+            cursor: pointer;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .unmute-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateX(-50%) scale(1.05);
+        }
+
+        .unmute-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Hide on small screens */
+        @media (max-width: 900px) {
+
+            .info-bar,
+            .sticker {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Background that transitions with each video -->
+    <div class="bg-layer" id="bgLayer"></div>
+
+    <div class="video-container" id="feed">
+        <!-- Video 1 - Purple theme -->
+        <div class="video-section active" data-video-id="VmjOqPBag8A" data-bg-color="#3d2351">
+
+            <div class="info-bar left">
+                <div class="info-line long"></div>
+                <div class="info-line medium"></div>
+                <div class="info-line short"></div>
+                <div class="info-line long"></div>
+                <div class="info-line medium"></div>
+            </div>
+
+            <div class="sticker sticker-star">
+                <svg viewBox="0 0 100 100" fill="#7CB9E8">
+                    <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
+                </svg>
+            </div>
+            <div class="sticker sticker-heart">💗</div>
+            <div class="sticker sticker-plus">✚</div>
+            <div class="sticker sticker-sparkle">✦</div>
+            <div class="sticker sticker-squiggle">
+                <svg viewBox="0 0 60 30" stroke="#f4a27a" stroke-width="4" fill="none">
+                    <path d="M5,15 Q15,5 25,15 T45,15 T55,15" />
+                </svg>
+            </div>
+
+            <div class="video-frame">
+                <div id="player1"></div>
+            </div>
+
+            <div class="info-bar right">
+                <div class="info-group">
+                    <div class="info-dot"></div>
+                    <div>
+                        <div class="info-line medium" style="margin-bottom: 6px;"></div>
+                        <div class="info-line short"></div>
+                    </div>
+                </div>
+                <div class="info-group">
+                    <div class="info-dot"></div>
+                    <div>
+                        <div class="info-line long" style="margin-bottom: 6px;"></div>
+                        <div class="info-line medium"></div>
+                    </div>
+                </div>
+                <div class="info-group">
+                    <div class="info-dot"></div>
+                    <div>
+                        <div class="info-line medium" style="margin-bottom: 6px;"></div>
+                        <div class="info-line short"></div>
+                    </div>
+                </div>
+                <div class="toggle-btn">
+                    <div class="line"></div>
+                    <div class="circle"></div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Video 2 - Blue theme -->
+        <div class="video-section" data-video-id="dQw4w9WgXcQ" data-bg-color="#1a3a5c">
+
+            <div class="info-bar left">
+                <div class="info-line long"></div>
+                <div class="info-line short"></div>
+                <div class="info-line medium"></div>
+                <div class="info-line long"></div>
+            </div>
+
+            <div class="sticker sticker-star">
+                <svg viewBox="0 0 100 100" fill="#ff6b6b">
+                    <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
+                </svg>
+            </div>
+            <div class="sticker sticker-heart">💙</div>
+            <div class="sticker sticker-plus">✚</div>
+            <div class="sticker sticker-sparkle">★</div>
+
+            <div class="video-frame">
+                <div id="player2"></div>
+            </div>
+
+            <div class="info-bar right">
+                <div class="info-group">
+                    <div class="info-dot"></div>
+                    <div>
+                        <div class="info-line long" style="margin-bottom: 6px;"></div>
+                        <div class="info-line short"></div>
+                    </div>
+                </div>
+                <div class="info-group">
+                    <div class="info-dot"></div>
+                    <div>
+                        <div class="info-line medium" style="margin-bottom: 6px;"></div>
+                        <div class="info-line medium"></div>
+                    </div>
+                </div>
+                <div class="toggle-btn">
+                    <div class="line"></div>
+                    <div class="circle"></div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Video 3 - Green theme -->
+        <div class="video-section" data-video-id="3set69V64Xk" data-bg-color="#1d4a3a">
+
+            <div class="info-bar left">
+                <div class="info-line medium"></div>
+                <div class="info-line long"></div>
+                <div class="info-line short"></div>
+            </div>
+
+            <div class="sticker sticker-star">
+                <svg viewBox="0 0 100 100" fill="#90EE90">
+                    <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
+                </svg>
+            </div>
+            <div class="sticker sticker-heart">💚</div>
+            <div class="sticker sticker-sparkle">✧</div>
+
+            <div class="video-frame">
+                <div id="player3"></div>
+            </div>
+
+            <div class="info-bar right">
+                <div class="info-group">
+                    <div class="info-dot"></div>
+                    <div>
+                        <div class="info-line medium" style="margin-bottom: 6px;"></div>
+                        <div class="info-line long"></div>
+                    </div>
+                </div>
+                <div class="toggle-btn">
+                    <div class="line"></div>
+                    <div class="circle"></div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Video 4 - Orange theme -->
+        <div class="video-section" data-video-id="9bZkp7q19f0" data-bg-color="#5c3a1a">
+
+            <div class="info-bar left">
+                <div class="info-line long"></div>
+                <div class="info-line medium"></div>
+                <div class="info-line long"></div>
+                <div class="info-line short"></div>
+            </div>
+
+            <div class="sticker sticker-star">
+                <svg viewBox="0 0 100 100" fill="#FFD700">
+                    <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
+                </svg>
+            </div>
+            <div class="sticker sticker-heart">🧡</div>
+            <div class="sticker sticker-plus">✦</div>
+
+            <div class="video-frame">
+                <div id="player4"></div>
+            </div>
+
+            <div class="info-bar right">
+                <div class="info-group">
+                    <div class="info-dot"></div>
+                    <div>
+                        <div class="info-line long" style="margin-bottom: 6px;"></div>
+                        <div class="info-line medium"></div>
+                    </div>
+                </div>
+                <div class="info-group">
+                    <div class="info-dot"></div>
+                    <div>
+                        <div class="info-line short" style="margin-bottom: 6px;"></div>
+                        <div class="info-line long"></div>
+                    </div>
+                </div>
+                <div class="toggle-btn">
+                    <div class="line"></div>
+                    <div class="circle"></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Sound Toggle Button -->
+    <button class="unmute-btn" id="soundBtn" onclick="toggleSound()">
+        <svg id="mutedIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+        </svg>
+        <svg id="unmutedIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+            style="display: none;">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+        </svg>
+        <span id="soundBtnText">Tap to unmute</span>
+    </button>
+
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script>
+        let players = {};
+        let playersReady = {};
+        let currentPlayerId = 'player1';
+        let isMuted = true;
+        const bgLayer = document.getElementById('bgLayer');
+
+        // Set initial background color
+        const firstSection = document.querySelector('.video-section');
+        if (firstSection) {
+            bgLayer.style.backgroundColor = firstSection.getAttribute('data-bg-color');
+        }
+
+        // Initialize YouTube Players
+        function onYouTubeIframeAPIReady() {
+            document.querySelectorAll('.video-section').forEach((section, index) => {
+                const videoId = section.getAttribute('data-video-id');
+                const divId = `player${index + 1}`;
+
+                players[divId] = new YT.Player(divId, {
+                    height: '100%',
+                    width: '100%',
+                    videoId: videoId,
+                    playerVars: {
+                        'autoplay': 0,
+                        'controls': 0,
+                        'modestbranding': 0,
+                        'rel': 0,
+                        'showinfo': 0,
+                        'iv_load_policy': 3,
+                        'fs': 0,
+                        'disablekb': 1,
+                        'playsinline': 1,
+                        'loop': 1,
+                        'playlist': videoId,
+                        'cc_load_policy': 0,
+                        'color': 'white',
+                        'origin': window.location.origin
+                    },
+                    events: {
+                        'onReady': onPlayerReady,
+                        'onStateChange': onPlayerStateChange
+                    }
+                });
+            });
+        }
+
+        function onPlayerReady(event) {
+            const playerId = event.target.getIframe().id;
+            playersReady[playerId] = true;
+            event.target.mute();
+
+            const section = event.target.getIframe().closest('.video-section');
+            if (section) {
+                observer.observe(section);
+            }
+
+            if (playerId === 'player1') {
+                event.target.seekTo(0);
+                event.target.playVideo();
+            }
+        }
+
+        function onPlayerStateChange(event) {
+            if (event.data === YT.PlayerState.ENDED) {
+                event.target.seekTo(0);
+                event.target.playVideo();
+            }
+        }
+
+        // Intersection Observer
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                const iframe = entry.target.querySelector('iframe');
+                if (!iframe) return;
+
+                const playerId = iframe.id;
+                const player = players[playerId];
+
+                if (!player || !playersReady[playerId]) return;
+
+                try {
+                    if (entry.isIntersecting) {
+                        currentPlayerId = playerId;
+                        entry.target.classList.add('active');
+
+                        // Change background color
+                        const bgColor = entry.target.getAttribute('data-bg-color');
+                        bgLayer.style.backgroundColor = bgColor;
+
+                        player.seekTo(0);
+                        player.playVideo();
+
+                        if (!isMuted) {
+                            player.unMute();
+                            player.setVolume(100);
+                        } else {
+                            player.mute();
+                        }
+                    } else {
+                        entry.target.classList.remove('active');
+                        const videoId = entry.target.getAttribute('data-video-id');
+                        player.cueVideoById(videoId);
+                        player.mute();
+                    }
+                } catch (e) {
+                    console.log('Player not ready yet:', playerId);
+                }
+            });
+        }, { threshold: 0.6 });
+
+        // Sound toggle
+        function toggleSound() {
+            isMuted = !isMuted;
+
+            const currentPlayer = players[currentPlayerId];
+            const mutedIcon = document.getElementById('mutedIcon');
+            const unmutedIcon = document.getElementById('unmutedIcon');
+            const btnText = document.getElementById('soundBtnText');
+
+            if (isMuted) {
+                if (currentPlayer && playersReady[currentPlayerId]) {
+                    currentPlayer.mute();
+                }
+                mutedIcon.style.display = 'block';
+                unmutedIcon.style.display = 'none';
+                btnText.textContent = 'Tap to unmute';
+            } else {
+                if (currentPlayer && playersReady[currentPlayerId]) {
+                    currentPlayer.unMute();
+                    currentPlayer.setVolume(100);
+                }
+                mutedIcon.style.display = 'none';
+                unmutedIcon.style.display = 'block';
+                btnText.textContent = 'Tap to mute';
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -81,14 +81,20 @@
             transform: scale(1);
         }
 
-        /* YouTube iframe - stretched to hide UI */
+        /* YouTube iframe - optimized for 9:16 vertical videos */
         .video-frame iframe {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 300%;
-            height: 180%;
+            /* 
+             * Optimized for 9:16 vertical videos in YouTube's 16:9 player:
+             * - Width 315%: Crops the black pillarbox bars on left/right
+             *   (16:9 / 9:16 = 256/81 ≈ 3.16, so ~316% fills horizontally)
+             * - Height 115%: Minimal crop to hide YouTube UI bars
+             */
+            width: 315%;
+            height: 115%;
             border: none;
             pointer-events: none;
         }

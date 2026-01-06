@@ -57,11 +57,16 @@
         /* Video frame container - 9:16 aspect ratio (phone-like) */
         .video-frame {
             position: relative;
-            width: min(380px, 85vw);
+            /* Responsive width: min 280px on small screens, max 380px on large, fluid in between */
+            width: clamp(280px, 50vw, 380px);
+            /* Limit max height to 75% of viewport height for better vertical centering */
+            max-height: 75vh;
             aspect-ratio: 9/16;
-            border-radius: 24px;
+            /* Responsive border radius */
+            border-radius: clamp(16px, 3vw, 24px);
             overflow: hidden;
-            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.4);
+            /* Responsive shadow */
+            box-shadow: 0 clamp(15px, 3vh, 25px) clamp(40px, 8vh, 80px) rgba(0, 0, 0, 0.4);
             opacity: 0.2;
             transform: scale(0.9);
             transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
@@ -98,56 +103,56 @@
             transform: scale(1);
         }
 
-        /* Heart sticker */
+        /* Heart sticker - responsive positioning */
         .sticker-heart {
             top: 15%;
-            right: calc(50% - 280px);
-            font-size: 48px;
+            right: calc(50% - min(280px, 25vw));
+            font-size: clamp(32px, 5vw, 48px);
         }
 
-        /* Star sticker */
+        /* Star sticker - responsive positioning */
         .sticker-star {
             top: 20%;
-            left: calc(50% - 300px);
-            width: 80px;
-            height: 80px;
+            left: calc(50% - min(300px, 27vw));
+            width: clamp(50px, 7vw, 80px);
+            height: clamp(50px, 7vw, 80px);
         }
 
-        /* Plus sticker */
+        /* Plus sticker - responsive positioning */
         .sticker-plus {
             bottom: 35%;
-            left: calc(50% - 250px);
-            font-size: 40px;
+            left: calc(50% - min(250px, 22vw));
+            font-size: clamp(28px, 4vw, 40px);
             color: #f0a0d0;
         }
 
-        /* Sparkle sticker */
+        /* Sparkle sticker - responsive positioning */
         .sticker-sparkle {
             bottom: 40%;
-            right: calc(50% - 280px);
-            font-size: 32px;
+            right: calc(50% - min(280px, 25vw));
+            font-size: clamp(22px, 3.5vw, 32px);
         }
 
-        /* Squiggle sticker */
+        /* Squiggle sticker - responsive positioning */
         .sticker-squiggle {
             bottom: 15%;
-            left: calc(50% - 280px);
-            width: 60px;
+            left: calc(50% - min(280px, 25vw));
+            width: clamp(40px, 5vw, 60px);
         }
 
-        /* Info bars on the sides */
+        /* Info bars on the sides - responsive positioning */
         .info-bar {
             position: absolute;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: clamp(8px, 1.5vw, 12px);
             opacity: 0;
             transform: translateX(-20px);
             transition: opacity 0.5s ease-in-out 0.15s, transform 0.5s ease-in-out 0.15s;
         }
 
         .info-bar.right {
-            right: calc(50% - 420px);
+            right: calc(50% - min(420px, 35vw));
             top: 50%;
             transform: translateY(-50%) translateX(20px);
         }
@@ -162,31 +167,31 @@
         }
 
         .info-bar.left {
-            left: calc(50% - 420px);
+            left: calc(50% - min(420px, 35vw));
             top: 40%;
         }
 
         .info-line {
-            height: 12px;
+            height: clamp(8px, 1.2vw, 12px);
             background: rgba(255, 255, 255, 0.25);
-            border-radius: 6px;
+            border-radius: clamp(4px, 0.6vw, 6px);
         }
 
         .info-line.short {
-            width: 60px;
+            width: clamp(40px, 6vw, 60px);
         }
 
         .info-line.medium {
-            width: 100px;
+            width: clamp(65px, 9vw, 100px);
         }
 
         .info-line.long {
-            width: 140px;
+            width: clamp(90px, 12vw, 140px);
         }
 
         .info-dot {
-            width: 28px;
-            height: 28px;
+            width: clamp(20px, 2.5vw, 28px);
+            height: clamp(20px, 2.5vw, 28px);
             background: rgba(255, 255, 255, 0.3);
             border-radius: 50%;
         }
@@ -194,7 +199,7 @@
         .info-group {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: clamp(8px, 1.2vw, 12px);
         }
 
         /* Toggle button design */
@@ -202,52 +207,52 @@
             display: flex;
             align-items: center;
             background: rgba(255, 255, 255, 0.15);
-            padding: 8px 16px;
-            border-radius: 25px;
-            gap: 12px;
+            padding: clamp(6px, 1vw, 8px) clamp(12px, 1.5vw, 16px);
+            border-radius: clamp(18px, 2.5vw, 25px);
+            gap: clamp(8px, 1.2vw, 12px);
         }
 
         .toggle-btn .line {
-            width: 50px;
-            height: 8px;
+            width: clamp(35px, 5vw, 50px);
+            height: clamp(6px, 0.8vw, 8px);
             background: rgba(255, 255, 255, 0.4);
-            border-radius: 4px;
+            border-radius: clamp(3px, 0.4vw, 4px);
         }
 
         .toggle-btn .circle {
-            width: 24px;
-            height: 24px;
+            width: clamp(18px, 2.2vw, 24px);
+            height: clamp(18px, 2.2vw, 24px);
             background: rgba(255, 255, 255, 0.5);
             border-radius: 50%;
         }
 
-        /* Control bar container */
+        /* Control bar container - responsive positioning */
         .control-bar {
             position: fixed;
-            bottom: 20px;
+            bottom: clamp(12px, 3vh, 20px);
             left: 50%;
             transform: translateX(-50%);
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: clamp(8px, 2vw, 12px);
             z-index: 1000;
         }
 
-        /* Unmute button */
+        /* Unmute button - responsive sizing */
         .unmute-btn {
             background: rgba(255, 255, 255, 0.2);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.3);
             color: white;
-            padding: 14px 28px;
+            padding: clamp(10px, 2vh, 14px) clamp(18px, 4vw, 28px);
             border-radius: 50px;
-            font-size: 15px;
+            font-size: clamp(12px, 2vw, 15px);
             font-family: inherit;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: clamp(6px, 1.5vw, 10px);
             transition: all 0.3s ease;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
         }
@@ -258,14 +263,14 @@
         }
 
         .unmute-btn svg {
-            width: 20px;
-            height: 20px;
+            width: clamp(16px, 3vw, 20px);
+            height: clamp(16px, 3vw, 20px);
         }
 
-        /* Play/Stop button - circular icon only */
+        /* Play/Stop button - responsive circular button */
         .play-stop-btn {
-            width: 50px;
-            height: 50px;
+            width: clamp(40px, 8vw, 50px);
+            height: clamp(40px, 8vw, 50px);
             background: rgba(255, 255, 255, 0.2);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
@@ -286,18 +291,18 @@
         }
 
         .play-stop-btn svg {
-            width: 40px;
-            height: 40px;
+            width: clamp(28px, 6vw, 40px);
+            height: clamp(28px, 6vw, 40px);
         }
 
-        /* Grid button at top */
+        /* Grid button at top - responsive sizing */
         .grid-btn {
             position: fixed;
-            top: 20px;
+            top: clamp(12px, 3vh, 20px);
             left: 50%;
             transform: translateX(-50%);
-            width: 50px;
-            height: 50px;
+            width: clamp(40px, 8vw, 50px);
+            height: clamp(40px, 8vw, 50px);
             background: rgba(255, 255, 255, 0.2);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
@@ -326,8 +331,8 @@
         }
 
         .grid-btn svg {
-            width: 24px;
-            height: 24px;
+            width: clamp(18px, 4vw, 24px);
+            height: clamp(18px, 4vw, 24px);
         }
 
         /* Grid Section - scrollable section before videos */
@@ -345,11 +350,11 @@
         .grid-container {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 16px;
-            padding: 20px;
-            max-width: 500px;
+            gap: clamp(10px, 2.5vw, 16px);
+            padding: clamp(12px, 3vw, 20px);
+            max-width: min(500px, 90vw);
             width: 90%;
-            max-height: 80vh;
+            max-height: 75vh;
             /* Entry animation - same as video frame */
             opacity: 0.2;
             transform: scale(0.9);
@@ -362,9 +367,9 @@
         }
 
         .grid-item {
-            height: calc((80vh - 100px) / 2);
-            max-height: 280px;
-            border-radius: 16px;
+            /* Height based on available space - works well on all devices */
+            height: clamp(120px, 28vh, 280px);
+            border-radius: clamp(10px, 2vw, 16px);
             overflow: hidden;
             cursor: pointer;
             background: rgba(255, 255, 255, 0.1);
@@ -386,26 +391,27 @@
 
         .grid-item .video-number {
             position: absolute;
-            bottom: 10px;
-            left: 10px;
+            bottom: clamp(6px, 1.5vh, 10px);
+            left: clamp(6px, 1.5vw, 10px);
             background: rgba(0, 0, 0, 0.7);
             color: white;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 14px;
+            padding: clamp(4px, 1vh, 6px) clamp(8px, 2vw, 12px);
+            border-radius: clamp(14px, 3vw, 20px);
+            font-size: clamp(11px, 2vw, 14px);
             font-weight: 500;
         }
 
         .grid-title {
             position: absolute;
-            top: 40px;
+            top: clamp(24px, 6vh, 40px);
             left: 50%;
             transform: translateX(-50%);
             color: white;
-            font-size: 24px;
+            font-size: clamp(18px, 4vw, 24px);
             font-weight: 600;
             opacity: 0;
             transition: opacity 0.5s ease-in-out;
+            white-space: nowrap;
         }
 
         .grid-section.active .grid-title {
@@ -414,17 +420,17 @@
 
         .scroll-hint {
             position: absolute;
-            bottom: 30px;
+            bottom: clamp(16px, 4vh, 30px);
             left: 50%;
             transform: translateX(-50%);
             color: rgba(255, 255, 255, 0.5);
-            font-size: 14px;
+            font-size: clamp(12px, 2vw, 14px);
             opacity: 0;
             transition: opacity 0.5s ease-in-out 0.3s;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 8px;
+            gap: clamp(4px, 1vh, 8px);
         }
 
         .grid-section.active .scroll-hint {
@@ -432,8 +438,8 @@
         }
 
         .scroll-hint svg {
-            width: 20px;
-            height: 20px;
+            width: clamp(16px, 3vw, 20px);
+            height: clamp(16px, 3vw, 20px);
             animation: bounce 2s infinite;
         }
 
@@ -456,12 +462,27 @@
             }
         }
 
-        /* Hide on small screens */
+        /* Hide decorative elements on smaller screens (below ~900px) */
         @media (max-width: 900px) {
 
             .info-bar,
             .sticker {
                 display: none;
+            }
+        }
+
+        /* Additional mobile optimizations */
+        @media (max-height: 600px) {
+            .video-frame {
+                max-height: 70vh;
+            }
+
+            .grid-container {
+                max-height: 65vh;
+            }
+
+            .grid-item {
+                height: clamp(80px, 22vh, 180px);
             }
         }
     </style>

@@ -79,7 +79,7 @@
             left: 50%;
             transform: translate(-50%, -50%);
             width: 300%;
-            height: 100%;
+            height: 180%;
             border: none;
             pointer-events: none;
         }
@@ -221,13 +221,20 @@
             border-radius: 50%;
         }
 
-
-        /* Unmute button */
-        .unmute-btn {
+        /* Control bar container */
+        .control-bar {
             position: fixed;
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 1000;
+        }
+
+        /* Unmute button */
+        .unmute-btn {
             background: rgba(255, 255, 255, 0.2);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
@@ -238,7 +245,6 @@
             font-size: 15px;
             font-family: inherit;
             cursor: pointer;
-            z-index: 1000;
             display: flex;
             align-items: center;
             gap: 10px;
@@ -248,12 +254,40 @@
 
         .unmute-btn:hover {
             background: rgba(255, 255, 255, 0.3);
-            transform: translateX(-50%) scale(1.05);
+            transform: scale(1.05);
         }
 
         .unmute-btn svg {
             width: 20px;
             height: 20px;
+        }
+
+        /* Play/Stop button - circular icon only */
+        .play-stop-btn {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .play-stop-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        .play-stop-btn svg {
+            width: 40px;
+            height: 40px;
         }
 
         /* Hide on small screens */
@@ -378,7 +412,7 @@
         </div>
 
         <!-- Video 3 - Green theme -->
-        <div class="video-section" data-video-id="3set69V64Xk" data-bg-color="#1d4a3a">
+        <div class="video-section" data-video-id="FpBOQ3tAE6U" data-bg-color="#1d4a3a">
 
             <div class="info-bar left">
                 <div class="info-line medium"></div>
@@ -460,21 +494,38 @@
         </div>
     </div>
 
-    <!-- Sound Toggle Button -->
-    <button class="unmute-btn" id="soundBtn" onclick="toggleSound()">
-        <svg id="mutedIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
-        </svg>
-        <svg id="unmutedIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-            style="display: none;">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-        </svg>
-        <span id="soundBtnText">Tap to unmute</span>
-    </button>
+    <!-- Control Bar -->
+    <div class="control-bar">
+        <!-- Play/Stop Button -->
+        <button class="play-stop-btn" id="playStopBtn" onclick="togglePlayStop()">
+            <svg id="pauseIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <rect x="6" y="6" width="12" height="12" rx="1" stroke-width="2" />
+            </svg>
+            <svg id="playIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                style="display: none;">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+            </svg>
+        </button>
+
+        <!-- Sound Toggle Button -->
+        <button class="unmute-btn" id="soundBtn" onclick="toggleSound()">
+            <svg id="mutedIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+            </svg>
+            <svg id="unmutedIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor" style="display: none;">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+            </svg>
+            <span id="soundBtnText">Tap to unmute</span>
+        </button>
+    </div>
 
     <script src="https://www.youtube.com/iframe_api"></script>
     <script>
@@ -567,6 +618,11 @@
                         const bgColor = entry.target.getAttribute('data-bg-color');
                         bgLayer.style.backgroundColor = bgColor;
 
+                        // Reset play state and button
+                        isPlaying = true;
+                        document.getElementById('pauseIcon').style.display = 'block';
+                        document.getElementById('playIcon').style.display = 'none';
+
                         player.seekTo(0);
                         player.playVideo();
 
@@ -614,6 +670,68 @@
                 btnText.textContent = 'Tap to mute';
             }
         }
+
+        // Play/Stop toggle
+        let isPlaying = true;
+
+        function togglePlayStop() {
+            const currentPlayer = players[currentPlayerId];
+            const pauseIcon = document.getElementById('pauseIcon');
+            const playIcon = document.getElementById('playIcon');
+
+            // Get the current video section to access video ID
+            const currentSection = document.querySelector('.video-section.active');
+
+            if (!currentPlayer || !playersReady[currentPlayerId] || !currentSection) return;
+
+            if (isPlaying) {
+                // Stop video completely to avoid related videos UI
+                const videoId = currentSection.getAttribute('data-video-id');
+                currentPlayer.cueVideoById(videoId);
+                currentPlayer.mute();
+                pauseIcon.style.display = 'none';
+                playIcon.style.display = 'block';
+            } else {
+                // Play from start
+                currentPlayer.seekTo(0);
+                currentPlayer.playVideo();
+                if (!isMuted) {
+                    currentPlayer.unMute();
+                    currentPlayer.setVolume(100);
+                }
+                pauseIcon.style.display = 'block';
+                playIcon.style.display = 'none';
+            }
+            isPlaying = !isPlaying;
+        }
+
+        // Keyboard navigation
+        const videoSections = document.querySelectorAll('.video-section');
+        let currentIndex = 0;
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+                e.preventDefault();
+                if (currentIndex < videoSections.length - 1) {
+                    currentIndex++;
+                    videoSections[currentIndex].scrollIntoView({ behavior: 'smooth' });
+                }
+            } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+                e.preventDefault();
+                if (currentIndex > 0) {
+                    currentIndex--;
+                    videoSections[currentIndex].scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+        });
+
+        // Keep currentIndex in sync with scroll
+        const feed = document.getElementById('feed');
+        feed.addEventListener('scroll', () => {
+            const scrollTop = feed.scrollTop;
+            const sectionHeight = window.innerHeight;
+            currentIndex = Math.round(scrollTop / sectionHeight);
+        });
     </script>
 </body>
 

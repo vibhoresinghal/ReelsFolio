@@ -57,10 +57,14 @@
         /* Video frame container - 9:16 aspect ratio (phone-like) */
         .video-frame {
             position: relative;
-            /* Responsive width: min 280px on small screens, max 380px on large, fluid in between */
-            width: clamp(280px, 50vw, 380px);
-            /* Limit max height to 75% of viewport height for better vertical centering */
-            max-height: 75vh;
+            /* 
+             * Width calculation that maintains 9:16 ratio within viewport:
+             * - min 280px on very small screens
+             * - max 380px on large screens  
+             * - 50vw for horizontal responsiveness
+             * - calc(80vh * 9 / 16) ensures height won't exceed 80% of viewport
+             */
+            width: min(clamp(280px, 50vw, 380px), calc(80vh * 9 / 16));
             aspect-ratio: 9/16;
             /* Responsive border radius */
             border-radius: clamp(16px, 3vw, 24px);
@@ -349,12 +353,16 @@
 
         .grid-container {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            /* Use auto columns so items determine their own width */
+            grid-template-columns: repeat(2, auto);
+            /* Center the grid content horizontally */
+            justify-content: center;
             gap: clamp(10px, 2.5vw, 16px);
             padding: clamp(12px, 3vw, 20px);
             max-width: min(500px, 90vw);
-            width: 90%;
-            max-height: 75vh;
+            width: 100%;
+            /* Limit height to leave room for title (top) and scroll hint (bottom) */
+            max-height: calc(100vh - clamp(100px, 20vh, 150px));
             /* Entry animation - same as video frame */
             opacity: 0.2;
             transform: scale(0.9);
@@ -367,8 +375,14 @@
         }
 
         .grid-item {
-            /* Height based on available space - works well on all devices */
-            height: clamp(120px, 28vh, 280px);
+            /* Same 9:16 aspect ratio as the video frame */
+            aspect-ratio: 9/16;
+            /* 
+             * Limit width so height (based on 9:16 ratio) fits within available space
+             * Each item should fit in ~40% of viewport height max
+             * width = height * 9/16, so for 35vh max height: width = 35vh * 9/16
+             */
+            max-width: min(100%, calc(35vh * 9 / 16));
             border-radius: clamp(10px, 2vw, 16px);
             overflow: hidden;
             cursor: pointer;
@@ -471,18 +485,11 @@
             }
         }
 
-        /* Additional mobile optimizations */
+        /* Additional mobile optimizations for short screens */
         @media (max-height: 600px) {
-            .video-frame {
-                max-height: 70vh;
-            }
-
             .grid-container {
-                max-height: 65vh;
-            }
-
-            .grid-item {
-                height: clamp(80px, 22vh, 180px);
+                max-height: 80vh;
+                overflow-y: auto;
             }
         }
     </style>

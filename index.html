@@ -246,6 +246,14 @@
             align-items: center;
             gap: clamp(8px, 2vw, 12px);
             z-index: 1000;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .control-bar.hidden {
+            opacity: 0;
+            visibility: hidden;
         }
 
         /* Unmute button - responsive sizing */
@@ -359,16 +367,18 @@
 
         .grid-container {
             display: grid;
-            /* Use auto columns so items determine their own width */
-            grid-template-columns: repeat(2, auto);
-            /* Center the grid content horizontally */
+            /* 5 columns x 2 rows - auto sizing for equal gaps */
+            grid-template-columns: repeat(5, auto);
+            grid-template-rows: repeat(2, auto);
             justify-content: center;
-            gap: clamp(10px, 2.5vw, 16px);
-            padding: clamp(12px, 3vw, 20px);
-            max-width: min(500px, 90vw);
+            align-content: center;
+            justify-items: center;
+            align-items: center;
+            gap: clamp(8px, 1.5vw, 12px);
+            padding: clamp(8px, 2vw, 16px);
+            max-width: 95vw;
             width: 100%;
-            /* Limit height to leave room for title (top) and scroll hint (bottom) */
-            max-height: calc(100vh - clamp(100px, 20vh, 150px));
+            /* No internal scroll - fit everything in viewport */
             /* Entry animation - same as video frame */
             opacity: 0.2;
             transform: scale(0.9);
@@ -383,13 +393,10 @@
         .grid-item {
             /* Same 9:16 aspect ratio as the video frame */
             aspect-ratio: 9/16;
-            /* 
-             * Limit width so height (based on 9:16 ratio) fits within available space
-             * Each item should fit in ~40% of viewport height max
-             * width = height * 9/16, so for 35vh max height: width = 35vh * 9/16
-             */
-            max-width: min(100%, calc(35vh * 9 / 16));
-            border-radius: clamp(10px, 2vw, 16px);
+            /* Calculate max height to fit 2 rows with gap and title space */
+            max-height: calc((100vh - 180px) / 2);
+            width: auto;
+            border-radius: clamp(8px, 1.5vw, 12px);
             overflow: hidden;
             cursor: pointer;
             background: rgba(255, 255, 255, 0.1);
@@ -399,7 +406,7 @@
         }
 
         .grid-item:hover {
-            transform: scale(1.05);
+            transform: scale(1.03);
             border-color: rgba(255, 255, 255, 0.5);
         }
 
@@ -411,13 +418,13 @@
 
         .grid-item .video-number {
             position: absolute;
-            bottom: clamp(6px, 1.5vh, 10px);
-            left: clamp(6px, 1.5vw, 10px);
+            bottom: clamp(4px, 1vh, 8px);
+            left: clamp(4px, 1vw, 8px);
             background: rgba(0, 0, 0, 0.7);
             color: white;
-            padding: clamp(4px, 1vh, 6px) clamp(8px, 2vw, 12px);
-            border-radius: clamp(14px, 3vw, 20px);
-            font-size: clamp(11px, 2vw, 14px);
+            padding: clamp(2px, 0.5vh, 4px) clamp(6px, 1vw, 10px);
+            border-radius: clamp(10px, 2vw, 16px);
+            font-size: clamp(10px, 1.5vw, 12px);
             font-weight: 500;
         }
 
@@ -438,49 +445,6 @@
             opacity: 1;
         }
 
-        .scroll-hint {
-            position: absolute;
-            bottom: clamp(16px, 4vh, 30px);
-            left: 50%;
-            transform: translateX(-50%);
-            color: rgba(255, 255, 255, 0.5);
-            font-size: clamp(12px, 2vw, 14px);
-            opacity: 0;
-            transition: opacity 0.5s ease-in-out 0.3s;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: clamp(4px, 1vh, 8px);
-        }
-
-        .grid-section.active .scroll-hint {
-            opacity: 1;
-        }
-
-        .scroll-hint svg {
-            width: clamp(16px, 3vw, 20px);
-            height: clamp(16px, 3vw, 20px);
-            animation: bounce 2s infinite;
-        }
-
-        @keyframes bounce {
-
-            0%,
-            20%,
-            50%,
-            80%,
-            100% {
-                transform: translateY(0);
-            }
-
-            40% {
-                transform: translateY(6px);
-            }
-
-            60% {
-                transform: translateY(3px);
-            }
-        }
 
         /* Hide decorative elements on smaller screens (below ~900px) */
         @media (max-width: 900px) {
@@ -526,13 +490,30 @@
                     <img src="https://img.youtube.com/vi/9bZkp7q19f0/maxresdefault.jpg" alt="Video 4">
                     <span class="video-number">4</span>
                 </div>
-            </div>
-            <div class="scroll-hint">
-                <span>Scroll down</span>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                </svg>
+                <div class="grid-item" onclick="goToVideo(5)">
+                    <img src="https://img.youtube.com/vi/kJQP7kiw5Fk/maxresdefault.jpg" alt="Video 5">
+                    <span class="video-number">5</span>
+                </div>
+                <div class="grid-item" onclick="goToVideo(6)">
+                    <img src="https://img.youtube.com/vi/JGwWNGJdvx8/maxresdefault.jpg" alt="Video 6">
+                    <span class="video-number">6</span>
+                </div>
+                <div class="grid-item" onclick="goToVideo(7)">
+                    <img src="https://img.youtube.com/vi/RgKAFK5djSk/maxresdefault.jpg" alt="Video 7">
+                    <span class="video-number">7</span>
+                </div>
+                <div class="grid-item" onclick="goToVideo(8)">
+                    <img src="https://img.youtube.com/vi/fRh_vgS2dFE/maxresdefault.jpg" alt="Video 8">
+                    <span class="video-number">8</span>
+                </div>
+                <div class="grid-item" onclick="goToVideo(9)">
+                    <img src="https://img.youtube.com/vi/CevxZvSJLk8/maxresdefault.jpg" alt="Video 9">
+                    <span class="video-number">9</span>
+                </div>
+                <div class="grid-item" onclick="goToVideo(10)">
+                    <img src="https://img.youtube.com/vi/OPf0YbXqDm0/maxresdefault.jpg" alt="Video 10">
+                    <span class="video-number">10</span>
+                </div>
             </div>
         </div>
 
@@ -722,6 +703,227 @@
             </div>
 
         </div>
+
+        <!-- Video 5 - Pink theme -->
+        <div class="video-section" data-video-id="kJQP7kiw5Fk" data-bg-color="#4a2040">
+
+            <div class="info-bar left">
+                <div class="info-line long"></div>
+                <div class="info-line medium"></div>
+                <div class="info-line short"></div>
+            </div>
+
+            <div class="sticker sticker-star">
+                <svg viewBox="0 0 100 100" fill="#FF69B4">
+                    <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
+                </svg>
+            </div>
+            <div class="sticker sticker-heart">💖</div>
+            <div class="sticker sticker-sparkle">✨</div>
+
+            <div class="video-frame">
+                <div id="player5"></div>
+            </div>
+
+            <div class="info-bar right">
+                <div class="info-group">
+                    <div class="info-dot"></div>
+                    <div>
+                        <div class="info-line medium" style="margin-bottom: 6px;"></div>
+                        <div class="info-line short"></div>
+                    </div>
+                </div>
+                <div class="toggle-btn">
+                    <div class="line"></div>
+                    <div class="circle"></div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Video 6 - Cyan theme -->
+        <div class="video-section" data-video-id="JGwWNGJdvx8" data-bg-color="#1a4a4a">
+
+            <div class="info-bar left">
+                <div class="info-line medium"></div>
+                <div class="info-line long"></div>
+                <div class="info-line short"></div>
+            </div>
+
+            <div class="sticker sticker-star">
+                <svg viewBox="0 0 100 100" fill="#00CED1">
+                    <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
+                </svg>
+            </div>
+            <div class="sticker sticker-heart">💙</div>
+            <div class="sticker sticker-plus">✦</div>
+
+            <div class="video-frame">
+                <div id="player6"></div>
+            </div>
+
+            <div class="info-bar right">
+                <div class="info-group">
+                    <div class="info-dot"></div>
+                    <div>
+                        <div class="info-line long" style="margin-bottom: 6px;"></div>
+                        <div class="info-line medium"></div>
+                    </div>
+                </div>
+                <div class="toggle-btn">
+                    <div class="line"></div>
+                    <div class="circle"></div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Video 7 - Yellow theme -->
+        <div class="video-section" data-video-id="RgKAFK5djSk" data-bg-color="#4a4a1a">
+
+            <div class="info-bar left">
+                <div class="info-line long"></div>
+                <div class="info-line short"></div>
+                <div class="info-line medium"></div>
+            </div>
+
+            <div class="sticker sticker-star">
+                <svg viewBox="0 0 100 100" fill="#FFD700">
+                    <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
+                </svg>
+            </div>
+            <div class="sticker sticker-heart">💛</div>
+            <div class="sticker sticker-sparkle">⭐</div>
+
+            <div class="video-frame">
+                <div id="player7"></div>
+            </div>
+
+            <div class="info-bar right">
+                <div class="info-group">
+                    <div class="info-dot"></div>
+                    <div>
+                        <div class="info-line short" style="margin-bottom: 6px;"></div>
+                        <div class="info-line long"></div>
+                    </div>
+                </div>
+                <div class="toggle-btn">
+                    <div class="line"></div>
+                    <div class="circle"></div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Video 8 - Red theme -->
+        <div class="video-section" data-video-id="fRh_vgS2dFE" data-bg-color="#4a1a1a">
+
+            <div class="info-bar left">
+                <div class="info-line medium"></div>
+                <div class="info-line long"></div>
+            </div>
+
+            <div class="sticker sticker-star">
+                <svg viewBox="0 0 100 100" fill="#FF6347">
+                    <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
+                </svg>
+            </div>
+            <div class="sticker sticker-heart">❤️</div>
+            <div class="sticker sticker-plus">✚</div>
+
+            <div class="video-frame">
+                <div id="player8"></div>
+            </div>
+
+            <div class="info-bar right">
+                <div class="info-group">
+                    <div class="info-dot"></div>
+                    <div>
+                        <div class="info-line medium" style="margin-bottom: 6px;"></div>
+                        <div class="info-line medium"></div>
+                    </div>
+                </div>
+                <div class="toggle-btn">
+                    <div class="line"></div>
+                    <div class="circle"></div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Video 9 - Indigo theme -->
+        <div class="video-section" data-video-id="CevxZvSJLk8" data-bg-color="#2a1a4a">
+
+            <div class="info-bar left">
+                <div class="info-line long"></div>
+                <div class="info-line medium"></div>
+                <div class="info-line short"></div>
+            </div>
+
+            <div class="sticker sticker-star">
+                <svg viewBox="0 0 100 100" fill="#9370DB">
+                    <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
+                </svg>
+            </div>
+            <div class="sticker sticker-heart">💜</div>
+            <div class="sticker sticker-sparkle">✧</div>
+
+            <div class="video-frame">
+                <div id="player9"></div>
+            </div>
+
+            <div class="info-bar right">
+                <div class="info-group">
+                    <div class="info-dot"></div>
+                    <div>
+                        <div class="info-line long" style="margin-bottom: 6px;"></div>
+                        <div class="info-line short"></div>
+                    </div>
+                </div>
+                <div class="toggle-btn">
+                    <div class="line"></div>
+                    <div class="circle"></div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Video 10 - Teal theme -->
+        <div class="video-section" data-video-id="OPf0YbXqDm0" data-bg-color="#1a3a3a">
+
+            <div class="info-bar left">
+                <div class="info-line short"></div>
+                <div class="info-line long"></div>
+                <div class="info-line medium"></div>
+            </div>
+
+            <div class="sticker sticker-star">
+                <svg viewBox="0 0 100 100" fill="#20B2AA">
+                    <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
+                </svg>
+            </div>
+            <div class="sticker sticker-heart">🩵</div>
+            <div class="sticker sticker-plus">✦</div>
+
+            <div class="video-frame">
+                <div id="player10"></div>
+            </div>
+
+            <div class="info-bar right">
+                <div class="info-group">
+                    <div class="info-dot"></div>
+                    <div>
+                        <div class="info-line medium" style="margin-bottom: 6px;"></div>
+                        <div class="info-line long"></div>
+                    </div>
+                </div>
+                <div class="toggle-btn">
+                    <div class="line"></div>
+                    <div class="circle"></div>
+                </div>
+            </div>
+
+        </div>
     </div>
 
     <!-- Grid Button at Top -->
@@ -761,7 +963,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
             </svg>
-            <span id="soundBtnText">Tap to unmute</span>
+            <span id="soundBtnText">Unmute</span>
         </button>
     </div>
 
@@ -838,6 +1040,7 @@
 
         // Unified Intersection Observer for all sections (grid + videos)
         const gridBtn = document.getElementById('gridBtn');
+        const controlBar = document.querySelector('.control-bar');
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 const isGridSection = entry.target.classList.contains('grid-section');
@@ -850,11 +1053,13 @@
                         bgLayer.style.backgroundColor = bgColor;
                     }
 
-                    // Show/hide grid button based on section
+                    // Show/hide grid button and control bar based on section
                     if (isGridSection) {
                         gridBtn.classList.add('hidden');
+                        controlBar.classList.add('hidden');
                     } else {
                         gridBtn.classList.remove('hidden');
+                        controlBar.classList.remove('hidden');
                     }
 
                     // Video-specific logic
@@ -934,7 +1139,7 @@
                 }
                 mutedIcon.style.display = 'block';
                 unmutedIcon.style.display = 'none';
-                btnText.textContent = 'Tap to unmute';
+                btnText.textContent = 'Unmute';
             } else {
                 if (currentPlayer && playersReady[currentPlayerId]) {
                     currentPlayer.unMute();
@@ -942,7 +1147,7 @@
                 }
                 mutedIcon.style.display = 'none';
                 unmutedIcon.style.display = 'block';
-                btnText.textContent = 'Tap to mute';
+                btnText.textContent = 'Mute';
             }
         }
 

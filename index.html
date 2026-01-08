@@ -367,14 +367,14 @@
 
         .grid-container {
             display: grid;
-            /* 5 columns x 2 rows - auto sizing for equal gaps */
+            /* Fixed 5 columns - Tab 1 gets 5x2, Tabs 2-4 get 4 items in 1 row */
             grid-template-columns: repeat(5, auto);
-            grid-template-rows: repeat(2, auto);
             justify-content: center;
             align-content: center;
             justify-items: center;
             align-items: center;
-            gap: clamp(8px, 1.5vw, 12px);
+            /* Consistent spacing across all tabs */
+            gap: clamp(10px, 2vw, 16px);
             padding: clamp(8px, 2vw, 16px);
             max-width: 95vw;
             width: 100%;
@@ -445,6 +445,69 @@
             opacity: 1;
         }
 
+        /* Tab Navigation */
+        .tab-nav {
+            position: fixed;
+            top: clamp(12px, 3vh, 20px);
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: clamp(4px, 1vw, 8px);
+            z-index: 1001;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: clamp(4px, 0.8vw, 6px);
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .tab-btn {
+            padding: clamp(8px, 1.5vh, 12px) clamp(16px, 3vw, 24px);
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: clamp(12px, 2vw, 14px);
+            font-weight: 500;
+            font-family: inherit;
+            cursor: pointer;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .tab-btn:hover {
+            color: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .tab-btn.active {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        /* Tab Content */
+        /* Horizontal scroll container for tabs */
+        .tabs-container {
+            display: flex;
+            width: 400vw;
+            /* 4 tabs × 100vw each */
+            height: 100vh;
+            transition: transform 0.5s ease-in-out;
+        }
+
+        .tab-content {
+            flex: 0 0 100vw;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Hide grid button when tabs are visible - it's replaced by tab nav */
+        .grid-btn {
+            display: none;
+        }
+
 
         /* Hide decorative elements on smaller screens (below ~900px) */
         @media (max-width: 900px) {
@@ -469,464 +532,917 @@
     <!-- Background that transitions with each video -->
     <div class="bg-layer" id="bgLayer"></div>
 
-    <div class="video-container" id="feed">
-        <!-- Grid Section - First in feed -->
-        <div class="grid-section active" data-bg-color="#1a1a2e">
-            <div class="grid-title">Choose a Video</div>
-            <div class="grid-container">
-                <div class="grid-item" onclick="goToVideo(1)">
-                    <img src="https://img.youtube.com/vi/VmjOqPBag8A/maxresdefault.jpg" alt="Video 1">
-                    <span class="video-number">1</span>
-                </div>
-                <div class="grid-item" onclick="goToVideo(2)">
-                    <img src="https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg" alt="Video 2">
-                    <span class="video-number">2</span>
-                </div>
-                <div class="grid-item" onclick="goToVideo(3)">
-                    <img src="https://img.youtube.com/vi/FpBOQ3tAE6U/maxresdefault.jpg" alt="Video 3">
-                    <span class="video-number">3</span>
-                </div>
-                <div class="grid-item" onclick="goToVideo(4)">
-                    <img src="https://img.youtube.com/vi/9bZkp7q19f0/maxresdefault.jpg" alt="Video 4">
-                    <span class="video-number">4</span>
-                </div>
-                <div class="grid-item" onclick="goToVideo(5)">
-                    <img src="https://img.youtube.com/vi/kJQP7kiw5Fk/maxresdefault.jpg" alt="Video 5">
-                    <span class="video-number">5</span>
-                </div>
-                <div class="grid-item" onclick="goToVideo(6)">
-                    <img src="https://img.youtube.com/vi/JGwWNGJdvx8/maxresdefault.jpg" alt="Video 6">
-                    <span class="video-number">6</span>
-                </div>
-                <div class="grid-item" onclick="goToVideo(7)">
-                    <img src="https://img.youtube.com/vi/RgKAFK5djSk/maxresdefault.jpg" alt="Video 7">
-                    <span class="video-number">7</span>
-                </div>
-                <div class="grid-item" onclick="goToVideo(8)">
-                    <img src="https://img.youtube.com/vi/fRh_vgS2dFE/maxresdefault.jpg" alt="Video 8">
-                    <span class="video-number">8</span>
-                </div>
-                <div class="grid-item" onclick="goToVideo(9)">
-                    <img src="https://img.youtube.com/vi/CevxZvSJLk8/maxresdefault.jpg" alt="Video 9">
-                    <span class="video-number">9</span>
-                </div>
-                <div class="grid-item" onclick="goToVideo(10)">
-                    <img src="https://img.youtube.com/vi/OPf0YbXqDm0/maxresdefault.jpg" alt="Video 10">
-                    <span class="video-number">10</span>
-                </div>
-            </div>
-        </div>
+    <!-- Tab Navigation -->
+    <nav class="tab-nav">
+        <button class="tab-btn active" onclick="switchTab(0)">Zeta</button>
+        <button class="tab-btn" onclick="switchTab(1)">Personal Projects</button>
+        <button class="tab-btn" onclick="switchTab(2)">Life</button>
+        <button class="tab-btn" onclick="switchTab(3)">Films</button>
+    </nav>
 
-        <!-- Video 1 - Purple theme -->
-        <div class="video-section" data-video-id="VmjOqPBag8A" data-bg-color="#3d2351">
-
-            <div class="info-bar left">
-                <div class="info-line long"></div>
-                <div class="info-line medium"></div>
-                <div class="info-line short"></div>
-                <div class="info-line long"></div>
-                <div class="info-line medium"></div>
-            </div>
-
-            <div class="sticker sticker-star">
-                <svg viewBox="0 0 100 100" fill="#7CB9E8">
-                    <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
-                </svg>
-            </div>
-            <div class="sticker sticker-heart">💗</div>
-            <div class="sticker sticker-plus">✚</div>
-            <div class="sticker sticker-sparkle">✦</div>
-            <div class="sticker sticker-squiggle">
-                <svg viewBox="0 0 60 30" stroke="#f4a27a" stroke-width="4" fill="none">
-                    <path d="M5,15 Q15,5 25,15 T45,15 T55,15" />
-                </svg>
-            </div>
-
-            <div class="video-frame">
-                <div id="player1"></div>
-            </div>
-
-            <div class="info-bar right">
-                <div class="info-group">
-                    <div class="info-dot"></div>
-                    <div>
-                        <div class="info-line medium" style="margin-bottom: 6px;"></div>
-                        <div class="info-line short"></div>
+    <!-- Horizontal Tabs Container -->
+    <div class="tabs-container" id="tabsContainer">
+        <!-- Tab 1 Content -->
+        <div class="tab-content" id="tab1">
+            <div class="video-container" id="feed1">
+                <!-- Grid Section - First in feed -->
+                <div class="grid-section active" data-bg-color="#1a1a2e">
+                    <div class="grid-container">
+                        <div class="grid-item" onclick="goToVideo(1)">
+                            <img src="https://img.youtube.com/vi/VmjOqPBag8A/maxresdefault.jpg" alt="Video 1">
+                            <span class="video-number">1</span>
+                        </div>
+                        <div class="grid-item" onclick="goToVideo(2)">
+                            <img src="https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg" alt="Video 2">
+                            <span class="video-number">2</span>
+                        </div>
+                        <div class="grid-item" onclick="goToVideo(3)">
+                            <img src="https://img.youtube.com/vi/FpBOQ3tAE6U/maxresdefault.jpg" alt="Video 3">
+                            <span class="video-number">3</span>
+                        </div>
+                        <div class="grid-item" onclick="goToVideo(4)">
+                            <img src="https://img.youtube.com/vi/9bZkp7q19f0/maxresdefault.jpg" alt="Video 4">
+                            <span class="video-number">4</span>
+                        </div>
+                        <div class="grid-item" onclick="goToVideo(5)">
+                            <img src="https://img.youtube.com/vi/kJQP7kiw5Fk/maxresdefault.jpg" alt="Video 5">
+                            <span class="video-number">5</span>
+                        </div>
+                        <div class="grid-item" onclick="goToVideo(6)">
+                            <img src="https://img.youtube.com/vi/JGwWNGJdvx8/maxresdefault.jpg" alt="Video 6">
+                            <span class="video-number">6</span>
+                        </div>
+                        <div class="grid-item" onclick="goToVideo(7)">
+                            <img src="https://img.youtube.com/vi/RgKAFK5djSk/maxresdefault.jpg" alt="Video 7">
+                            <span class="video-number">7</span>
+                        </div>
+                        <div class="grid-item" onclick="goToVideo(8)">
+                            <img src="https://img.youtube.com/vi/fRh_vgS2dFE/maxresdefault.jpg" alt="Video 8">
+                            <span class="video-number">8</span>
+                        </div>
+                        <div class="grid-item" onclick="goToVideo(9)">
+                            <img src="https://img.youtube.com/vi/CevxZvSJLk8/maxresdefault.jpg" alt="Video 9">
+                            <span class="video-number">9</span>
+                        </div>
+                        <div class="grid-item" onclick="goToVideo(10)">
+                            <img src="https://img.youtube.com/vi/OPf0YbXqDm0/maxresdefault.jpg" alt="Video 10">
+                            <span class="video-number">10</span>
+                        </div>
                     </div>
                 </div>
-                <div class="info-group">
-                    <div class="info-dot"></div>
-                    <div>
-                        <div class="info-line long" style="margin-bottom: 6px;"></div>
+
+                <!-- Video 1 - Purple theme -->
+                <div class="video-section" data-video-id="VmjOqPBag8A" data-bg-color="#3d2351">
+
+                    <div class="info-bar left">
+                        <div class="info-line long"></div>
+                        <div class="info-line medium"></div>
+                        <div class="info-line short"></div>
+                        <div class="info-line long"></div>
                         <div class="info-line medium"></div>
                     </div>
-                </div>
-                <div class="info-group">
-                    <div class="info-dot"></div>
-                    <div>
-                        <div class="info-line medium" style="margin-bottom: 6px;"></div>
-                        <div class="info-line short"></div>
+
+                    <div class="sticker sticker-star">
+                        <svg viewBox="0 0 100 100" fill="#7CB9E8">
+                            <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
+                        </svg>
                     </div>
-                </div>
-                <div class="toggle-btn">
-                    <div class="line"></div>
-                    <div class="circle"></div>
-                </div>
-            </div>
-
-        </div>
-
-        <!-- Video 2 - Blue theme -->
-        <div class="video-section" data-video-id="dQw4w9WgXcQ" data-bg-color="#1a3a5c">
-
-            <div class="info-bar left">
-                <div class="info-line long"></div>
-                <div class="info-line short"></div>
-                <div class="info-line medium"></div>
-                <div class="info-line long"></div>
-            </div>
-
-            <div class="sticker sticker-star">
-                <svg viewBox="0 0 100 100" fill="#ff6b6b">
-                    <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
-                </svg>
-            </div>
-            <div class="sticker sticker-heart">💙</div>
-            <div class="sticker sticker-plus">✚</div>
-            <div class="sticker sticker-sparkle">★</div>
-
-            <div class="video-frame">
-                <div id="player2"></div>
-            </div>
-
-            <div class="info-bar right">
-                <div class="info-group">
-                    <div class="info-dot"></div>
-                    <div>
-                        <div class="info-line long" style="margin-bottom: 6px;"></div>
-                        <div class="info-line short"></div>
+                    <div class="sticker sticker-heart">💗</div>
+                    <div class="sticker sticker-plus">✚</div>
+                    <div class="sticker sticker-sparkle">✦</div>
+                    <div class="sticker sticker-squiggle">
+                        <svg viewBox="0 0 60 30" stroke="#f4a27a" stroke-width="4" fill="none">
+                            <path d="M5,15 Q15,5 25,15 T45,15 T55,15" />
+                        </svg>
                     </div>
+
+                    <div class="video-frame">
+                        <div id="player1"></div>
+                    </div>
+
+                    <div class="info-bar right">
+                        <div class="info-group">
+                            <div class="info-dot"></div>
+                            <div>
+                                <div class="info-line medium" style="margin-bottom: 6px;"></div>
+                                <div class="info-line short"></div>
+                            </div>
+                        </div>
+                        <div class="info-group">
+                            <div class="info-dot"></div>
+                            <div>
+                                <div class="info-line long" style="margin-bottom: 6px;"></div>
+                                <div class="info-line medium"></div>
+                            </div>
+                        </div>
+                        <div class="info-group">
+                            <div class="info-dot"></div>
+                            <div>
+                                <div class="info-line medium" style="margin-bottom: 6px;"></div>
+                                <div class="info-line short"></div>
+                            </div>
+                        </div>
+                        <div class="toggle-btn">
+                            <div class="line"></div>
+                            <div class="circle"></div>
+                        </div>
+                    </div>
+
                 </div>
-                <div class="info-group">
-                    <div class="info-dot"></div>
-                    <div>
-                        <div class="info-line medium" style="margin-bottom: 6px;"></div>
+
+                <!-- Video 2 - Blue theme -->
+                <div class="video-section" data-video-id="dQw4w9WgXcQ" data-bg-color="#1a3a5c">
+
+                    <div class="info-bar left">
+                        <div class="info-line long"></div>
+                        <div class="info-line short"></div>
                         <div class="info-line medium"></div>
-                    </div>
-                </div>
-                <div class="toggle-btn">
-                    <div class="line"></div>
-                    <div class="circle"></div>
-                </div>
-            </div>
-
-        </div>
-
-        <!-- Video 3 - Green theme -->
-        <div class="video-section" data-video-id="FpBOQ3tAE6U" data-bg-color="#1d4a3a">
-
-            <div class="info-bar left">
-                <div class="info-line medium"></div>
-                <div class="info-line long"></div>
-                <div class="info-line short"></div>
-            </div>
-
-            <div class="sticker sticker-star">
-                <svg viewBox="0 0 100 100" fill="#90EE90">
-                    <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
-                </svg>
-            </div>
-            <div class="sticker sticker-heart">💚</div>
-            <div class="sticker sticker-sparkle">✧</div>
-
-            <div class="video-frame">
-                <div id="player3"></div>
-            </div>
-
-            <div class="info-bar right">
-                <div class="info-group">
-                    <div class="info-dot"></div>
-                    <div>
-                        <div class="info-line medium" style="margin-bottom: 6px;"></div>
                         <div class="info-line long"></div>
                     </div>
+
+                    <div class="sticker sticker-star">
+                        <svg viewBox="0 0 100 100" fill="#ff6b6b">
+                            <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
+                        </svg>
+                    </div>
+                    <div class="sticker sticker-heart">💙</div>
+                    <div class="sticker sticker-plus">✚</div>
+                    <div class="sticker sticker-sparkle">★</div>
+
+                    <div class="video-frame">
+                        <div id="player2"></div>
+                    </div>
+
+                    <div class="info-bar right">
+                        <div class="info-group">
+                            <div class="info-dot"></div>
+                            <div>
+                                <div class="info-line long" style="margin-bottom: 6px;"></div>
+                                <div class="info-line short"></div>
+                            </div>
+                        </div>
+                        <div class="info-group">
+                            <div class="info-dot"></div>
+                            <div>
+                                <div class="info-line medium" style="margin-bottom: 6px;"></div>
+                                <div class="info-line medium"></div>
+                            </div>
+                        </div>
+                        <div class="toggle-btn">
+                            <div class="line"></div>
+                            <div class="circle"></div>
+                        </div>
+                    </div>
+
                 </div>
-                <div class="toggle-btn">
-                    <div class="line"></div>
-                    <div class="circle"></div>
-                </div>
-            </div>
 
-        </div>
+                <!-- Video 3 - Green theme -->
+                <div class="video-section" data-video-id="FpBOQ3tAE6U" data-bg-color="#1d4a3a">
 
-        <!-- Video 4 - Orange theme -->
-        <div class="video-section" data-video-id="9bZkp7q19f0" data-bg-color="#5c3a1a">
-
-            <div class="info-bar left">
-                <div class="info-line long"></div>
-                <div class="info-line medium"></div>
-                <div class="info-line long"></div>
-                <div class="info-line short"></div>
-            </div>
-
-            <div class="sticker sticker-star">
-                <svg viewBox="0 0 100 100" fill="#FFD700">
-                    <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
-                </svg>
-            </div>
-            <div class="sticker sticker-heart">🧡</div>
-            <div class="sticker sticker-plus">✦</div>
-
-            <div class="video-frame">
-                <div id="player4"></div>
-            </div>
-
-            <div class="info-bar right">
-                <div class="info-group">
-                    <div class="info-dot"></div>
-                    <div>
-                        <div class="info-line long" style="margin-bottom: 6px;"></div>
+                    <div class="info-bar left">
                         <div class="info-line medium"></div>
-                    </div>
-                </div>
-                <div class="info-group">
-                    <div class="info-dot"></div>
-                    <div>
-                        <div class="info-line short" style="margin-bottom: 6px;"></div>
                         <div class="info-line long"></div>
-                    </div>
-                </div>
-                <div class="toggle-btn">
-                    <div class="line"></div>
-                    <div class="circle"></div>
-                </div>
-            </div>
-
-        </div>
-
-        <!-- Video 5 - Pink theme -->
-        <div class="video-section" data-video-id="kJQP7kiw5Fk" data-bg-color="#4a2040">
-
-            <div class="info-bar left">
-                <div class="info-line long"></div>
-                <div class="info-line medium"></div>
-                <div class="info-line short"></div>
-            </div>
-
-            <div class="sticker sticker-star">
-                <svg viewBox="0 0 100 100" fill="#FF69B4">
-                    <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
-                </svg>
-            </div>
-            <div class="sticker sticker-heart">💖</div>
-            <div class="sticker sticker-sparkle">✨</div>
-
-            <div class="video-frame">
-                <div id="player5"></div>
-            </div>
-
-            <div class="info-bar right">
-                <div class="info-group">
-                    <div class="info-dot"></div>
-                    <div>
-                        <div class="info-line medium" style="margin-bottom: 6px;"></div>
                         <div class="info-line short"></div>
                     </div>
-                </div>
-                <div class="toggle-btn">
-                    <div class="line"></div>
-                    <div class="circle"></div>
-                </div>
-            </div>
 
-        </div>
-
-        <!-- Video 6 - Cyan theme -->
-        <div class="video-section" data-video-id="JGwWNGJdvx8" data-bg-color="#1a4a4a">
-
-            <div class="info-bar left">
-                <div class="info-line medium"></div>
-                <div class="info-line long"></div>
-                <div class="info-line short"></div>
-            </div>
-
-            <div class="sticker sticker-star">
-                <svg viewBox="0 0 100 100" fill="#00CED1">
-                    <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
-                </svg>
-            </div>
-            <div class="sticker sticker-heart">💙</div>
-            <div class="sticker sticker-plus">✦</div>
-
-            <div class="video-frame">
-                <div id="player6"></div>
-            </div>
-
-            <div class="info-bar right">
-                <div class="info-group">
-                    <div class="info-dot"></div>
-                    <div>
-                        <div class="info-line long" style="margin-bottom: 6px;"></div>
-                        <div class="info-line medium"></div>
+                    <div class="sticker sticker-star">
+                        <svg viewBox="0 0 100 100" fill="#90EE90">
+                            <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
+                        </svg>
                     </div>
+                    <div class="sticker sticker-heart">💚</div>
+                    <div class="sticker sticker-sparkle">✧</div>
+
+                    <div class="video-frame">
+                        <div id="player3"></div>
+                    </div>
+
+                    <div class="info-bar right">
+                        <div class="info-group">
+                            <div class="info-dot"></div>
+                            <div>
+                                <div class="info-line medium" style="margin-bottom: 6px;"></div>
+                                <div class="info-line long"></div>
+                            </div>
+                        </div>
+                        <div class="toggle-btn">
+                            <div class="line"></div>
+                            <div class="circle"></div>
+                        </div>
+                    </div>
+
                 </div>
-                <div class="toggle-btn">
-                    <div class="line"></div>
-                    <div class="circle"></div>
-                </div>
-            </div>
 
-        </div>
+                <!-- Video 4 - Orange theme -->
+                <div class="video-section" data-video-id="9bZkp7q19f0" data-bg-color="#5c3a1a">
 
-        <!-- Video 7 - Yellow theme -->
-        <div class="video-section" data-video-id="RgKAFK5djSk" data-bg-color="#4a4a1a">
-
-            <div class="info-bar left">
-                <div class="info-line long"></div>
-                <div class="info-line short"></div>
-                <div class="info-line medium"></div>
-            </div>
-
-            <div class="sticker sticker-star">
-                <svg viewBox="0 0 100 100" fill="#FFD700">
-                    <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
-                </svg>
-            </div>
-            <div class="sticker sticker-heart">💛</div>
-            <div class="sticker sticker-sparkle">⭐</div>
-
-            <div class="video-frame">
-                <div id="player7"></div>
-            </div>
-
-            <div class="info-bar right">
-                <div class="info-group">
-                    <div class="info-dot"></div>
-                    <div>
-                        <div class="info-line short" style="margin-bottom: 6px;"></div>
+                    <div class="info-bar left">
                         <div class="info-line long"></div>
-                    </div>
-                </div>
-                <div class="toggle-btn">
-                    <div class="line"></div>
-                    <div class="circle"></div>
-                </div>
-            </div>
-
-        </div>
-
-        <!-- Video 8 - Red theme -->
-        <div class="video-section" data-video-id="fRh_vgS2dFE" data-bg-color="#4a1a1a">
-
-            <div class="info-bar left">
-                <div class="info-line medium"></div>
-                <div class="info-line long"></div>
-            </div>
-
-            <div class="sticker sticker-star">
-                <svg viewBox="0 0 100 100" fill="#FF6347">
-                    <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
-                </svg>
-            </div>
-            <div class="sticker sticker-heart">❤️</div>
-            <div class="sticker sticker-plus">✚</div>
-
-            <div class="video-frame">
-                <div id="player8"></div>
-            </div>
-
-            <div class="info-bar right">
-                <div class="info-group">
-                    <div class="info-dot"></div>
-                    <div>
-                        <div class="info-line medium" style="margin-bottom: 6px;"></div>
                         <div class="info-line medium"></div>
-                    </div>
-                </div>
-                <div class="toggle-btn">
-                    <div class="line"></div>
-                    <div class="circle"></div>
-                </div>
-            </div>
-
-        </div>
-
-        <!-- Video 9 - Indigo theme -->
-        <div class="video-section" data-video-id="CevxZvSJLk8" data-bg-color="#2a1a4a">
-
-            <div class="info-bar left">
-                <div class="info-line long"></div>
-                <div class="info-line medium"></div>
-                <div class="info-line short"></div>
-            </div>
-
-            <div class="sticker sticker-star">
-                <svg viewBox="0 0 100 100" fill="#9370DB">
-                    <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
-                </svg>
-            </div>
-            <div class="sticker sticker-heart">💜</div>
-            <div class="sticker sticker-sparkle">✧</div>
-
-            <div class="video-frame">
-                <div id="player9"></div>
-            </div>
-
-            <div class="info-bar right">
-                <div class="info-group">
-                    <div class="info-dot"></div>
-                    <div>
-                        <div class="info-line long" style="margin-bottom: 6px;"></div>
+                        <div class="info-line long"></div>
                         <div class="info-line short"></div>
                     </div>
+
+                    <div class="sticker sticker-star">
+                        <svg viewBox="0 0 100 100" fill="#FFD700">
+                            <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
+                        </svg>
+                    </div>
+                    <div class="sticker sticker-heart">🧡</div>
+                    <div class="sticker sticker-plus">✦</div>
+
+                    <div class="video-frame">
+                        <div id="player4"></div>
+                    </div>
+
+                    <div class="info-bar right">
+                        <div class="info-group">
+                            <div class="info-dot"></div>
+                            <div>
+                                <div class="info-line long" style="margin-bottom: 6px;"></div>
+                                <div class="info-line medium"></div>
+                            </div>
+                        </div>
+                        <div class="info-group">
+                            <div class="info-dot"></div>
+                            <div>
+                                <div class="info-line short" style="margin-bottom: 6px;"></div>
+                                <div class="info-line long"></div>
+                            </div>
+                        </div>
+                        <div class="toggle-btn">
+                            <div class="line"></div>
+                            <div class="circle"></div>
+                        </div>
+                    </div>
+
                 </div>
-                <div class="toggle-btn">
-                    <div class="line"></div>
-                    <div class="circle"></div>
+
+                <!-- Video 5 - Pink theme -->
+                <div class="video-section" data-video-id="kJQP7kiw5Fk" data-bg-color="#4a2040">
+
+                    <div class="info-bar left">
+                        <div class="info-line long"></div>
+                        <div class="info-line medium"></div>
+                        <div class="info-line short"></div>
+                    </div>
+
+                    <div class="sticker sticker-star">
+                        <svg viewBox="0 0 100 100" fill="#FF69B4">
+                            <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
+                        </svg>
+                    </div>
+                    <div class="sticker sticker-heart">💖</div>
+                    <div class="sticker sticker-sparkle">✨</div>
+
+                    <div class="video-frame">
+                        <div id="player5"></div>
+                    </div>
+
+                    <div class="info-bar right">
+                        <div class="info-group">
+                            <div class="info-dot"></div>
+                            <div>
+                                <div class="info-line medium" style="margin-bottom: 6px;"></div>
+                                <div class="info-line short"></div>
+                            </div>
+                        </div>
+                        <div class="toggle-btn">
+                            <div class="line"></div>
+                            <div class="circle"></div>
+                        </div>
+                    </div>
+
                 </div>
-            </div>
 
-        </div>
+                <!-- Video 6 - Cyan theme -->
+                <div class="video-section" data-video-id="JGwWNGJdvx8" data-bg-color="#1a4a4a">
 
-        <!-- Video 10 - Teal theme -->
-        <div class="video-section" data-video-id="OPf0YbXqDm0" data-bg-color="#1a3a3a">
+                    <div class="info-bar left">
+                        <div class="info-line medium"></div>
+                        <div class="info-line long"></div>
+                        <div class="info-line short"></div>
+                    </div>
 
-            <div class="info-bar left">
-                <div class="info-line short"></div>
-                <div class="info-line long"></div>
-                <div class="info-line medium"></div>
-            </div>
+                    <div class="sticker sticker-star">
+                        <svg viewBox="0 0 100 100" fill="#00CED1">
+                            <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
+                        </svg>
+                    </div>
+                    <div class="sticker sticker-heart">💙</div>
+                    <div class="sticker sticker-plus">✦</div>
 
-            <div class="sticker sticker-star">
-                <svg viewBox="0 0 100 100" fill="#20B2AA">
-                    <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
-                </svg>
-            </div>
-            <div class="sticker sticker-heart">🩵</div>
-            <div class="sticker sticker-plus">✦</div>
+                    <div class="video-frame">
+                        <div id="player6"></div>
+                    </div>
 
-            <div class="video-frame">
-                <div id="player10"></div>
-            </div>
+                    <div class="info-bar right">
+                        <div class="info-group">
+                            <div class="info-dot"></div>
+                            <div>
+                                <div class="info-line long" style="margin-bottom: 6px;"></div>
+                                <div class="info-line medium"></div>
+                            </div>
+                        </div>
+                        <div class="toggle-btn">
+                            <div class="line"></div>
+                            <div class="circle"></div>
+                        </div>
+                    </div>
 
-            <div class="info-bar right">
-                <div class="info-group">
-                    <div class="info-dot"></div>
-                    <div>
-                        <div class="info-line medium" style="margin-bottom: 6px;"></div>
+                </div>
+
+                <!-- Video 7 - Yellow theme -->
+                <div class="video-section" data-video-id="RgKAFK5djSk" data-bg-color="#4a4a1a">
+
+                    <div class="info-bar left">
+                        <div class="info-line long"></div>
+                        <div class="info-line short"></div>
+                        <div class="info-line medium"></div>
+                    </div>
+
+                    <div class="sticker sticker-star">
+                        <svg viewBox="0 0 100 100" fill="#FFD700">
+                            <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
+                        </svg>
+                    </div>
+                    <div class="sticker sticker-heart">💛</div>
+                    <div class="sticker sticker-sparkle">⭐</div>
+
+                    <div class="video-frame">
+                        <div id="player7"></div>
+                    </div>
+
+                    <div class="info-bar right">
+                        <div class="info-group">
+                            <div class="info-dot"></div>
+                            <div>
+                                <div class="info-line short" style="margin-bottom: 6px;"></div>
+                                <div class="info-line long"></div>
+                            </div>
+                        </div>
+                        <div class="toggle-btn">
+                            <div class="line"></div>
+                            <div class="circle"></div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Video 8 - Red theme -->
+                <div class="video-section" data-video-id="fRh_vgS2dFE" data-bg-color="#4a1a1a">
+
+                    <div class="info-bar left">
+                        <div class="info-line medium"></div>
                         <div class="info-line long"></div>
                     </div>
+
+                    <div class="sticker sticker-star">
+                        <svg viewBox="0 0 100 100" fill="#FF6347">
+                            <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
+                        </svg>
+                    </div>
+                    <div class="sticker sticker-heart">❤️</div>
+                    <div class="sticker sticker-plus">✚</div>
+
+                    <div class="video-frame">
+                        <div id="player8"></div>
+                    </div>
+
+                    <div class="info-bar right">
+                        <div class="info-group">
+                            <div class="info-dot"></div>
+                            <div>
+                                <div class="info-line medium" style="margin-bottom: 6px;"></div>
+                                <div class="info-line medium"></div>
+                            </div>
+                        </div>
+                        <div class="toggle-btn">
+                            <div class="line"></div>
+                            <div class="circle"></div>
+                        </div>
+                    </div>
+
                 </div>
-                <div class="toggle-btn">
-                    <div class="line"></div>
-                    <div class="circle"></div>
+
+                <!-- Video 9 - Indigo theme -->
+                <div class="video-section" data-video-id="CevxZvSJLk8" data-bg-color="#2a1a4a">
+
+                    <div class="info-bar left">
+                        <div class="info-line long"></div>
+                        <div class="info-line medium"></div>
+                        <div class="info-line short"></div>
+                    </div>
+
+                    <div class="sticker sticker-star">
+                        <svg viewBox="0 0 100 100" fill="#9370DB">
+                            <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
+                        </svg>
+                    </div>
+                    <div class="sticker sticker-heart">💜</div>
+                    <div class="sticker sticker-sparkle">✧</div>
+
+                    <div class="video-frame">
+                        <div id="player9"></div>
+                    </div>
+
+                    <div class="info-bar right">
+                        <div class="info-group">
+                            <div class="info-dot"></div>
+                            <div>
+                                <div class="info-line long" style="margin-bottom: 6px;"></div>
+                                <div class="info-line short"></div>
+                            </div>
+                        </div>
+                        <div class="toggle-btn">
+                            <div class="line"></div>
+                            <div class="circle"></div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Video 10 - Teal theme -->
+                <div class="video-section" data-video-id="OPf0YbXqDm0" data-bg-color="#1a3a3a">
+
+                    <div class="info-bar left">
+                        <div class="info-line short"></div>
+                        <div class="info-line long"></div>
+                        <div class="info-line medium"></div>
+                    </div>
+
+                    <div class="sticker sticker-star">
+                        <svg viewBox="0 0 100 100" fill="#20B2AA">
+                            <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
+                        </svg>
+                    </div>
+                    <div class="sticker sticker-heart">🩵</div>
+                    <div class="sticker sticker-plus">✦</div>
+
+                    <div class="video-frame">
+                        <div id="player10"></div>
+                    </div>
+
+                    <div class="info-bar right">
+                        <div class="info-group">
+                            <div class="info-dot"></div>
+                            <div>
+                                <div class="info-line medium" style="margin-bottom: 6px;"></div>
+                                <div class="info-line long"></div>
+                            </div>
+                        </div>
+                        <div class="toggle-btn">
+                            <div class="line"></div>
+                            <div class="circle"></div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
-
         </div>
+        <!-- End Tab 1 Content -->
+
+        <!-- Tab 2 Content -->
+        <div class="tab-content" id="tab2">
+            <div class="video-container" id="feed2">
+                <div class="grid-section" data-bg-color="#1e3a2e">
+
+                    <div class="grid-container">
+                        <div class="grid-item" onclick="goToVideo(1, 1)">
+                            <img src="https://img.youtube.com/vi/kJQP7kiw5Fk/maxresdefault.jpg" alt="Video 1">
+                            <span class="video-number">1</span>
+                        </div>
+                        <div class="grid-item" onclick="goToVideo(2, 1)">
+                            <img src="https://img.youtube.com/vi/JGwWNGJdvx8/maxresdefault.jpg" alt="Video 2">
+                            <span class="video-number">2</span>
+                        </div>
+                        <div class="grid-item" onclick="goToVideo(3, 1)">
+                            <img src="https://img.youtube.com/vi/RgKAFK5djSk/maxresdefault.jpg" alt="Video 3">
+                            <span class="video-number">3</span>
+                        </div>
+                        <div class="grid-item" onclick="goToVideo(4, 1)">
+                            <img src="https://img.youtube.com/vi/vkOJ9uNj9EY/maxresdefault.jpg" alt="Video 4">
+                            <span class="video-number">4</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 2 Video 1 - Despacito -->
+                <div class="video-section" data-video-id="kJQP7kiw5Fk" data-bg-color="#2d4a3a">
+                    <div class="info-bar left">
+                        <div class="info-line long"></div>
+                        <div class="info-line medium"></div>
+                        <div class="info-line short"></div>
+                    </div>
+                    <div class="sticker sticker-star">
+                        <svg viewBox="0 0 100 100" fill="#90EE90">
+                            <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
+                        </svg>
+                    </div>
+                    <div class="sticker sticker-heart">💚</div>
+                    <div class="sticker sticker-sparkle">✨</div>
+                    <div class="video-frame">
+                        <div id="t2p1"></div>
+                    </div>
+                    <div class="info-bar right">
+                        <div class="info-group">
+                            <div class="info-dot"></div>
+                            <div>
+                                <div class="info-line medium" style="margin-bottom: 6px;"></div>
+                                <div class="info-line short"></div>
+                            </div>
+                        </div>
+                        <div class="toggle-btn">
+                            <div class="line"></div>
+                            <div class="circle"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 2 Video 2 - Shape of You -->
+                <div class="video-section" data-video-id="JGwWNGJdvx8" data-bg-color="#1a4a3a">
+                    <div class="info-bar left">
+                        <div class="info-line medium"></div>
+                        <div class="info-line long"></div>
+                    </div>
+                    <div class="sticker sticker-star">
+                        <svg viewBox="0 0 100 100" fill="#4ECDC4">
+                            <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
+                        </svg>
+                    </div>
+                    <div class="sticker sticker-heart">🩵</div>
+                    <div class="sticker sticker-plus">✦</div>
+                    <div class="video-frame">
+                        <div id="t2p2"></div>
+                    </div>
+                    <div class="info-bar right">
+                        <div class="info-group">
+                            <div class="info-dot"></div>
+                            <div>
+                                <div class="info-line long" style="margin-bottom: 6px;"></div>
+                                <div class="info-line medium"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 2 Video 3 - See You Again -->
+                <div class="video-section" data-video-id="RgKAFK5djSk" data-bg-color="#2a5a4a">
+                    <div class="info-bar left">
+                        <div class="info-line short"></div>
+                        <div class="info-line long"></div>
+                        <div class="info-line medium"></div>
+                    </div>
+                    <div class="sticker sticker-star">
+                        <svg viewBox="0 0 100 100" fill="#98D8C8">
+                            <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
+                        </svg>
+                    </div>
+                    <div class="sticker sticker-heart">💙</div>
+                    <div class="sticker sticker-sparkle">⭐</div>
+                    <div class="video-frame">
+                        <div id="t2p3"></div>
+                    </div>
+                    <div class="info-bar right">
+                        <div class="info-group">
+                            <div class="info-dot"></div>
+                            <div>
+                                <div class="info-line short" style="margin-bottom: 6px;"></div>
+                                <div class="info-line long"></div>
+                            </div>
+                        </div>
+                        <div class="toggle-btn">
+                            <div class="line"></div>
+                            <div class="circle"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 2 Video 4 - Sorry -->
+                <div class="video-section" data-video-id="vkOJ9uNj9EY" data-bg-color="#1e4a4e">
+                    <div class="info-bar left">
+                        <div class="info-line long"></div>
+                        <div class="info-line short"></div>
+                    </div>
+                    <div class="sticker sticker-star">
+                        <svg viewBox="0 0 100 100" fill="#7CB9E8">
+                            <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
+                        </svg>
+                    </div>
+                    <div class="sticker sticker-heart">🤍</div>
+                    <div class="sticker sticker-plus">✧</div>
+                    <div class="video-frame">
+                        <div id="t2p4"></div>
+                    </div>
+                    <div class="info-bar right">
+                        <div class="info-group">
+                            <div class="info-dot"></div>
+                            <div>
+                                <div class="info-line medium" style="margin-bottom: 6px;"></div>
+                                <div class="info-line medium"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- End Tab 2 Content -->
+
+        <!-- Tab 3 Content -->
+        <div class="tab-content" id="tab3">
+            <div class="video-container" id="feed3">
+                <div class="grid-section" data-bg-color="#2e1e3a">
+
+                    <div class="grid-container">
+                        <div class="grid-item" onclick="goToVideo(1, 2)">
+                            <img src="https://img.youtube.com/vi/hT_nvWreIhg/maxresdefault.jpg" alt="Video 1">
+                            <span class="video-number">1</span>
+                        </div>
+                        <div class="grid-item" onclick="goToVideo(2, 2)">
+                            <img src="https://img.youtube.com/vi/CevxZvSJLk8/maxresdefault.jpg" alt="Video 2">
+                            <span class="video-number">2</span>
+                        </div>
+                        <div class="grid-item" onclick="goToVideo(3, 2)">
+                            <img src="https://img.youtube.com/vi/OPf0YbXqDm0/maxresdefault.jpg" alt="Video 3">
+                            <span class="video-number">3</span>
+                        </div>
+                        <div class="grid-item" onclick="goToVideo(4, 2)">
+                            <img src="https://img.youtube.com/vi/09R8_2nJtjg/maxresdefault.jpg" alt="Video 4">
+                            <span class="video-number">4</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 3 Video 1 - One Dance -->
+                <div class="video-section" data-video-id="hT_nvWreIhg" data-bg-color="#3d2a4a">
+                    <div class="info-bar left">
+                        <div class="info-line medium"></div>
+                        <div class="info-line long"></div>
+                        <div class="info-line short"></div>
+                    </div>
+                    <div class="sticker sticker-star">
+                        <svg viewBox="0 0 100 100" fill="#9370DB">
+                            <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
+                        </svg>
+                    </div>
+                    <div class="sticker sticker-heart">💜</div>
+                    <div class="sticker sticker-sparkle">✨</div>
+                    <div class="video-frame">
+                        <div id="t3p1"></div>
+                    </div>
+                    <div class="info-bar right">
+                        <div class="info-group">
+                            <div class="info-dot"></div>
+                            <div>
+                                <div class="info-line long" style="margin-bottom: 6px;"></div>
+                                <div class="info-line medium"></div>
+                            </div>
+                        </div>
+                        <div class="toggle-btn">
+                            <div class="line"></div>
+                            <div class="circle"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 3 Video 2 - Roar -->
+                <div class="video-section" data-video-id="CevxZvSJLk8" data-bg-color="#4a2a5a">
+                    <div class="info-bar left">
+                        <div class="info-line short"></div>
+                        <div class="info-line medium"></div>
+                    </div>
+                    <div class="sticker sticker-star">
+                        <svg viewBox="0 0 100 100" fill="#DA70D6">
+                            <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
+                        </svg>
+                    </div>
+                    <div class="sticker sticker-heart">🩷</div>
+                    <div class="sticker sticker-plus">⭐</div>
+                    <div class="video-frame">
+                        <div id="t3p2"></div>
+                    </div>
+                    <div class="info-bar right">
+                        <div class="info-group">
+                            <div class="info-dot"></div>
+                            <div>
+                                <div class="info-line short" style="margin-bottom: 6px;"></div>
+                                <div class="info-line long"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 3 Video 3 - Uptown Funk -->
+                <div class="video-section" data-video-id="OPf0YbXqDm0" data-bg-color="#3a1a4a">
+                    <div class="info-bar left">
+                        <div class="info-line long"></div>
+                        <div class="info-line long"></div>
+                    </div>
+                    <div class="sticker sticker-star">
+                        <svg viewBox="0 0 100 100" fill="#BA55D3">
+                            <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
+                        </svg>
+                    </div>
+                    <div class="sticker sticker-heart">💟</div>
+                    <div class="sticker sticker-sparkle">✦</div>
+                    <div class="video-frame">
+                        <div id="t3p3"></div>
+                    </div>
+                    <div class="info-bar right">
+                        <div class="info-group">
+                            <div class="info-dot"></div>
+                            <div>
+                                <div class="info-line medium" style="margin-bottom: 6px;"></div>
+                                <div class="info-line short"></div>
+                            </div>
+                        </div>
+                        <div class="toggle-btn">
+                            <div class="line"></div>
+                            <div class="circle"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 3 Video 4 - Sugar -->
+                <div class="video-section" data-video-id="09R8_2nJtjg" data-bg-color="#2e2a4a">
+                    <div class="info-bar left">
+                        <div class="info-line medium"></div>
+                        <div class="info-line short"></div>
+                        <div class="info-line long"></div>
+                    </div>
+                    <div class="sticker sticker-star">
+                        <svg viewBox="0 0 100 100" fill="#E6E6FA">
+                            <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
+                        </svg>
+                    </div>
+                    <div class="sticker sticker-heart">🤍</div>
+                    <div class="sticker sticker-plus">✧</div>
+                    <div class="video-frame">
+                        <div id="t3p4"></div>
+                    </div>
+                    <div class="info-bar right">
+                        <div class="info-group">
+                            <div class="info-dot"></div>
+                            <div>
+                                <div class="info-line long" style="margin-bottom: 6px;"></div>
+                                <div class="info-line long"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- End Tab 3 Content -->
+
+        <!-- Tab 4 Content -->
+        <div class="tab-content" id="tab4">
+            <div class="video-container" id="feed4">
+                <div class="grid-section" data-bg-color="#3a2e1e">
+
+                    <div class="grid-container">
+                        <div class="grid-item" onclick="goToVideo(1, 3)">
+                            <img src="https://img.youtube.com/vi/9bZkp7q19f0/maxresdefault.jpg" alt="Video 1">
+                            <span class="video-number">1</span>
+                        </div>
+                        <div class="grid-item" onclick="goToVideo(2, 3)">
+                            <img src="https://img.youtube.com/vi/60ItHLz5WEA/maxresdefault.jpg" alt="Video 2">
+                            <span class="video-number">2</span>
+                        </div>
+                        <div class="grid-item" onclick="goToVideo(3, 3)">
+                            <img src="https://img.youtube.com/vi/YQHsXMglC9A/maxresdefault.jpg" alt="Video 3">
+                            <span class="video-number">3</span>
+                        </div>
+                        <div class="grid-item" onclick="goToVideo(4, 3)">
+                            <img src="https://img.youtube.com/vi/fRh_vgS2dFE/maxresdefault.jpg" alt="Video 4">
+                            <span class="video-number">4</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 4 Video 1 - Gangnam Style -->
+                <div class="video-section" data-video-id="9bZkp7q19f0" data-bg-color="#4a3a2a">
+                    <div class="info-bar left">
+                        <div class="info-line long"></div>
+                        <div class="info-line short"></div>
+                        <div class="info-line medium"></div>
+                    </div>
+                    <div class="sticker sticker-star">
+                        <svg viewBox="0 0 100 100" fill="#FFD700">
+                            <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
+                        </svg>
+                    </div>
+                    <div class="sticker sticker-heart">🧡</div>
+                    <div class="sticker sticker-sparkle">✨</div>
+                    <div class="video-frame">
+                        <div id="t4p1"></div>
+                    </div>
+                    <div class="info-bar right">
+                        <div class="info-group">
+                            <div class="info-dot"></div>
+                            <div>
+                                <div class="info-line short" style="margin-bottom: 6px;"></div>
+                                <div class="info-line long"></div>
+                            </div>
+                        </div>
+                        <div class="toggle-btn">
+                            <div class="line"></div>
+                            <div class="circle"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 4 Video 2 - Lean On -->
+                <div class="video-section" data-video-id="60ItHLz5WEA" data-bg-color="#5a4a3a">
+                    <div class="info-bar left">
+                        <div class="info-line medium"></div>
+                        <div class="info-line long"></div>
+                    </div>
+                    <div class="sticker sticker-star">
+                        <svg viewBox="0 0 100 100" fill="#FFA500">
+                            <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
+                        </svg>
+                    </div>
+                    <div class="sticker sticker-heart">💛</div>
+                    <div class="sticker sticker-plus">⭐</div>
+                    <div class="video-frame">
+                        <div id="t4p2"></div>
+                    </div>
+                    <div class="info-bar right">
+                        <div class="info-group">
+                            <div class="info-dot"></div>
+                            <div>
+                                <div class="info-line medium" style="margin-bottom: 6px;"></div>
+                                <div class="info-line medium"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 4 Video 3 - Hello -->
+                <div class="video-section" data-video-id="YQHsXMglC9A" data-bg-color="#4a3a1a">
+                    <div class="info-bar left">
+                        <div class="info-line short"></div>
+                        <div class="info-line long"></div>
+                        <div class="info-line short"></div>
+                    </div>
+                    <div class="sticker sticker-star">
+                        <svg viewBox="0 0 100 100" fill="#FF8C00">
+                            <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
+                        </svg>
+                    </div>
+                    <div class="sticker sticker-heart">🤎</div>
+                    <div class="sticker sticker-sparkle">✦</div>
+                    <div class="video-frame">
+                        <div id="t4p3"></div>
+                    </div>
+                    <div class="info-bar right">
+                        <div class="info-group">
+                            <div class="info-dot"></div>
+                            <div>
+                                <div class="info-line long" style="margin-bottom: 6px;"></div>
+                                <div class="info-line short"></div>
+                            </div>
+                        </div>
+                        <div class="toggle-btn">
+                            <div class="line"></div>
+                            <div class="circle"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 4 Video 4 - Shake It Off -->
+                <div class="video-section" data-video-id="fRh_vgS2dFE" data-bg-color="#3a2a1a">
+                    <div class="info-bar left">
+                        <div class="info-line long"></div>
+                        <div class="info-line medium"></div>
+                    </div>
+                    <div class="sticker sticker-star">
+                        <svg viewBox="0 0 100 100" fill="#CD853F">
+                            <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
+                        </svg>
+                    </div>
+                    <div class="sticker sticker-heart">❤️</div>
+                    <div class="sticker sticker-plus">✧</div>
+                    <div class="video-frame">
+                        <div id="t4p4"></div>
+                    </div>
+                    <div class="info-bar right">
+                        <div class="info-group">
+                            <div class="info-dot"></div>
+                            <div>
+                                <div class="info-line short" style="margin-bottom: 6px;"></div>
+                                <div class="info-line long"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- End Tab 4 Content -->
     </div>
+    <!-- End Tabs Container -->
 
-    <!-- Grid Button at Top -->
+    <!-- Grid Button at Top (hidden, replaced by tabs) -->
     <button class="grid-btn hidden" id="gridBtn" onclick="goToVideo(0)">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -973,19 +1489,103 @@
         let playersReady = {};
         let currentPlayerId = 'player1';
         let isMuted = true;
+        let currentTab = 0;
         const bgLayer = document.getElementById('bgLayer');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        const tabsContainer = document.getElementById('tabsContainer');
 
-        // Set initial background color
-        const firstSection = document.querySelector('.video-section');
-        if (firstSection) {
-            bgLayer.style.backgroundColor = firstSection.getAttribute('data-bg-color');
+        // Tab switching function - uses horizontal scroll animation
+        function switchTab(tabIndex) {
+            const targetTabContent = tabContents[tabIndex];
+
+            // If clicking current tab, just scroll to grid view
+            if (tabIndex === currentTab) {
+                if (targetTabContent) {
+                    const gridSection = targetTabContent.querySelector('.grid-section');
+                    const videoContainer = targetTabContent.querySelector('.video-container');
+                    if (gridSection && videoContainer) {
+                        gridSection.scrollIntoView({ behavior: 'smooth' });
+                    }
+                }
+                return;
+            }
+
+            // Stop all playing videos in current tab
+            Object.keys(players).forEach(playerId => {
+                if (players[playerId] && playersReady[playerId]) {
+                    try {
+                        const section = players[playerId].getIframe().closest('.video-section');
+                        if (section) {
+                            const videoId = section.getAttribute('data-video-id');
+                            players[playerId].cueVideoById(videoId);
+                            players[playerId].mute();
+                        }
+                    } catch (e) {
+                        console.log('Error stopping video:', e);
+                    }
+                }
+            });
+
+            // Update tab buttons
+            tabButtons.forEach((btn, i) => {
+                if (i === tabIndex) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            // Slide to the new tab using CSS transform
+            tabsContainer.style.transform = `translateX(-${tabIndex * 100}vw)`;
+
+            // Update background to match the grid section of new tab
+            if (targetTabContent) {
+                const gridSection = targetTabContent.querySelector('.grid-section');
+                if (gridSection) {
+                    const bgColor = gridSection.getAttribute('data-bg-color');
+                    if (bgColor) {
+                        bgLayer.style.backgroundColor = bgColor;
+                    }
+                    // Add active class to new tab's grid section after animation
+                    setTimeout(() => {
+                        gridSection.classList.add('active');
+                    }, 100);
+                }
+                // Scroll to grid view (top) of the new tab
+                const videoContainer = targetTabContent.querySelector('.video-container');
+                if (videoContainer) {
+                    videoContainer.scrollTop = 0;
+                }
+            }
+
+            // Remove active from all sections in previous tab
+            const oldTabContent = tabContents[currentTab];
+            if (oldTabContent) {
+                oldTabContent.querySelectorAll('.grid-section, .video-section').forEach(section => {
+                    section.classList.remove('active');
+                });
+            }
+
+            currentTab = tabIndex;
+        }
+
+        // Set initial background color from first tab's grid
+        const firstTabContent = tabContents[0];
+        const firstGridSection = firstTabContent ? firstTabContent.querySelector('.grid-section') : null;
+        if (firstGridSection) {
+            bgLayer.style.backgroundColor = firstGridSection.getAttribute('data-bg-color');
+            firstGridSection.classList.add('active');
         }
 
         // Initialize YouTube Players
         function onYouTubeIframeAPIReady() {
-            document.querySelectorAll('.video-section').forEach((section, index) => {
+            document.querySelectorAll('.video-section').forEach((section) => {
                 const videoId = section.getAttribute('data-video-id');
-                const divId = `player${index + 1}`;
+                const playerDiv = section.querySelector('.video-frame > div');
+                if (!playerDiv || !playerDiv.id) return;
+
+                const divId = playerDiv.id;
 
                 players[divId] = new YT.Player(divId, {
                     height: '100%',
@@ -1043,6 +1643,13 @@
         const controlBar = document.querySelector('.control-bar');
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
+                // Only process sections in the current tab
+                const parentTab = entry.target.closest('.tab-content');
+                const tabIndex = Array.from(tabContents).indexOf(parentTab);
+                if (tabIndex !== currentTab) {
+                    return; // Skip sections in other tabs
+                }
+
                 const isGridSection = entry.target.classList.contains('grid-section');
 
                 if (entry.isIntersecting) {
@@ -1118,11 +1725,10 @@
             });
         }, { threshold: 0.6 });
 
-        // Observe the grid section too
-        const gridSection = document.querySelector('.grid-section');
-        if (gridSection) {
+        // Observe all grid sections across all tabs
+        document.querySelectorAll('.grid-section').forEach(gridSection => {
             observer.observe(gridSection);
-        }
+        });
 
         // Sound toggle
         function toggleSound() {
@@ -1216,10 +1822,28 @@
         // All sections including grid
         const allSections = document.querySelectorAll('.grid-section, .video-section');
 
-        // Go to grid/video from grid or grid button
-        function goToVideo(index) {
-            currentIndex = index;
-            allSections[index].scrollIntoView({ behavior: 'smooth' });
+        // Go to grid/video from grid (works within current tab)
+        function goToVideo(index, tabIndex) {
+            // If tabIndex is provided, switch to that tab first
+            if (tabIndex !== undefined && tabIndex !== currentTab) {
+                switchTab(tabIndex);
+                // Wait for tab switch animation before scrolling
+                setTimeout(() => {
+                    scrollToSection(index, tabIndex);
+                }, 100);
+            } else {
+                scrollToSection(index, currentTab);
+            }
+        }
+
+        function scrollToSection(index, tabIdx) {
+            const targetTab = tabContents[tabIdx];
+            if (!targetTab) return;
+
+            const sections = targetTab.querySelectorAll('.grid-section, .video-section');
+            if (sections[index]) {
+                sections[index].scrollIntoView({ behavior: 'smooth' });
+            }
         }
     </script>
 </body>

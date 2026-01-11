@@ -348,6 +348,44 @@
             line-height: 1.1;
         }
 
+        /* Project Link Button */
+        .content-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.35);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            padding: 14px 22px;
+            border-radius: 14px;
+            color: rgba(255, 255, 255, 0.85);
+            font-size: clamp(14px, 1.5vw, 16px);
+            font-weight: 500;
+            text-decoration: none;
+            margin-top: clamp(16px, 3vh, 24px);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            pointer-events: auto;
+        }
+
+        .content-link:hover {
+            background: rgba(0, 0, 0, 0.5);
+            border-color: rgba(255, 255, 255, 0.25);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .content-link svg {
+            width: 18px;
+            height: 18px;
+            opacity: 0.75;
+        }
+
+        .content-link:hover svg {
+            opacity: 1;
+        }
+
         /* NEW: Right Info Section (Comments) */
         .content-info-right {
             position: absolute;
@@ -777,6 +815,7 @@
         let currentVideoId = null;
         let videosReady = {};
         let isScrolling = false;
+        let userPaused = {}; // Track which videos were paused by the user
 
 
         // DOM Elements
@@ -831,6 +870,12 @@
                                 <div class="content-info-left">
                                     ${video.description ? `<p class="content-desc">${video.description}</p>` : ''}
                                     ${video.title ? `<h2 class="content-title">${video.title}</h2>` : ''}
+                                    ${video.link ? `<a class="content-link" href="${video.link.url}" target="_blank" rel="noopener noreferrer">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M19.902 4.098a3.75 3.75 0 00-5.304 0l-4.5 4.5a3.75 3.75 0 001.035 6.037.75.75 0 01-.646 1.353 5.25 5.25 0 01-1.449-8.45l4.5-4.5a5.25 5.25 0 117.424 7.424l-1.757 1.757a.75.75 0 11-1.06-1.06l1.757-1.757a3.75 3.75 0 000-5.304zm-7.389 4.267a.75.75 0 011-.353 5.25 5.25 0 011.449 8.45l-4.5 4.5a5.25 5.25 0 11-7.424-7.424l1.757-1.757a.75.75 0 111.06 1.06l-1.757 1.757a3.75 3.75 0 105.304 5.304l4.5-4.5a3.75 3.75 0 00-1.035-6.037.75.75 0 01-.354-1z" clip-rule="evenodd" />
+                                        </svg>
+                                        ${video.link.text}
+                                    </a>` : ''}
                                 </div>
 
                                 <div class="sticker sticker-star" style="color: #FFD700; width: 60px; height: 60px;">
@@ -967,9 +1012,8 @@
             if (!video) return;
 
             video.pause();
-
-            const btn = document.getElementById('btn-' + videoId);
-            if (btn) btn.classList.add('paused');
+            // Don't show play button for system-initiated pauses (scrolling away)
+            // Only show if it was previously user-paused
         }
 
         function scrollToNextVideo(videoEl) {
@@ -995,12 +1039,14 @@
             if (video.paused) {
                 video.play();
                 if (btn) btn.classList.remove('paused');
+                userPaused[videoId] = false; // User resumed
                 isPlaying = true;
                 document.getElementById('pauseIcon').style.display = 'block';
                 document.getElementById('playIcon').style.display = 'none';
             } else {
                 video.pause();
                 if (btn) btn.classList.add('paused');
+                userPaused[videoId] = true; // User explicitly paused
                 isPlaying = false;
                 document.getElementById('pauseIcon').style.display = 'none';
                 document.getElementById('playIcon').style.display = 'block';

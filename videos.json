@@ -7,21 +7,11 @@
                 {
                     "id": "t1v1",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
-                    "thumbnail": "https://placehold.co/360x640/1a1a2e/FFF?text=HueRex",
-                    "bgColor": "#1a1a2e",
-                    "title": "HueRex",
-                    "description": "Streamline your creative workflow by editing hue, saturation, and brightness across any selection instantly. Whether you need to shift every color at once, target specific hue groups, or organize visible swatches, this tool eliminates the manual hassle of updating individual elements.",
-                    "comments": [
-                        {
-                            "text": "This was my first vibe-coded project, used ChatGPT 4o",
-                            "type": "avatar",
-                            "avatarColor": "#8e44ad"
-                        },
-                        {
-                            "text": "Love by 234 people on Figma Community",
-                            "type": "heart"
-                        }
-                    ]
+                    "thumbnail": "https://placehold.co/360x640/2c3e50/FFF?text=Mountain",
+                    "bgColor": "#2c3e50",
+                    "title": "Mountain Trek",
+                    "description": "Documentation of a 3-day hike through the Alps.",
+                    "comments": []
                 },
                 {
                     "id": "t1v2",
@@ -124,11 +114,25 @@
                 {
                     "id": "t2v1",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
-                    "thumbnail": "https://placehold.co/360x640/2c3e50/FFF?text=Mountain",
-                    "bgColor": "#2c3e50",
-                    "title": "Mountain Trek",
-                    "description": "Documentation of a 3-day hike through the Alps.",
-                    "comments": []
+                    "thumbnail": "https://placehold.co/360x640/1a1a2e/FFF?text=HueRex",
+                    "bgColor": "#451910",
+                    "title": "HueRex",
+                    "description": "Streamline your creative workflow by editing hue, saturation, and brightness across any selection instantly. Whether you need to shift every color at once, target specific hue groups, or organize visible swatches, this tool eliminates the manual hassle of updating individual elements.",
+                    "link": {
+                        "text": "Figma Community",
+                        "url": "https://www.figma.com/community/plugin/1510039474871692985/huerex"
+                    },
+                    "comments": [
+                        {
+                            "text": "This was my first vibe-coded project, used ChatGPT 4o",
+                            "type": "avatar",
+                            "avatarColor": "#8e44ad"
+                        },
+                        {
+                            "text": "Love by 234 people on Figma Community",
+                            "type": "heart"
+                        }
+                    ]
                 },
                 {
                     "id": "t2v2",
@@ -208,38 +212,31 @@
                 {
                     "id": "t4v1",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/Sakleshpur_handbrake.mp4",
-                    "thumbnail": "https://placehold.co/640x360/08350b/FFF?text=Echo",
+                    "thumbnail": "thumbnails/sakleshpur.png",
                     "bgColor": "#08350b",
-                    "title": "Short Film: Echo",
+                    "title": "A Weekend in Sakleshpur",
                     "description": "this is the first video i made using my new camera FUJIFILM XS-20",
                     "isLandscape": true,
                     "comments": []
                 },
                 {
                     "id": "t4v2",
-                    "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
-                    "thumbnail": "https://placehold.co/360x640/d35400/FFF?text=Doc",
-                    "bgColor": "#d35400",
-                    "title": "Documentary",
-                    "description": "Interview with a local artisan.",
+                    "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/Delhi%20in%20a%20lapse.mp4",
+                    "thumbnail": "thumbnails/Delhi.png",
+                    "bgColor": "#213E47",
+                    "title": "Delhi in a lapse",
+                    "description": "My first video ever",
+                    "isLandscape": true,
                     "comments": []
                 },
                 {
                     "id": "t4v3",
-                    "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
-                    "thumbnail": "https://placehold.co/360x640/e67e22/FFF?text=Animation",
-                    "bgColor": "#e67e22",
-                    "title": "Animation",
-                    "description": "Stop motion experiment with clay.",
-                    "comments": []
-                },
-                {
-                    "id": "t4v4",
-                    "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
-                    "thumbnail": "https://placehold.co/360x640/d35400/FFF?text=Music",
-                    "bgColor": "#d35400",
-                    "title": "Music Video",
-                    "description": "Unofficial video for a favorite track.",
+                    "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/Leh_2018_16-9.mp4",
+                    "thumbnail": "thumbnails/Ladakh.png",
+                    "bgColor": "#2C435F",
+                    "title": "Ladakh 2018",
+                    "description": "That one college trip",
+                    "isLandscape": true,
                     "comments": []
                 }
             ]

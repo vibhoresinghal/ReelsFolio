@@ -645,8 +645,10 @@
                         <div class="grid-section ${tabIndex === 0 ? 'active' : ''}" data-bg-color="${tab.videos[0].bgColor}">
                             <div class="grid-container">
                                 ${tab.videos.map((video, vIndex) => `
-                                    <div class="grid-item" onclick="goToVideo(${vIndex + 1}, ${tabIndex})">
-                                        <img src="${video.poster}" alt="Video ${vIndex + 1}">
+                                    <div class="grid-item" onclick="goToVideo(${vIndex + 1}, ${tabIndex})" 
+                                         onmouseenter="this.querySelector('video').play()" 
+                                         onmouseleave="this.querySelector('video').pause(); this.querySelector('video').currentTime = 0;">
+                                        <video src="${video.src}#t=0.1" muted playsinline preload="metadata" style="width: 100%; height: 100%; object-fit: cover;"></video>
                                         <span class="video-number">${vIndex + 1}</span>
                                     </div>
                                 `).join('')}
@@ -671,7 +673,7 @@
                                 <div class="sticker sticker-sparkle">✨</div>
 
                                 <div class="video-frame" onclick="toggleVideo('${video.id}')">
-                                    <video id="${video.id}" src="${video.src}" loop muted playsinline preload="auto" poster="${video.poster}"></video>
+                                    <video id="${video.id}" src="${video.src}" muted playsinline preload="metadata" onended="scrollToNextVideo(this)"></video>
                                     <div class="play-overlay-btn" id="btn-${video.id}">
                                          <svg viewBox="0 0 24 24"><polygon points="8,5 19,12 8,19"/></svg>
                                     </div>
@@ -794,6 +796,19 @@
             if (btn) btn.classList.add('paused');
         }
 
+        function scrollToNextVideo(videoEl) {
+            const currentSection = videoEl.closest('.video-section');
+            const nextSection = currentSection.nextElementSibling;
+
+            if (nextSection && nextSection.classList.contains('video-section')) {
+                nextSection.scrollIntoView({ behavior: 'smooth' });
+            } else {
+                // If it's the last video, maybe loop back to grid? Or just stop.
+                // For now, let's stop.
+                toggleVideo(videoEl.id); // Show play button again
+            }
+        }
+
         function toggleVideo(videoId) {
             const video = document.getElementById(videoId);
             const btn = document.getElementById('btn-' + videoId);
@@ -856,7 +871,15 @@
         // --- Navigation Functions ---
 
         function switchTab(index) {
-            if (index === currentTab) return;
+            if (index === currentTab) {
+                // Scroll current tab to top (grid view)
+                const currentTabEl = document.getElementById(`tab-${videosData.tabs[index].id}`);
+                const container = currentTabEl.querySelector('.video-container');
+                if (container) {
+                    container.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+                return;
+            }
 
             // Pause current video
             if (currentVideoId) {

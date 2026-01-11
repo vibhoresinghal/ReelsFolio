@@ -7,61 +7,51 @@
                 {
                     "id": "t1v1",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
-                    "poster": "https://img.youtube.com/vi/VmjOqPBag8A/maxresdefault.jpg",
                     "bgColor": "#1a1a2e"
                 },
                 {
                     "id": "t1v2",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
-                    "poster": "https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg",
                     "bgColor": "#16213e"
                 },
                 {
                     "id": "t1v3",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
-                    "poster": "https://img.youtube.com/vi/FpBOQ3tAE6U/maxresdefault.jpg",
                     "bgColor": "#0f3460"
                 },
                 {
                     "id": "t1v4",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
-                    "poster": "https://img.youtube.com/vi/9bZkp7q19f0/maxresdefault.jpg",
                     "bgColor": "#533483"
                 },
                 {
                     "id": "t1v5",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
-                    "poster": "https://img.youtube.com/vi/kJQP7kiw5Fk/maxresdefault.jpg",
                     "bgColor": "#1a1a2e"
                 },
                 {
                     "id": "t1v6",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
-                    "poster": "https://img.youtube.com/vi/JGwWNGJdvx8/maxresdefault.jpg",
                     "bgColor": "#16213e"
                 },
                 {
                     "id": "t1v7",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
-                    "poster": "https://img.youtube.com/vi/RgKAFK5djSk/maxresdefault.jpg",
                     "bgColor": "#0f3460"
                 },
                 {
                     "id": "t1v8",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
-                    "poster": "https://img.youtube.com/vi/fRh_vgS2dFE/maxresdefault.jpg",
                     "bgColor": "#533483"
                 },
                 {
                     "id": "t1v9",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
-                    "poster": "https://img.youtube.com/vi/CevxZvSJLk8/maxresdefault.jpg",
                     "bgColor": "#1a1a2e"
                 },
                 {
                     "id": "t1v10",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
-                    "poster": "https://img.youtube.com/vi/OPf0YbXqDm0/maxresdefault.jpg",
                     "bgColor": "#16213e"
                 }
             ]
@@ -73,25 +63,21 @@
                 {
                     "id": "t2v1",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
-                    "poster": "https://img.youtube.com/vi/kJQP7kiw5Fk/maxresdefault.jpg",
                     "bgColor": "#2c3e50"
                 },
                 {
                     "id": "t2v2",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
-                    "poster": "https://img.youtube.com/vi/JGwWNGJdvx8/maxresdefault.jpg",
                     "bgColor": "#34495e"
                 },
                 {
                     "id": "t2v3",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
-                    "poster": "https://img.youtube.com/vi/RgKAFK5djSk/maxresdefault.jpg",
                     "bgColor": "#2c3e50"
                 },
                 {
                     "id": "t2v4",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
-                    "poster": "https://img.youtube.com/vi/fRh_vgS2dFE/maxresdefault.jpg",
                     "bgColor": "#34495e"
                 }
             ]
@@ -103,25 +89,21 @@
                 {
                     "id": "t3v1",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
-                    "poster": "https://img.youtube.com/vi/iyEUvUcMHGg/maxresdefault.jpg",
                     "bgColor": "#27ae60"
                 },
                 {
                     "id": "t3v2",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
-                    "poster": "https://img.youtube.com/vi/CevxZvSJLk8/maxresdefault.jpg",
                     "bgColor": "#2ecc71"
                 },
                 {
                     "id": "t3v3",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
-                    "poster": "https://img.youtube.com/vi/OPf0YbXqDm0/maxresdefault.jpg",
                     "bgColor": "#27ae60"
                 },
                 {
                     "id": "t3v4",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
-                    "poster": "https://img.youtube.com/vi/nfWlot6h_JM/maxresdefault.jpg",
                     "bgColor": "#2ecc71"
                 }
             ]
@@ -133,25 +115,21 @@
                 {
                     "id": "t4v1",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
-                    "poster": "https://vumbnail.com/1153280345.jpg",
                     "bgColor": "#e67e22"
                 },
                 {
                     "id": "t4v2",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
-                    "poster": "https://img.youtube.com/vi/YqeW9_5kURI/maxresdefault.jpg",
                     "bgColor": "#d35400"
                 },
                 {
                     "id": "t4v3",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
-                    "poster": "https://img.youtube.com/vi/YQHsXMglC9A/maxresdefault.jpg",
                     "bgColor": "#e67e22"
                 },
                 {
                     "id": "t4v4",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
-                    "poster": "https://img.youtube.com/vi/nfWlot6h_JM/maxresdefault.jpg",
                     "bgColor": "#d35400"
                 }
             ]

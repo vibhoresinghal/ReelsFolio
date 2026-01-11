@@ -650,6 +650,11 @@
             border: 2px solid transparent;
             transition: all 0.3s ease;
             position: relative;
+            /* Prevent selection highlight when dragging */
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
         }
 
         .grid-item:hover {
@@ -1205,6 +1210,54 @@
                 navigate(-1);
             }
         });
+
+        // Touch Swipe for Tab Switching (mobile)
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let touchEndX = 0;
+        let touchEndY = 0;
+        const minSwipeDistance = 80; // Minimum swipe distance in pixels
+
+        function isOnGridSection() {
+            const tabData = videosData.tabs[currentTab];
+            const tabEl = document.getElementById(`tab-${tabData.id}`);
+            const container = tabEl.querySelector('.video-container');
+            // If scrollTop is near 0, user is on the grid section
+            return container && container.scrollTop < window.innerHeight * 0.3;
+        }
+
+        function handleSwipeGesture() {
+            const deltaX = touchEndX - touchStartX;
+            const deltaY = touchEndY - touchStartY;
+
+            // Only process horizontal swipes (deltaX > deltaY) and when on grid
+            if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > minSwipeDistance) {
+                if (!isOnGridSection()) return;
+
+                if (deltaX < 0) {
+                    // Swipe left -> next tab
+                    if (currentTab < videosData.tabs.length - 1) {
+                        switchTab(currentTab + 1);
+                    }
+                } else {
+                    // Swipe right -> previous tab
+                    if (currentTab > 0) {
+                        switchTab(currentTab - 1);
+                    }
+                }
+            }
+        }
+
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+            touchStartY = e.changedTouches[0].screenY;
+        }, { passive: true });
+
+        document.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            touchEndY = e.changedTouches[0].screenY;
+            handleSwipeGesture();
+        }, { passive: true });
 
         // Initialize
         initApp();

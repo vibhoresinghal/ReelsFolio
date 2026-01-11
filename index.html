@@ -81,26 +81,8 @@
             transform: scale(1);
         }
 
-        /* YouTube iframe - optimized for 9:16 vertical videos */
-        .video-frame iframe {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            /* 
-             * Optimized for 9:16 vertical videos in YouTube's 16:9 player:
-             * - Width 315%: Crops the black pillarbox bars on left/right
-             *   (16:9 / 9:16 = 256/81 ≈ 3.16, so ~316% fills horizontally)
-             * - Height 115%: Minimal crop to hide YouTube UI bars
-             */
-            width: 315%;
-            height: 115%;
-            border: none;
-            pointer-events: none;
-        }
-
         /* R2/HTML5 video - scale to fill vertical 9:16 frame */
-        .r2-video .video-frame video {
+        .video-frame video {
             position: absolute;
             top: 50%;
             left: 50%;
@@ -114,7 +96,7 @@
         }
 
         /* R2 video play button overlay - matches control bar style */
-        .r2-video .video-frame .r2-play-btn {
+        .video-frame .play-overlay-btn {
             position: absolute;
             top: 50%;
             left: 50%;
@@ -138,23 +120,23 @@
         }
 
         /* Only show button when paused */
-        .r2-video .video-frame .r2-play-btn.paused {
+        .video-frame .play-overlay-btn.paused {
             opacity: 1;
             pointer-events: auto;
         }
 
-        .r2-video .video-frame .r2-play-btn:hover {
+        .video-frame .play-overlay-btn:hover {
             background: rgba(255, 255, 255, 0.3);
             transform: translate(-50%, -50%) scale(1.05);
         }
 
-        .r2-play-btn svg {
+        .play-overlay-btn svg {
             width: 28px;
             height: 28px;
             margin-left: 3px;
         }
 
-        .r2-play-btn svg polygon {
+        .play-overlay-btn svg polygon {
             fill: white;
         }
 
@@ -438,7 +420,6 @@
             max-width: 95vw;
             width: 100%;
             /* No internal scroll - fit everything in viewport */
-            /* Entry animation - same as video frame */
             opacity: 0.2;
             transform: scale(0.9);
             transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
@@ -487,23 +468,6 @@
             font-weight: 500;
         }
 
-        .grid-title {
-            position: absolute;
-            top: clamp(24px, 6vh, 40px);
-            left: 50%;
-            transform: translateX(-50%);
-            color: white;
-            font-size: clamp(18px, 4vw, 24px);
-            font-weight: 600;
-            opacity: 0;
-            transition: opacity 0.5s ease-in-out;
-            white-space: nowrap;
-        }
-
-        .grid-section.active .grid-title {
-            opacity: 1;
-        }
-
         /* Tab Navigation */
         .tab-nav {
             position: fixed;
@@ -546,11 +510,10 @@
         }
 
         /* Tab Content */
-        /* Horizontal scroll container for tabs */
         .tabs-container {
             display: flex;
             width: 400vw;
-            /* 4 tabs × 100vw each */
+            /* Will be updated dynamically */
             height: 100vh;
             transition: transform 0.5s ease-in-out;
         }
@@ -562,13 +525,11 @@
             overflow: hidden;
         }
 
-        /* Hide grid button when tabs are visible - it's replaced by tab nav */
+        /* Hide grid button when tabs are visible */
         .grid-btn {
             display: none;
         }
 
-
-        /* Hide decorative elements on smaller screens (below ~900px) */
         @media (max-width: 900px) {
 
             .info-bar,
@@ -577,7 +538,6 @@
             }
         }
 
-        /* Additional mobile optimizations for short screens */
         @media (max-height: 600px) {
             .grid-container {
                 max-height: 80vh;
@@ -592,923 +552,10 @@
     <div class="bg-layer" id="bgLayer"></div>
 
     <!-- Tab Navigation -->
-    <nav class="tab-nav">
-        <button class="tab-btn active" onclick="switchTab(0)">Zeta</button>
-        <button class="tab-btn" onclick="switchTab(1)">Personal Projects</button>
-        <button class="tab-btn" onclick="switchTab(2)">Life</button>
-        <button class="tab-btn" onclick="switchTab(3)">Films</button>
-    </nav>
+    <nav class="tab-nav" id="tabNav"></nav>
 
     <!-- Horizontal Tabs Container -->
-    <div class="tabs-container" id="tabsContainer">
-        <!-- Tab 1 Content -->
-        <div class="tab-content" id="tab1">
-            <div class="video-container" id="feed1">
-                <!-- Grid Section - First in feed -->
-                <div class="grid-section active" data-bg-color="#1a1a2e">
-                    <div class="grid-container">
-                        <div class="grid-item" onclick="goToVideo(1)">
-                            <img src="https://img.youtube.com/vi/VmjOqPBag8A/maxresdefault.jpg" alt="Video 1">
-                            <span class="video-number">1</span>
-                        </div>
-                        <div class="grid-item" onclick="goToVideo(2)">
-                            <img src="https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg" alt="Video 2">
-                            <span class="video-number">2</span>
-                        </div>
-                        <div class="grid-item" onclick="goToVideo(3)">
-                            <img src="https://img.youtube.com/vi/FpBOQ3tAE6U/maxresdefault.jpg" alt="Video 3">
-                            <span class="video-number">3</span>
-                        </div>
-                        <div class="grid-item" onclick="goToVideo(4)">
-                            <img src="https://img.youtube.com/vi/9bZkp7q19f0/maxresdefault.jpg" alt="Video 4">
-                            <span class="video-number">4</span>
-                        </div>
-                        <div class="grid-item" onclick="goToVideo(5)">
-                            <img src="https://img.youtube.com/vi/kJQP7kiw5Fk/maxresdefault.jpg" alt="Video 5">
-                            <span class="video-number">5</span>
-                        </div>
-                        <div class="grid-item" onclick="goToVideo(6)">
-                            <img src="https://img.youtube.com/vi/JGwWNGJdvx8/maxresdefault.jpg" alt="Video 6">
-                            <span class="video-number">6</span>
-                        </div>
-                        <div class="grid-item" onclick="goToVideo(7)">
-                            <img src="https://img.youtube.com/vi/RgKAFK5djSk/maxresdefault.jpg" alt="Video 7">
-                            <span class="video-number">7</span>
-                        </div>
-                        <div class="grid-item" onclick="goToVideo(8)">
-                            <img src="https://img.youtube.com/vi/fRh_vgS2dFE/maxresdefault.jpg" alt="Video 8">
-                            <span class="video-number">8</span>
-                        </div>
-                        <div class="grid-item" onclick="goToVideo(9)">
-                            <img src="https://img.youtube.com/vi/CevxZvSJLk8/maxresdefault.jpg" alt="Video 9">
-                            <span class="video-number">9</span>
-                        </div>
-                        <div class="grid-item" onclick="goToVideo(10)">
-                            <img src="https://img.youtube.com/vi/OPf0YbXqDm0/maxresdefault.jpg" alt="Video 10">
-                            <span class="video-number">10</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Video 1 - Purple theme -->
-                <div class="video-section" data-video-id="VmjOqPBag8A" data-bg-color="#3d2351">
-
-                    <div class="info-bar left">
-                        <div class="info-line long"></div>
-                        <div class="info-line medium"></div>
-                        <div class="info-line short"></div>
-                        <div class="info-line long"></div>
-                        <div class="info-line medium"></div>
-                    </div>
-
-                    <div class="sticker sticker-star">
-                        <svg viewBox="0 0 100 100" fill="#7CB9E8">
-                            <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
-                        </svg>
-                    </div>
-                    <div class="sticker sticker-heart">💗</div>
-                    <div class="sticker sticker-plus">✚</div>
-                    <div class="sticker sticker-sparkle">✦</div>
-                    <div class="sticker sticker-squiggle">
-                        <svg viewBox="0 0 60 30" stroke="#f4a27a" stroke-width="4" fill="none">
-                            <path d="M5,15 Q15,5 25,15 T45,15 T55,15" />
-                        </svg>
-                    </div>
-
-                    <div class="video-frame">
-                        <div id="player1"></div>
-                    </div>
-
-                    <div class="info-bar right">
-                        <div class="info-group">
-                            <div class="info-dot"></div>
-                            <div>
-                                <div class="info-line medium" style="margin-bottom: 6px;"></div>
-                                <div class="info-line short"></div>
-                            </div>
-                        </div>
-                        <div class="info-group">
-                            <div class="info-dot"></div>
-                            <div>
-                                <div class="info-line long" style="margin-bottom: 6px;"></div>
-                                <div class="info-line medium"></div>
-                            </div>
-                        </div>
-                        <div class="info-group">
-                            <div class="info-dot"></div>
-                            <div>
-                                <div class="info-line medium" style="margin-bottom: 6px;"></div>
-                                <div class="info-line short"></div>
-                            </div>
-                        </div>
-                        <div class="toggle-btn">
-                            <div class="line"></div>
-                            <div class="circle"></div>
-                        </div>
-                    </div>
-
-                </div>
-
-                <!-- Video 2 - Blue theme -->
-                <div class="video-section" data-video-id="dQw4w9WgXcQ" data-bg-color="#1a3a5c">
-
-                    <div class="info-bar left">
-                        <div class="info-line long"></div>
-                        <div class="info-line short"></div>
-                        <div class="info-line medium"></div>
-                        <div class="info-line long"></div>
-                    </div>
-
-                    <div class="sticker sticker-star">
-                        <svg viewBox="0 0 100 100" fill="#ff6b6b">
-                            <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
-                        </svg>
-                    </div>
-                    <div class="sticker sticker-heart">💙</div>
-                    <div class="sticker sticker-plus">✚</div>
-                    <div class="sticker sticker-sparkle">★</div>
-
-                    <div class="video-frame">
-                        <div id="player2"></div>
-                    </div>
-
-                    <div class="info-bar right">
-                        <div class="info-group">
-                            <div class="info-dot"></div>
-                            <div>
-                                <div class="info-line long" style="margin-bottom: 6px;"></div>
-                                <div class="info-line short"></div>
-                            </div>
-                        </div>
-                        <div class="info-group">
-                            <div class="info-dot"></div>
-                            <div>
-                                <div class="info-line medium" style="margin-bottom: 6px;"></div>
-                                <div class="info-line medium"></div>
-                            </div>
-                        </div>
-                        <div class="toggle-btn">
-                            <div class="line"></div>
-                            <div class="circle"></div>
-                        </div>
-                    </div>
-
-                </div>
-
-                <!-- Video 3 - Green theme -->
-                <div class="video-section" data-video-id="FpBOQ3tAE6U" data-bg-color="#1d4a3a">
-
-                    <div class="info-bar left">
-                        <div class="info-line medium"></div>
-                        <div class="info-line long"></div>
-                        <div class="info-line short"></div>
-                    </div>
-
-                    <div class="sticker sticker-star">
-                        <svg viewBox="0 0 100 100" fill="#90EE90">
-                            <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
-                        </svg>
-                    </div>
-                    <div class="sticker sticker-heart">💚</div>
-                    <div class="sticker sticker-sparkle">✧</div>
-
-                    <div class="video-frame">
-                        <div id="player3"></div>
-                    </div>
-
-                    <div class="info-bar right">
-                        <div class="info-group">
-                            <div class="info-dot"></div>
-                            <div>
-                                <div class="info-line medium" style="margin-bottom: 6px;"></div>
-                                <div class="info-line long"></div>
-                            </div>
-                        </div>
-                        <div class="toggle-btn">
-                            <div class="line"></div>
-                            <div class="circle"></div>
-                        </div>
-                    </div>
-
-                </div>
-
-                <!-- Video 4 - Orange theme -->
-                <div class="video-section" data-video-id="9bZkp7q19f0" data-bg-color="#5c3a1a">
-
-                    <div class="info-bar left">
-                        <div class="info-line long"></div>
-                        <div class="info-line medium"></div>
-                        <div class="info-line long"></div>
-                        <div class="info-line short"></div>
-                    </div>
-
-                    <div class="sticker sticker-star">
-                        <svg viewBox="0 0 100 100" fill="#FFD700">
-                            <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
-                        </svg>
-                    </div>
-                    <div class="sticker sticker-heart">🧡</div>
-                    <div class="sticker sticker-plus">✦</div>
-
-                    <div class="video-frame">
-                        <div id="player4"></div>
-                    </div>
-
-                    <div class="info-bar right">
-                        <div class="info-group">
-                            <div class="info-dot"></div>
-                            <div>
-                                <div class="info-line long" style="margin-bottom: 6px;"></div>
-                                <div class="info-line medium"></div>
-                            </div>
-                        </div>
-                        <div class="info-group">
-                            <div class="info-dot"></div>
-                            <div>
-                                <div class="info-line short" style="margin-bottom: 6px;"></div>
-                                <div class="info-line long"></div>
-                            </div>
-                        </div>
-                        <div class="toggle-btn">
-                            <div class="line"></div>
-                            <div class="circle"></div>
-                        </div>
-                    </div>
-
-                </div>
-
-                <!-- Video 5 - Pink theme -->
-                <div class="video-section" data-video-id="kJQP7kiw5Fk" data-bg-color="#4a2040">
-
-                    <div class="info-bar left">
-                        <div class="info-line long"></div>
-                        <div class="info-line medium"></div>
-                        <div class="info-line short"></div>
-                    </div>
-
-                    <div class="sticker sticker-star">
-                        <svg viewBox="0 0 100 100" fill="#FF69B4">
-                            <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
-                        </svg>
-                    </div>
-                    <div class="sticker sticker-heart">💖</div>
-                    <div class="sticker sticker-sparkle">✨</div>
-
-                    <div class="video-frame">
-                        <div id="player5"></div>
-                    </div>
-
-                    <div class="info-bar right">
-                        <div class="info-group">
-                            <div class="info-dot"></div>
-                            <div>
-                                <div class="info-line medium" style="margin-bottom: 6px;"></div>
-                                <div class="info-line short"></div>
-                            </div>
-                        </div>
-                        <div class="toggle-btn">
-                            <div class="line"></div>
-                            <div class="circle"></div>
-                        </div>
-                    </div>
-
-                </div>
-
-                <!-- Video 6 - Cyan theme -->
-                <div class="video-section" data-video-id="JGwWNGJdvx8" data-bg-color="#1a4a4a">
-
-                    <div class="info-bar left">
-                        <div class="info-line medium"></div>
-                        <div class="info-line long"></div>
-                        <div class="info-line short"></div>
-                    </div>
-
-                    <div class="sticker sticker-star">
-                        <svg viewBox="0 0 100 100" fill="#00CED1">
-                            <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
-                        </svg>
-                    </div>
-                    <div class="sticker sticker-heart">💙</div>
-                    <div class="sticker sticker-plus">✦</div>
-
-                    <div class="video-frame">
-                        <div id="player6"></div>
-                    </div>
-
-                    <div class="info-bar right">
-                        <div class="info-group">
-                            <div class="info-dot"></div>
-                            <div>
-                                <div class="info-line long" style="margin-bottom: 6px;"></div>
-                                <div class="info-line medium"></div>
-                            </div>
-                        </div>
-                        <div class="toggle-btn">
-                            <div class="line"></div>
-                            <div class="circle"></div>
-                        </div>
-                    </div>
-
-                </div>
-
-                <!-- Video 7 - Yellow theme -->
-                <div class="video-section" data-video-id="RgKAFK5djSk" data-bg-color="#4a4a1a">
-
-                    <div class="info-bar left">
-                        <div class="info-line long"></div>
-                        <div class="info-line short"></div>
-                        <div class="info-line medium"></div>
-                    </div>
-
-                    <div class="sticker sticker-star">
-                        <svg viewBox="0 0 100 100" fill="#FFD700">
-                            <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
-                        </svg>
-                    </div>
-                    <div class="sticker sticker-heart">💛</div>
-                    <div class="sticker sticker-sparkle">⭐</div>
-
-                    <div class="video-frame">
-                        <div id="player7"></div>
-                    </div>
-
-                    <div class="info-bar right">
-                        <div class="info-group">
-                            <div class="info-dot"></div>
-                            <div>
-                                <div class="info-line short" style="margin-bottom: 6px;"></div>
-                                <div class="info-line long"></div>
-                            </div>
-                        </div>
-                        <div class="toggle-btn">
-                            <div class="line"></div>
-                            <div class="circle"></div>
-                        </div>
-                    </div>
-
-                </div>
-
-                <!-- Video 8 - Red theme -->
-                <div class="video-section" data-video-id="fRh_vgS2dFE" data-bg-color="#4a1a1a">
-
-                    <div class="info-bar left">
-                        <div class="info-line medium"></div>
-                        <div class="info-line long"></div>
-                    </div>
-
-                    <div class="sticker sticker-star">
-                        <svg viewBox="0 0 100 100" fill="#FF6347">
-                            <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
-                        </svg>
-                    </div>
-                    <div class="sticker sticker-heart">❤️</div>
-                    <div class="sticker sticker-plus">✚</div>
-
-                    <div class="video-frame">
-                        <div id="player8"></div>
-                    </div>
-
-                    <div class="info-bar right">
-                        <div class="info-group">
-                            <div class="info-dot"></div>
-                            <div>
-                                <div class="info-line medium" style="margin-bottom: 6px;"></div>
-                                <div class="info-line medium"></div>
-                            </div>
-                        </div>
-                        <div class="toggle-btn">
-                            <div class="line"></div>
-                            <div class="circle"></div>
-                        </div>
-                    </div>
-
-                </div>
-
-                <!-- Video 9 - Indigo theme -->
-                <div class="video-section" data-video-id="CevxZvSJLk8" data-bg-color="#2a1a4a">
-
-                    <div class="info-bar left">
-                        <div class="info-line long"></div>
-                        <div class="info-line medium"></div>
-                        <div class="info-line short"></div>
-                    </div>
-
-                    <div class="sticker sticker-star">
-                        <svg viewBox="0 0 100 100" fill="#9370DB">
-                            <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
-                        </svg>
-                    </div>
-                    <div class="sticker sticker-heart">💜</div>
-                    <div class="sticker sticker-sparkle">✧</div>
-
-                    <div class="video-frame">
-                        <div id="player9"></div>
-                    </div>
-
-                    <div class="info-bar right">
-                        <div class="info-group">
-                            <div class="info-dot"></div>
-                            <div>
-                                <div class="info-line long" style="margin-bottom: 6px;"></div>
-                                <div class="info-line short"></div>
-                            </div>
-                        </div>
-                        <div class="toggle-btn">
-                            <div class="line"></div>
-                            <div class="circle"></div>
-                        </div>
-                    </div>
-
-                </div>
-
-                <!-- Video 10 - Teal theme -->
-                <div class="video-section" data-video-id="OPf0YbXqDm0" data-bg-color="#1a3a3a">
-
-                    <div class="info-bar left">
-                        <div class="info-line short"></div>
-                        <div class="info-line long"></div>
-                        <div class="info-line medium"></div>
-                    </div>
-
-                    <div class="sticker sticker-star">
-                        <svg viewBox="0 0 100 100" fill="#20B2AA">
-                            <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
-                        </svg>
-                    </div>
-                    <div class="sticker sticker-heart">🩵</div>
-                    <div class="sticker sticker-plus">✦</div>
-
-                    <div class="video-frame">
-                        <div id="player10"></div>
-                    </div>
-
-                    <div class="info-bar right">
-                        <div class="info-group">
-                            <div class="info-dot"></div>
-                            <div>
-                                <div class="info-line medium" style="margin-bottom: 6px;"></div>
-                                <div class="info-line long"></div>
-                            </div>
-                        </div>
-                        <div class="toggle-btn">
-                            <div class="line"></div>
-                            <div class="circle"></div>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-        </div>
-        <!-- End Tab 1 Content -->
-
-        <!-- Tab 2 Content -->
-        <div class="tab-content" id="tab2">
-            <div class="video-container" id="feed2">
-                <div class="grid-section" data-bg-color="#1e3a2e">
-
-                    <div class="grid-container">
-                        <div class="grid-item" onclick="goToVideo(1, 1)">
-                            <img src="https://img.youtube.com/vi/kJQP7kiw5Fk/maxresdefault.jpg" alt="Video 1">
-                            <span class="video-number">1</span>
-                        </div>
-                        <div class="grid-item" onclick="goToVideo(2, 1)">
-                            <img src="https://img.youtube.com/vi/JGwWNGJdvx8/maxresdefault.jpg" alt="Video 2">
-                            <span class="video-number">2</span>
-                        </div>
-                        <div class="grid-item" onclick="goToVideo(3, 1)">
-                            <img src="https://img.youtube.com/vi/RgKAFK5djSk/maxresdefault.jpg" alt="Video 3">
-                            <span class="video-number">3</span>
-                        </div>
-                        <div class="grid-item" onclick="goToVideo(4, 1)">
-                            <img src="https://img.youtube.com/vi/vkOJ9uNj9EY/maxresdefault.jpg" alt="Video 4">
-                            <span class="video-number">4</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tab 2 Video 1 - Despacito -->
-                <div class="video-section" data-video-id="kJQP7kiw5Fk" data-bg-color="#2d4a3a">
-                    <div class="info-bar left">
-                        <div class="info-line long"></div>
-                        <div class="info-line medium"></div>
-                        <div class="info-line short"></div>
-                    </div>
-                    <div class="sticker sticker-star">
-                        <svg viewBox="0 0 100 100" fill="#90EE90">
-                            <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
-                        </svg>
-                    </div>
-                    <div class="sticker sticker-heart">💚</div>
-                    <div class="sticker sticker-sparkle">✨</div>
-                    <div class="video-frame">
-                        <div id="t2p1"></div>
-                    </div>
-                    <div class="info-bar right">
-                        <div class="info-group">
-                            <div class="info-dot"></div>
-                            <div>
-                                <div class="info-line medium" style="margin-bottom: 6px;"></div>
-                                <div class="info-line short"></div>
-                            </div>
-                        </div>
-                        <div class="toggle-btn">
-                            <div class="line"></div>
-                            <div class="circle"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tab 2 Video 2 - Shape of You -->
-                <div class="video-section" data-video-id="JGwWNGJdvx8" data-bg-color="#1a4a3a">
-                    <div class="info-bar left">
-                        <div class="info-line medium"></div>
-                        <div class="info-line long"></div>
-                    </div>
-                    <div class="sticker sticker-star">
-                        <svg viewBox="0 0 100 100" fill="#4ECDC4">
-                            <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
-                        </svg>
-                    </div>
-                    <div class="sticker sticker-heart">🩵</div>
-                    <div class="sticker sticker-plus">✦</div>
-                    <div class="video-frame">
-                        <div id="t2p2"></div>
-                    </div>
-                    <div class="info-bar right">
-                        <div class="info-group">
-                            <div class="info-dot"></div>
-                            <div>
-                                <div class="info-line long" style="margin-bottom: 6px;"></div>
-                                <div class="info-line medium"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tab 2 Video 3 - See You Again -->
-                <div class="video-section" data-video-id="RgKAFK5djSk" data-bg-color="#2a5a4a">
-                    <div class="info-bar left">
-                        <div class="info-line short"></div>
-                        <div class="info-line long"></div>
-                        <div class="info-line medium"></div>
-                    </div>
-                    <div class="sticker sticker-star">
-                        <svg viewBox="0 0 100 100" fill="#98D8C8">
-                            <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
-                        </svg>
-                    </div>
-                    <div class="sticker sticker-heart">💙</div>
-                    <div class="sticker sticker-sparkle">⭐</div>
-                    <div class="video-frame">
-                        <div id="t2p3"></div>
-                    </div>
-                    <div class="info-bar right">
-                        <div class="info-group">
-                            <div class="info-dot"></div>
-                            <div>
-                                <div class="info-line short" style="margin-bottom: 6px;"></div>
-                                <div class="info-line long"></div>
-                            </div>
-                        </div>
-                        <div class="toggle-btn">
-                            <div class="line"></div>
-                            <div class="circle"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tab 2 Video 4 - Sorry -->
-                <div class="video-section" data-video-id="vkOJ9uNj9EY" data-bg-color="#1e4a4e">
-                    <div class="info-bar left">
-                        <div class="info-line long"></div>
-                        <div class="info-line short"></div>
-                    </div>
-                    <div class="sticker sticker-star">
-                        <svg viewBox="0 0 100 100" fill="#7CB9E8">
-                            <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
-                        </svg>
-                    </div>
-                    <div class="sticker sticker-heart">🤍</div>
-                    <div class="sticker sticker-plus">✧</div>
-                    <div class="video-frame">
-                        <div id="t2p4"></div>
-                    </div>
-                    <div class="info-bar right">
-                        <div class="info-group">
-                            <div class="info-dot"></div>
-                            <div>
-                                <div class="info-line medium" style="margin-bottom: 6px;"></div>
-                                <div class="info-line medium"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- End Tab 2 Content -->
-
-        <!-- Tab 3 Content -->
-        <div class="tab-content" id="tab3">
-            <div class="video-container" id="feed3">
-                <div class="grid-section" data-bg-color="#2e1e3a">
-
-                    <div class="grid-container">
-                        <div class="grid-item" onclick="goToVideo(1, 2)">
-                            <img src="https://img.youtube.com/vi/hT_nvWreIhg/maxresdefault.jpg" alt="Video 1">
-                            <span class="video-number">1</span>
-                        </div>
-                        <div class="grid-item" onclick="goToVideo(2, 2)">
-                            <img src="https://img.youtube.com/vi/CevxZvSJLk8/maxresdefault.jpg" alt="Video 2">
-                            <span class="video-number">2</span>
-                        </div>
-                        <div class="grid-item" onclick="goToVideo(3, 2)">
-                            <img src="https://img.youtube.com/vi/OPf0YbXqDm0/maxresdefault.jpg" alt="Video 3">
-                            <span class="video-number">3</span>
-                        </div>
-                        <div class="grid-item" onclick="goToVideo(4, 2)">
-                            <img src="https://img.youtube.com/vi/09R8_2nJtjg/maxresdefault.jpg" alt="Video 4">
-                            <span class="video-number">4</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tab 3 Video 1 - One Dance -->
-                <div class="video-section" data-video-id="hT_nvWreIhg" data-bg-color="#3d2a4a">
-                    <div class="info-bar left">
-                        <div class="info-line medium"></div>
-                        <div class="info-line long"></div>
-                        <div class="info-line short"></div>
-                    </div>
-                    <div class="sticker sticker-star">
-                        <svg viewBox="0 0 100 100" fill="#9370DB">
-                            <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
-                        </svg>
-                    </div>
-                    <div class="sticker sticker-heart">💜</div>
-                    <div class="sticker sticker-sparkle">✨</div>
-                    <div class="video-frame">
-                        <div id="t3p1"></div>
-                    </div>
-                    <div class="info-bar right">
-                        <div class="info-group">
-                            <div class="info-dot"></div>
-                            <div>
-                                <div class="info-line long" style="margin-bottom: 6px;"></div>
-                                <div class="info-line medium"></div>
-                            </div>
-                        </div>
-                        <div class="toggle-btn">
-                            <div class="line"></div>
-                            <div class="circle"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tab 3 Video 2 - Roar -->
-                <div class="video-section" data-video-id="CevxZvSJLk8" data-bg-color="#4a2a5a">
-                    <div class="info-bar left">
-                        <div class="info-line short"></div>
-                        <div class="info-line medium"></div>
-                    </div>
-                    <div class="sticker sticker-star">
-                        <svg viewBox="0 0 100 100" fill="#DA70D6">
-                            <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
-                        </svg>
-                    </div>
-                    <div class="sticker sticker-heart">🩷</div>
-                    <div class="sticker sticker-plus">⭐</div>
-                    <div class="video-frame">
-                        <div id="t3p2"></div>
-                    </div>
-                    <div class="info-bar right">
-                        <div class="info-group">
-                            <div class="info-dot"></div>
-                            <div>
-                                <div class="info-line short" style="margin-bottom: 6px;"></div>
-                                <div class="info-line long"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tab 3 Video 3 - Uptown Funk -->
-                <div class="video-section" data-video-id="OPf0YbXqDm0" data-bg-color="#3a1a4a">
-                    <div class="info-bar left">
-                        <div class="info-line long"></div>
-                        <div class="info-line long"></div>
-                    </div>
-                    <div class="sticker sticker-star">
-                        <svg viewBox="0 0 100 100" fill="#BA55D3">
-                            <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
-                        </svg>
-                    </div>
-                    <div class="sticker sticker-heart">💟</div>
-                    <div class="sticker sticker-sparkle">✦</div>
-                    <div class="video-frame">
-                        <div id="t3p3"></div>
-                    </div>
-                    <div class="info-bar right">
-                        <div class="info-group">
-                            <div class="info-dot"></div>
-                            <div>
-                                <div class="info-line medium" style="margin-bottom: 6px;"></div>
-                                <div class="info-line short"></div>
-                            </div>
-                        </div>
-                        <div class="toggle-btn">
-                            <div class="line"></div>
-                            <div class="circle"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tab 3 Video 4 - Sugar -->
-                <div class="video-section" data-video-id="09R8_2nJtjg" data-bg-color="#2e2a4a">
-                    <div class="info-bar left">
-                        <div class="info-line medium"></div>
-                        <div class="info-line short"></div>
-                        <div class="info-line long"></div>
-                    </div>
-                    <div class="sticker sticker-star">
-                        <svg viewBox="0 0 100 100" fill="#E6E6FA">
-                            <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
-                        </svg>
-                    </div>
-                    <div class="sticker sticker-heart">🤍</div>
-                    <div class="sticker sticker-plus">✧</div>
-                    <div class="video-frame">
-                        <div id="t3p4"></div>
-                    </div>
-                    <div class="info-bar right">
-                        <div class="info-group">
-                            <div class="info-dot"></div>
-                            <div>
-                                <div class="info-line long" style="margin-bottom: 6px;"></div>
-                                <div class="info-line long"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- End Tab 3 Content -->
-
-        <!-- Tab 4 Content -->
-        <div class="tab-content" id="tab4">
-            <div class="video-container" id="feed4">
-                <div class="grid-section" data-bg-color="#3a2e1e">
-
-                    <div class="grid-container">
-                        <div class="grid-item" onclick="goToVideo(1, 3)">
-                            <img src="https://vumbnail.com/1153280345.jpg" alt="Video 1">
-                            <span class="video-number">1</span>
-                        </div>
-                        <div class="grid-item" onclick="goToVideo(2, 3)">
-                            <img src="https://img.youtube.com/vi/60ItHLz5WEA/maxresdefault.jpg" alt="Video 2">
-                            <span class="video-number">2</span>
-                        </div>
-                        <div class="grid-item" onclick="goToVideo(3, 3)">
-                            <img src="https://img.youtube.com/vi/YQHsXMglC9A/maxresdefault.jpg" alt="Video 3">
-                            <span class="video-number">3</span>
-                        </div>
-                        <div class="grid-item" onclick="goToVideo(4, 3)">
-                            <img src="https://img.youtube.com/vi/fRh_vgS2dFE/maxresdefault.jpg" alt="Video 4">
-                            <span class="video-number">4</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tab 4 Video 1 - Sakleshpur (R2 hosted) -->
-                <div class="video-section r2-video" data-bg-color="#4a3a2a">
-                    <div class="info-bar left">
-                        <div class="info-line long"></div>
-                        <div class="info-line short"></div>
-                        <div class="info-line medium"></div>
-                    </div>
-                    <div class="sticker sticker-star">
-                        <svg viewBox="0 0 100 100" fill="#FFD700">
-                            <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
-                        </svg>
-                    </div>
-                    <div class="sticker sticker-heart">🧡</div>
-                    <div class="sticker sticker-sparkle">✨</div>
-                    <div class="video-frame" onclick="toggleR2Video('t4p1-r2')">
-                        <video id="t4p1-r2"
-                            src="https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4" loop muted
-                            playsinline preload="auto">
-                        </video>
-                        <div class="r2-play-btn" id="r2-btn-t4p1-r2"
-                            onclick="event.stopPropagation(); toggleR2Video('t4p1-r2')">
-                            <svg viewBox="0 0 24 24">
-                                <polygon points="8,5 19,12 8,19" />
-                            </svg>
-                        </div>
-                    </div>
-                    <div class="info-bar right">
-                        <div class="info-group">
-                            <div class="info-dot"></div>
-                            <div>
-                                <div class="info-line short" style="margin-bottom: 6px;"></div>
-                                <div class="info-line long"></div>
-                            </div>
-                        </div>
-                        <div class="toggle-btn">
-                            <div class="line"></div>
-                            <div class="circle"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tab 4 Video 2 - Lean On -->
-                <div class="video-section" data-video-id="60ItHLz5WEA" data-bg-color="#5a4a3a">
-                    <div class="info-bar left">
-                        <div class="info-line medium"></div>
-                        <div class="info-line long"></div>
-                    </div>
-                    <div class="sticker sticker-star">
-                        <svg viewBox="0 0 100 100" fill="#FFA500">
-                            <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
-                        </svg>
-                    </div>
-                    <div class="sticker sticker-heart">💛</div>
-                    <div class="sticker sticker-plus">⭐</div>
-                    <div class="video-frame">
-                        <div id="t4p2"></div>
-                    </div>
-                    <div class="info-bar right">
-                        <div class="info-group">
-                            <div class="info-dot"></div>
-                            <div>
-                                <div class="info-line medium" style="margin-bottom: 6px;"></div>
-                                <div class="info-line medium"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tab 4 Video 3 - Hello -->
-                <div class="video-section" data-video-id="YQHsXMglC9A" data-bg-color="#4a3a1a">
-                    <div class="info-bar left">
-                        <div class="info-line short"></div>
-                        <div class="info-line long"></div>
-                        <div class="info-line short"></div>
-                    </div>
-                    <div class="sticker sticker-star">
-                        <svg viewBox="0 0 100 100" fill="#FF8C00">
-                            <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
-                        </svg>
-                    </div>
-                    <div class="sticker sticker-heart">🤎</div>
-                    <div class="sticker sticker-sparkle">✦</div>
-                    <div class="video-frame">
-                        <div id="t4p3"></div>
-                    </div>
-                    <div class="info-bar right">
-                        <div class="info-group">
-                            <div class="info-dot"></div>
-                            <div>
-                                <div class="info-line long" style="margin-bottom: 6px;"></div>
-                                <div class="info-line short"></div>
-                            </div>
-                        </div>
-                        <div class="toggle-btn">
-                            <div class="line"></div>
-                            <div class="circle"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tab 4 Video 4 - Shake It Off -->
-                <div class="video-section" data-video-id="fRh_vgS2dFE" data-bg-color="#3a2a1a">
-                    <div class="info-bar left">
-                        <div class="info-line long"></div>
-                        <div class="info-line medium"></div>
-                    </div>
-                    <div class="sticker sticker-star">
-                        <svg viewBox="0 0 100 100" fill="#CD853F">
-                            <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
-                        </svg>
-                    </div>
-                    <div class="sticker sticker-heart">❤️</div>
-                    <div class="sticker sticker-plus">✧</div>
-                    <div class="video-frame">
-                        <div id="t4p4"></div>
-                    </div>
-                    <div class="info-bar right">
-                        <div class="info-group">
-                            <div class="info-dot"></div>
-                            <div>
-                                <div class="info-line short" style="margin-bottom: 6px;"></div>
-                                <div class="info-line long"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- End Tab 4 Content -->
-    </div>
-    <!-- End Tabs Container -->
+    <div class="tabs-container" id="tabsContainer"></div>
 
     <!-- Grid Button at Top (hidden, replaced by tabs) -->
     <button class="grid-btn hidden" id="gridBtn" onclick="goToVideo(0)">
@@ -1551,434 +598,222 @@
         </button>
     </div>
 
-    <script src="https://www.youtube.com/iframe_api"></script>
     <script>
-        let players = {};
-        let playersReady = {};
-        let currentPlayerId = 'player1';
-        let isMuted = true;
+        // State
+        let videosData = null;
         let currentTab = 0;
+        let isMuted = true;
+        let isPlaying = true;
+        let observer = null;
+        let currentVideoId = null;
+        let videosReady = {};
+        let firstInteraction = {};
+
+        // DOM Elements
         const bgLayer = document.getElementById('bgLayer');
-        const tabContents = document.querySelectorAll('.tab-content');
-        const tabButtons = document.querySelectorAll('.tab-btn');
+        const tabNav = document.getElementById('tabNav');
         const tabsContainer = document.getElementById('tabsContainer');
-
-        // Tab switching function - uses horizontal scroll animation
-        function switchTab(tabIndex) {
-            const targetTabContent = tabContents[tabIndex];
-
-            // If clicking current tab, just scroll to grid view
-            if (tabIndex === currentTab) {
-                if (targetTabContent) {
-                    const gridSection = targetTabContent.querySelector('.grid-section');
-                    const videoContainer = targetTabContent.querySelector('.video-container');
-                    if (gridSection && videoContainer) {
-                        gridSection.scrollIntoView({ behavior: 'smooth' });
-                    }
-                }
-                return;
-            }
-
-            // Stop all playing videos in current tab
-            Object.keys(players).forEach(playerId => {
-                if (players[playerId] && playersReady[playerId]) {
-                    try {
-                        const section = players[playerId].getIframe().closest('.video-section');
-                        if (section) {
-                            const videoId = section.getAttribute('data-video-id');
-                            players[playerId].cueVideoById(videoId);
-                            players[playerId].mute();
-                        }
-                    } catch (e) {
-                        console.log('Error stopping video:', e);
-                    }
-                }
-            });
-
-            // Update tab buttons
-            tabButtons.forEach((btn, i) => {
-                if (i === tabIndex) {
-                    btn.classList.add('active');
-                } else {
-                    btn.classList.remove('active');
-                }
-            });
-
-            // Slide to the new tab using CSS transform
-            tabsContainer.style.transform = `translateX(-${tabIndex * 100}vw)`;
-
-            // Update background to match the grid section of new tab
-            if (targetTabContent) {
-                const gridSection = targetTabContent.querySelector('.grid-section');
-                if (gridSection) {
-                    const bgColor = gridSection.getAttribute('data-bg-color');
-                    if (bgColor) {
-                        bgLayer.style.backgroundColor = bgColor;
-                    }
-                    // Add active class to new tab's grid section after animation
-                    setTimeout(() => {
-                        gridSection.classList.add('active');
-                    }, 100);
-                }
-                // Scroll to grid view (top) of the new tab
-                const videoContainer = targetTabContent.querySelector('.video-container');
-                if (videoContainer) {
-                    videoContainer.scrollTop = 0;
-                }
-            }
-
-            // Remove active from all sections in previous tab
-            const oldTabContent = tabContents[currentTab];
-            if (oldTabContent) {
-                oldTabContent.querySelectorAll('.grid-section, .video-section').forEach(section => {
-                    section.classList.remove('active');
-                });
-            }
-
-            currentTab = tabIndex;
-        }
-
-        // Set initial background color from first tab's grid
-        const firstTabContent = tabContents[0];
-        const firstGridSection = firstTabContent ? firstTabContent.querySelector('.grid-section') : null;
-        if (firstGridSection) {
-            bgLayer.style.backgroundColor = firstGridSection.getAttribute('data-bg-color');
-            firstGridSection.classList.add('active');
-        }
-
-        // Initialize YouTube Players
-        function onYouTubeIframeAPIReady() {
-            document.querySelectorAll('.video-section').forEach((section) => {
-                // Skip R2/HTML5 video sections
-                if (section.classList.contains('r2-video')) return;
-
-                const videoId = section.getAttribute('data-video-id');
-                if (!videoId) return; // Skip if no video ID
-
-                const playerDiv = section.querySelector('.video-frame > div');
-                if (!playerDiv || !playerDiv.id) return;
-
-                const divId = playerDiv.id;
-
-                players[divId] = new YT.Player(divId, {
-                    height: '100%',
-                    width: '100%',
-                    videoId: videoId,
-                    playerVars: {
-                        'autoplay': 0,
-                        'controls': 0,
-                        'modestbranding': 0,
-                        'rel': 0,
-                        'showinfo': 0,
-                        'iv_load_policy': 3,
-                        'fs': 0,
-                        'disablekb': 1,
-                        'playsinline': 1,
-                        'loop': 1,
-                        'playlist': videoId,
-                        'cc_load_policy': 0,
-                        'color': 'white',
-                        'origin': window.location.origin
-                    },
-                    events: {
-                        'onReady': onPlayerReady,
-                        'onStateChange': onPlayerStateChange
-                    }
-                });
-            });
-        }
-
-        function onPlayerReady(event) {
-            const playerId = event.target.getIframe().id;
-            playersReady[playerId] = true;
-            event.target.mute();
-
-            const section = event.target.getIframe().closest('.video-section');
-            if (section) {
-                observer.observe(section);
-            }
-
-            if (playerId === 'player1') {
-                event.target.seekTo(0);
-                event.target.playVideo();
-            }
-        }
-
-        function onPlayerStateChange(event) {
-            if (event.data === YT.PlayerState.ENDED) {
-                event.target.seekTo(0);
-                event.target.playVideo();
-            }
-        }
-
-        // R2/HTML5 Video Players
-        let r2Videos = {};
-        let r2VideosReady = {};
-
-        // Initialize R2 video players
-        function initR2Videos() {
-            document.querySelectorAll('.r2-video').forEach((section) => {
-                const video = section.querySelector('video');
-                if (!video || !video.id) return;
-
-                const videoId = video.id;
-                r2Videos[videoId] = video;
-                r2VideosReady[videoId] = true;
-
-                // Observe this section
-                observer.observe(section);
-            });
-        }
-
-        // Initialize R2 videos after observer is ready
-        setTimeout(initR2Videos, 100);
-
-        // Unified Intersection Observer for all sections (grid + videos)
         const gridBtn = document.getElementById('gridBtn');
         const controlBar = document.querySelector('.control-bar');
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                // Only process sections in the current tab
-                const parentTab = entry.target.closest('.tab-content');
-                const tabIndex = Array.from(tabContents).indexOf(parentTab);
-                if (tabIndex !== currentTab) {
-                    return; // Skip sections in other tabs
-                }
 
-                const isGridSection = entry.target.classList.contains('grid-section');
+        // Fetch JSON and initialize
+        async function initApp() {
+            try {
+                const response = await fetch('videos.json');
+                videosData = await response.json();
+                renderApp();
+            } catch (error) {
+                console.error('Failed to load videos:', error);
+            }
+        }
 
-                if (entry.isIntersecting) {
-                    // Add active class and change background for ALL sections
-                    entry.target.classList.add('active');
-                    const bgColor = entry.target.getAttribute('data-bg-color');
-                    if (bgColor) {
-                        bgLayer.style.backgroundColor = bgColor;
-                    }
+        // Render the entire app structure
+        function renderApp() {
+            if (!videosData || !videosData.tabs) return;
 
-                    // Show/hide grid button and control bar based on section
-                    if (isGridSection) {
-                        gridBtn.classList.add('hidden');
-                        controlBar.classList.add('hidden');
-                    } else {
-                        gridBtn.classList.remove('hidden');
-                        controlBar.classList.remove('hidden');
-                    }
+            // 1. Render Tabs Navigation
+            tabNav.innerHTML = videosData.tabs.map((tab, index) =>
+                `<button class="tab-btn ${index === 0 ? 'active' : ''}" onclick="switchTab(${index})">${tab.label}</button>`
+            ).join('');
 
-                    // Video-specific logic
-                    if (!isGridSection) {
-                        const isR2Video = entry.target.classList.contains('r2-video');
+            // 2. Render Tabs Content
+            tabsContainer.style.width = `${videosData.tabs.length * 100}vw`;
+            tabsContainer.innerHTML = videosData.tabs.map((tab, tabIndex) => `
+                <div class="tab-content" id="tab-${tab.id}">
+                    <div class="video-container">
+                        <!-- Grid Section -->
+                        <div class="grid-section ${tabIndex === 0 ? 'active' : ''}" data-bg-color="${tab.videos[0].bgColor}">
+                            <div class="grid-container">
+                                ${tab.videos.map((video, vIndex) => `
+                                    <div class="grid-item" onclick="goToVideo(${vIndex + 1}, ${tabIndex})">
+                                        <img src="${video.poster}" alt="Video ${vIndex + 1}">
+                                        <span class="video-number">${vIndex + 1}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
 
-                        // Handle R2/HTML5 videos
-                        if (isR2Video) {
-                            const video = entry.target.querySelector('video');
-                            if (!video || !video.id) return;
+                        <!-- Video Sections -->
+                        ${tab.videos.map(video => `
+                            <div class="video-section video-section-r2" data-video-id="${video.id}" data-bg-color="${video.bgColor}">
+                                <div class="info-bar left">
+                                    <div class="info-line long"></div>
+                                    <div class="info-line medium"></div>
+                                    <div class="info-line short"></div>
+                                </div>
 
-                            const videoId = video.id;
-                            if (r2Videos[videoId] && r2VideosReady[videoId]) {
-                                currentPlayerId = videoId;
+                                <div class="sticker sticker-star">
+                                    <svg viewBox="0 0 100 100" fill="#FFD700">
+                                        <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35" />
+                                    </svg>
+                                </div>
+                                <div class="sticker sticker-heart">🧡</div>
+                                <div class="sticker sticker-sparkle">✨</div>
 
-                                // Reset play state and button
-                                isPlaying = true;
-                                document.getElementById('pauseIcon').style.display = 'block';
-                                document.getElementById('playIcon').style.display = 'none';
+                                <div class="video-frame" onclick="toggleVideo('${video.id}')">
+                                    <video id="${video.id}" src="${video.src}" loop muted playsinline preload="auto" poster="${video.poster}"></video>
+                                    <div class="play-overlay-btn" id="btn-${video.id}">
+                                         <svg viewBox="0 0 24 24"><polygon points="8,5 19,12 8,19"/></svg>
+                                    </div>
+                                </div>
 
-                                // Play the video
-                                video.currentTime = 0;
-                                video.play();
+                                <div class="info-bar right">
+                                    <div class="info-group">
+                                        <div class="info-dot"></div>
+                                        <div>
+                                            <div class="info-line short" style="margin-bottom: 6px;"></div>
+                                            <div class="info-line long"></div>
+                                        </div>
+                                    </div>
+                                    <div class="toggle-btn">
+                                        <div class="line"></div>
+                                        <div class="circle"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
 
-                                if (!isMuted) {
-                                    video.muted = false;
-                                } else {
-                                    video.muted = true;
-                                }
-                            }
-                        } else {
-                            // Handle YouTube videos
-                            const iframe = entry.target.querySelector('iframe');
-                            if (!iframe) return;
+            // Initialize background with first tab's first color
+            if (videosData.tabs[0] && videosData.tabs[0].videos[0]) {
+                bgLayer.style.backgroundColor = videosData.tabs[0].videos[0].bgColor;
+            }
 
-                            const playerId = iframe.id;
-                            const player = players[playerId];
+            // Initialize Observer
+            initObserver();
 
-                            if (!player || !playersReady[playerId]) return;
-
-                            try {
-                                currentPlayerId = playerId;
-
-                                // Reset play state and button
-                                isPlaying = true;
-                                document.getElementById('pauseIcon').style.display = 'block';
-                                document.getElementById('playIcon').style.display = 'none';
-
-                                player.seekTo(0);
-                                player.playVideo();
-
-                                if (!isMuted) {
-                                    player.unMute();
-                                    player.setVolume(100);
-                                } else {
-                                    player.mute();
-                                }
-                            } catch (e) {
-                                console.log('Player not ready yet:', playerId);
-                            }
-                        }
-                    }
-                } else {
-                    entry.target.classList.remove('active');
-
-                    // Video-specific cleanup
-                    if (!isGridSection) {
-                        const isR2Video = entry.target.classList.contains('r2-video');
-
-                        if (isR2Video) {
-                            // Pause R2/HTML5 video
-                            const video = entry.target.querySelector('video');
-                            if (video) {
-                                video.pause();
-                                video.muted = true;
-                            }
-                        } else {
-                            // Stop YouTube video
-                            const iframe = entry.target.querySelector('iframe');
-                            if (!iframe) return;
-
-                            const playerId = iframe.id;
-                            const player = players[playerId];
-                            if (player && playersReady[playerId]) {
-                                try {
-                                    const videoId = entry.target.getAttribute('data-video-id');
-                                    player.cueVideoById(videoId);
-                                    player.mute();
-                                } catch (e) {
-                                    console.log('Player not ready yet:', playerId);
-                                }
-                            }
-                        }
-                    }
-                }
+            // Setup scroll listeners for navigation
+            document.querySelectorAll('.video-container').forEach(container => {
+                container.addEventListener('scroll', handleScroll);
             });
-        }, { threshold: 0.6 });
-
-        // Observe all grid sections across all tabs
-        document.querySelectorAll('.grid-section').forEach(gridSection => {
-            observer.observe(gridSection);
-        });
-
-        function toggleSound() {
-            isMuted = !isMuted;
-
-            const currentPlayer = players[currentPlayerId];
-            const r2Video = r2Videos[currentPlayerId];
-            const mutedIcon = document.getElementById('mutedIcon');
-            const unmutedIcon = document.getElementById('unmutedIcon');
-            const btnText = document.getElementById('soundBtnText');
-
-            if (isMuted) {
-                if (currentPlayer && playersReady[currentPlayerId]) {
-                    currentPlayer.mute();
-                } else if (r2Video && r2VideosReady[currentPlayerId]) {
-                    r2Video.muted = true;
-                }
-                mutedIcon.style.display = 'block';
-                unmutedIcon.style.display = 'none';
-                btnText.textContent = 'Unmute';
-            } else {
-                if (currentPlayer && playersReady[currentPlayerId]) {
-                    currentPlayer.unMute();
-                    currentPlayer.setVolume(100);
-                } else if (r2Video && r2VideosReady[currentPlayerId]) {
-                    r2Video.muted = false;
-                }
-                mutedIcon.style.display = 'none';
-                unmutedIcon.style.display = 'block';
-                btnText.textContent = 'Mute';
-            }
         }
 
-        // Play/Stop toggle
-        let isPlaying = true;
+        // Intersection Observer logic
+        function initObserver() {
+            observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    const parentTab = entry.target.closest('.tab-content');
+                    // Find index of parent tab
+                    const parentTabIndex = Array.from(tabsContainer.children).indexOf(parentTab);
 
-        function togglePlayStop() {
-            const currentPlayer = players[currentPlayerId];
-            const r2Video = r2Videos[currentPlayerId];
-            const pauseIcon = document.getElementById('pauseIcon');
-            const playIcon = document.getElementById('playIcon');
+                    if (parentTabIndex !== currentTab) return;
 
-            // Get the current video section to access video ID
-            const currentSection = document.querySelector('.video-section.active');
-            if (!currentSection) return;
+                    if (entry.isIntersecting) {
+                        // Set Active Class
+                        entry.target.classList.add('active');
 
-            const isR2Video = currentSection.classList.contains('r2-video');
+                        // Set Background Color
+                        const bgColor = entry.target.getAttribute('data-bg-color');
+                        if (bgColor) bgLayer.style.backgroundColor = bgColor;
 
-            if (isR2Video) {
-                if (!r2Video || !r2VideosReady[currentPlayerId]) return;
+                        // Identify section type
+                        const isGrid = entry.target.classList.contains('grid-section');
 
-                if (isPlaying) {
-                    r2Video.pause();
-                    pauseIcon.style.display = 'none';
-                    playIcon.style.display = 'block';
-                } else {
-                    r2Video.play();
-                    if (!isMuted) {
-                        r2Video.muted = false;
+                        // Update UI Buttons
+                        if (isGrid) {
+                            gridBtn.classList.add('hidden');
+                            controlBar.classList.add('hidden');
+                        } else {
+                            gridBtn.classList.remove('hidden');
+                            controlBar.classList.remove('hidden');
+                        }
+
+                        // Play Video if not grid
+                        if (!isGrid) {
+                            const videoId = entry.target.getAttribute('data-video-id');
+                            playVideo(videoId);
+                        }
+                    } else {
+                        entry.target.classList.remove('active');
+                        // Pause Video
+                        if (!entry.target.classList.contains('grid-section')) {
+                            const videoId = entry.target.getAttribute('data-video-id');
+                            pauseVideo(videoId);
+                        }
                     }
-                    pauseIcon.style.display = 'block';
-                    playIcon.style.display = 'none';
-                }
-            } else {
-                if (!currentPlayer || !playersReady[currentPlayerId]) return;
+                });
+            }, { threshold: 0.6 });
 
-                if (isPlaying) {
-                    // Stop video completely to avoid related videos UI
-                    const videoId = currentSection.getAttribute('data-video-id');
-                    currentPlayer.cueVideoById(videoId);
-                    currentPlayer.mute();
-                    pauseIcon.style.display = 'none';
-                    playIcon.style.display = 'block';
-                } else {
-                    // Play from start
-                    currentPlayer.seekTo(0);
-                    currentPlayer.playVideo();
-                    if (!isMuted) {
-                        currentPlayer.unMute();
-                        currentPlayer.setVolume(100);
-                    }
-                    pauseIcon.style.display = 'block';
-                    playIcon.style.display = 'none';
-                }
-            }
-            isPlaying = !isPlaying;
+            document.querySelectorAll('.grid-section, .video-section').forEach(section => {
+                observer.observe(section);
+            });
         }
 
-        // R2 video click to play/pause (also unmutes on first interaction)
-        let r2FirstInteraction = {};
+        // --- Video Control Functions ---
 
-        function toggleR2Video(videoId) {
+        function playVideo(videoId) {
             const video = document.getElementById(videoId);
-            const btn = document.getElementById('r2-btn-' + videoId);
             if (!video) return;
 
-            // First interaction - unmute the video
-            if (!r2FirstInteraction[videoId]) {
-                r2FirstInteraction[videoId] = true;
+            currentVideoId = videoId;
+            isPlaying = true;
+
+            // Update icons
+            document.getElementById('pauseIcon').style.display = 'block';
+            document.getElementById('playIcon').style.display = 'none';
+
+            video.currentTime = 0;
+            video.play().catch(e => console.log('Autoplay blocked:', e));
+
+            video.muted = isMuted;
+
+            // Update overlay button
+            const btn = document.getElementById('btn-' + videoId);
+            if (btn) btn.classList.remove('paused');
+        }
+
+        function pauseVideo(videoId) {
+            const video = document.getElementById(videoId);
+            if (!video) return;
+
+            video.pause();
+
+            const btn = document.getElementById('btn-' + videoId);
+            if (btn) btn.classList.add('paused');
+        }
+
+        function toggleVideo(videoId) {
+            const video = document.getElementById(videoId);
+            const btn = document.getElementById('btn-' + videoId);
+            if (!video) return;
+
+            // First interaction unmute logic
+            if (!firstInteraction[videoId]) {
+                firstInteraction[videoId] = true;
                 video.muted = false;
                 isMuted = false;
-                // Update global mute button
-                document.getElementById('mutedIcon').style.display = 'none';
-                document.getElementById('unmutedIcon').style.display = 'block';
-                document.getElementById('soundBtnText').textContent = 'Mute';
+                updateMuteUI();
             }
 
             if (video.paused) {
-                // Play the video
                 video.play();
                 if (btn) btn.classList.remove('paused');
                 isPlaying = true;
                 document.getElementById('pauseIcon').style.display = 'block';
                 document.getElementById('playIcon').style.display = 'none';
             } else {
-                // Pause the video - show play button
                 video.pause();
                 if (btn) btn.classList.add('paused');
                 isPlaying = false;
@@ -1987,68 +822,126 @@
             }
         }
 
-        // Keyboard navigation
-        const videoSections = document.querySelectorAll('.video-section');
-        let currentIndex = 0;
+        function togglePlayStop() {
+            if (!currentVideoId) return;
+            toggleVideo(currentVideoId);
+        }
 
-        // Keyboard navigation - works within current tab
-        document.addEventListener('keydown', (e) => {
-            // Get sections from current tab
-            const currentTabContent = tabContents[currentTab];
-            if (!currentTabContent) return;
+        function toggleSound() {
+            isMuted = !isMuted;
+            updateMuteUI();
 
-            const sections = currentTabContent.querySelectorAll('.grid-section, .video-section');
-
-            if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
-                e.preventDefault();
-                if (currentIndex < sections.length - 1) {
-                    currentIndex++;
-                    sections[currentIndex].scrollIntoView({ behavior: 'smooth' });
-                }
-            } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
-                e.preventDefault();
-                if (currentIndex > 0) {
-                    currentIndex--;
-                    sections[currentIndex].scrollIntoView({ behavior: 'smooth' });
-                }
-            }
-        });
-
-        // Keep currentIndex in sync with scroll for each tab
-        document.querySelectorAll('.video-container').forEach(container => {
-            container.addEventListener('scroll', () => {
-                const scrollTop = container.scrollTop;
-                const sectionHeight = window.innerHeight;
-                currentIndex = Math.round(scrollTop / sectionHeight);
-            });
-        });
-
-        // All sections including grid (for reference)
-        const allSections = document.querySelectorAll('.grid-section, .video-section');
-
-        // Go to grid/video from grid (works within current tab)
-        function goToVideo(index, tabIndex) {
-            // If tabIndex is provided, switch to that tab first
-            if (tabIndex !== undefined && tabIndex !== currentTab) {
-                switchTab(tabIndex);
-                // Wait for tab switch animation before scrolling
-                setTimeout(() => {
-                    scrollToSection(index, tabIndex);
-                }, 100);
-            } else {
-                scrollToSection(index, currentTab);
+            if (currentVideoId) {
+                const video = document.getElementById(currentVideoId);
+                if (video) video.muted = isMuted;
             }
         }
 
-        function scrollToSection(index, tabIdx) {
-            const targetTab = tabContents[tabIdx];
-            if (!targetTab) return;
+        function updateMuteUI() {
+            const mutedIcon = document.getElementById('mutedIcon');
+            const unmutedIcon = document.getElementById('unmutedIcon');
+            const btnText = document.getElementById('soundBtnText');
 
-            const sections = targetTab.querySelectorAll('.grid-section, .video-section');
+            if (isMuted) {
+                mutedIcon.style.display = 'block';
+                unmutedIcon.style.display = 'none';
+                btnText.textContent = 'Unmute';
+            } else {
+                mutedIcon.style.display = 'none';
+                unmutedIcon.style.display = 'block';
+                btnText.textContent = 'Mute';
+            }
+        }
+
+        // --- Navigation Functions ---
+
+        function switchTab(index) {
+            if (index === currentTab) return;
+
+            // Pause current video
+            if (currentVideoId) {
+                pauseVideo(currentVideoId);
+                /* Also reset current video to grid? user usually prefers that */
+            }
+
+            // Update UI
+            document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+                btn.classList.toggle('active', i === index);
+            });
+
+            // Slide content
+            tabsContainer.style.transform = `translateX(-${index * 100}vw)`;
+
+            // Update state
+            currentTab = index;
+
+            // Update BG to the grid of new tab (simple logic)
+            if (videosData && videosData.tabs[index]) {
+                bgLayer.style.backgroundColor = videosData.tabs[index].videos[0].bgColor;
+            }
+
+            // Scroll new tab to top
+            const newTab = document.getElementById(`tab-${videosData.tabs[index].id}`);
+            if (newTab) {
+                const container = newTab.querySelector('.video-container');
+                if (container) container.scrollTop = 0;
+            }
+        }
+
+        function goToVideo(index, tabIndex) {
+            if (tabIndex !== undefined && tabIndex !== currentTab) {
+                switchTab(tabIndex);
+                setTimeout(() => scrollToVideo(index, tabIndex), 500); // wait for slide
+            } else {
+                scrollToVideo(index, currentTab);
+            }
+        }
+
+        function scrollToVideo(index, tabIdx) {
+            const tabData = videosData.tabs[tabIdx];
+            if (!tabData) return;
+
+            const tabEl = document.getElementById(`tab-${tabData.id}`);
+            const sections = tabEl.querySelectorAll('.video-section, .grid-section');
+            // index 0 is grid, 1 is first video... 
+            // The grid item click passes 1 for first video. 
+            // Selector query includes grid section first.
             if (sections[index]) {
                 sections[index].scrollIntoView({ behavior: 'smooth' });
             }
         }
+
+        let scrollTimeout;
+        function handleScroll(e) {
+            // Optional: Debounce or logic to sync things if needed
+        }
+
+        // Keyboard Navigation
+        document.addEventListener('keydown', (e) => {
+            const tabData = videosData.tabs[currentTab];
+            const tabEl = document.getElementById(`tab-${tabData.id}`);
+            const container = tabEl.querySelector('.video-container');
+            const sectionHeight = window.innerHeight;
+
+            let currentScrollIndex = Math.round(container.scrollTop / sectionHeight);
+            const totalSections = tabData.videos.length + 1; // +1 for grid
+
+            if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+                if (currentScrollIndex < totalSections - 1) {
+                    currentScrollIndex++;
+                    scrollToVideo(currentScrollIndex, currentTab);
+                }
+            } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+                if (currentScrollIndex > 0) {
+                    currentScrollIndex--;
+                    scrollToVideo(currentScrollIndex, currentTab);
+                }
+            }
+        });
+
+        // Initialize
+        initApp();
+
     </script>
 </body>
 

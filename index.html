@@ -99,6 +99,65 @@
             pointer-events: none;
         }
 
+        /* R2/HTML5 video - scale to fill vertical 9:16 frame */
+        .r2-video .video-frame video {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: 100%;
+            object-fit: cover;
+            cursor: pointer;
+        }
+
+        /* R2 video play button overlay - matches control bar style */
+        .r2-video .video-frame .r2-play-btn {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Only show button when paused */
+        .r2-video .video-frame .r2-play-btn.paused {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .r2-video .video-frame .r2-play-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%) scale(1.05);
+        }
+
+        .r2-play-btn svg {
+            width: 28px;
+            height: 28px;
+            margin-left: 3px;
+        }
+
+        .r2-play-btn svg polygon {
+            fill: white;
+        }
+
         /* Decorative stickers */
         .sticker {
             position: absolute;
@@ -1301,7 +1360,7 @@
 
                     <div class="grid-container">
                         <div class="grid-item" onclick="goToVideo(1, 3)">
-                            <img src="https://img.youtube.com/vi/9bZkp7q19f0/maxresdefault.jpg" alt="Video 1">
+                            <img src="https://vumbnail.com/1153280345.jpg" alt="Video 1">
                             <span class="video-number">1</span>
                         </div>
                         <div class="grid-item" onclick="goToVideo(2, 3)">
@@ -1319,8 +1378,8 @@
                     </div>
                 </div>
 
-                <!-- Tab 4 Video 1 - Gangnam Style -->
-                <div class="video-section" data-video-id="9bZkp7q19f0" data-bg-color="#4a3a2a">
+                <!-- Tab 4 Video 1 - Sakleshpur (R2 hosted) -->
+                <div class="video-section r2-video" data-bg-color="#4a3a2a">
                     <div class="info-bar left">
                         <div class="info-line long"></div>
                         <div class="info-line short"></div>
@@ -1333,8 +1392,17 @@
                     </div>
                     <div class="sticker sticker-heart">🧡</div>
                     <div class="sticker sticker-sparkle">✨</div>
-                    <div class="video-frame">
-                        <div id="t4p1"></div>
+                    <div class="video-frame" onclick="toggleR2Video('t4p1-r2')">
+                        <video id="t4p1-r2"
+                            src="https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4" loop muted
+                            playsinline preload="auto">
+                        </video>
+                        <div class="r2-play-btn" id="r2-btn-t4p1-r2"
+                            onclick="event.stopPropagation(); toggleR2Video('t4p1-r2')">
+                            <svg viewBox="0 0 24 24">
+                                <polygon points="8,5 19,12 8,19" />
+                            </svg>
+                        </div>
                     </div>
                     <div class="info-bar right">
                         <div class="info-group">
@@ -1581,7 +1649,12 @@
         // Initialize YouTube Players
         function onYouTubeIframeAPIReady() {
             document.querySelectorAll('.video-section').forEach((section) => {
+                // Skip R2/HTML5 video sections
+                if (section.classList.contains('r2-video')) return;
+
                 const videoId = section.getAttribute('data-video-id');
+                if (!videoId) return; // Skip if no video ID
+
                 const playerDiv = section.querySelector('.video-frame > div');
                 if (!playerDiv || !playerDiv.id) return;
 
@@ -1638,6 +1711,28 @@
             }
         }
 
+        // R2/HTML5 Video Players
+        let r2Videos = {};
+        let r2VideosReady = {};
+
+        // Initialize R2 video players
+        function initR2Videos() {
+            document.querySelectorAll('.r2-video').forEach((section) => {
+                const video = section.querySelector('video');
+                if (!video || !video.id) return;
+
+                const videoId = video.id;
+                r2Videos[videoId] = video;
+                r2VideosReady[videoId] = true;
+
+                // Observe this section
+                observer.observe(section);
+            });
+        }
+
+        // Initialize R2 videos after observer is ready
+        setTimeout(initR2Videos, 100);
+
         // Unified Intersection Observer for all sections (grid + videos)
         const gridBtn = document.getElementById('gridBtn');
         const controlBar = document.querySelector('.control-bar');
@@ -1671,33 +1766,62 @@
 
                     // Video-specific logic
                     if (!isGridSection) {
-                        const iframe = entry.target.querySelector('iframe');
-                        if (!iframe) return;
+                        const isR2Video = entry.target.classList.contains('r2-video');
 
-                        const playerId = iframe.id;
-                        const player = players[playerId];
+                        // Handle R2/HTML5 videos
+                        if (isR2Video) {
+                            const video = entry.target.querySelector('video');
+                            if (!video || !video.id) return;
 
-                        if (!player || !playersReady[playerId]) return;
+                            const videoId = video.id;
+                            if (r2Videos[videoId] && r2VideosReady[videoId]) {
+                                currentPlayerId = videoId;
 
-                        try {
-                            currentPlayerId = playerId;
+                                // Reset play state and button
+                                isPlaying = true;
+                                document.getElementById('pauseIcon').style.display = 'block';
+                                document.getElementById('playIcon').style.display = 'none';
 
-                            // Reset play state and button
-                            isPlaying = true;
-                            document.getElementById('pauseIcon').style.display = 'block';
-                            document.getElementById('playIcon').style.display = 'none';
+                                // Play the video
+                                video.currentTime = 0;
+                                video.play();
 
-                            player.seekTo(0);
-                            player.playVideo();
-
-                            if (!isMuted) {
-                                player.unMute();
-                                player.setVolume(100);
-                            } else {
-                                player.mute();
+                                if (!isMuted) {
+                                    video.muted = false;
+                                } else {
+                                    video.muted = true;
+                                }
                             }
-                        } catch (e) {
-                            console.log('Player not ready yet:', playerId);
+                        } else {
+                            // Handle YouTube videos
+                            const iframe = entry.target.querySelector('iframe');
+                            if (!iframe) return;
+
+                            const playerId = iframe.id;
+                            const player = players[playerId];
+
+                            if (!player || !playersReady[playerId]) return;
+
+                            try {
+                                currentPlayerId = playerId;
+
+                                // Reset play state and button
+                                isPlaying = true;
+                                document.getElementById('pauseIcon').style.display = 'block';
+                                document.getElementById('playIcon').style.display = 'none';
+
+                                player.seekTo(0);
+                                player.playVideo();
+
+                                if (!isMuted) {
+                                    player.unMute();
+                                    player.setVolume(100);
+                                } else {
+                                    player.mute();
+                                }
+                            } catch (e) {
+                                console.log('Player not ready yet:', playerId);
+                            }
                         }
                     }
                 } else {
@@ -1705,19 +1829,30 @@
 
                     // Video-specific cleanup
                     if (!isGridSection) {
-                        const iframe = entry.target.querySelector('iframe');
-                        if (!iframe) return;
+                        const isR2Video = entry.target.classList.contains('r2-video');
 
-                        const playerId = iframe.id;
-                        const player = players[playerId];
+                        if (isR2Video) {
+                            // Pause R2/HTML5 video
+                            const video = entry.target.querySelector('video');
+                            if (video) {
+                                video.pause();
+                                video.muted = true;
+                            }
+                        } else {
+                            // Stop YouTube video
+                            const iframe = entry.target.querySelector('iframe');
+                            if (!iframe) return;
 
-                        if (player && playersReady[playerId]) {
-                            try {
-                                const videoId = entry.target.getAttribute('data-video-id');
-                                player.cueVideoById(videoId);
-                                player.mute();
-                            } catch (e) {
-                                console.log('Player not ready yet:', playerId);
+                            const playerId = iframe.id;
+                            const player = players[playerId];
+                            if (player && playersReady[playerId]) {
+                                try {
+                                    const videoId = entry.target.getAttribute('data-video-id');
+                                    player.cueVideoById(videoId);
+                                    player.mute();
+                                } catch (e) {
+                                    console.log('Player not ready yet:', playerId);
+                                }
                             }
                         }
                     }
@@ -1730,11 +1865,11 @@
             observer.observe(gridSection);
         });
 
-        // Sound toggle
         function toggleSound() {
             isMuted = !isMuted;
 
             const currentPlayer = players[currentPlayerId];
+            const r2Video = r2Videos[currentPlayerId];
             const mutedIcon = document.getElementById('mutedIcon');
             const unmutedIcon = document.getElementById('unmutedIcon');
             const btnText = document.getElementById('soundBtnText');
@@ -1742,6 +1877,8 @@
             if (isMuted) {
                 if (currentPlayer && playersReady[currentPlayerId]) {
                     currentPlayer.mute();
+                } else if (r2Video && r2VideosReady[currentPlayerId]) {
+                    r2Video.muted = true;
                 }
                 mutedIcon.style.display = 'block';
                 unmutedIcon.style.display = 'none';
@@ -1750,6 +1887,8 @@
                 if (currentPlayer && playersReady[currentPlayerId]) {
                     currentPlayer.unMute();
                     currentPlayer.setVolume(100);
+                } else if (r2Video && r2VideosReady[currentPlayerId]) {
+                    r2Video.muted = false;
                 }
                 mutedIcon.style.display = 'none';
                 unmutedIcon.style.display = 'block';
@@ -1762,64 +1901,129 @@
 
         function togglePlayStop() {
             const currentPlayer = players[currentPlayerId];
+            const r2Video = r2Videos[currentPlayerId];
             const pauseIcon = document.getElementById('pauseIcon');
             const playIcon = document.getElementById('playIcon');
 
             // Get the current video section to access video ID
             const currentSection = document.querySelector('.video-section.active');
+            if (!currentSection) return;
 
-            if (!currentPlayer || !playersReady[currentPlayerId] || !currentSection) return;
+            const isR2Video = currentSection.classList.contains('r2-video');
 
-            if (isPlaying) {
-                // Stop video completely to avoid related videos UI
-                const videoId = currentSection.getAttribute('data-video-id');
-                currentPlayer.cueVideoById(videoId);
-                currentPlayer.mute();
-                pauseIcon.style.display = 'none';
-                playIcon.style.display = 'block';
-            } else {
-                // Play from start
-                currentPlayer.seekTo(0);
-                currentPlayer.playVideo();
-                if (!isMuted) {
-                    currentPlayer.unMute();
-                    currentPlayer.setVolume(100);
+            if (isR2Video) {
+                if (!r2Video || !r2VideosReady[currentPlayerId]) return;
+
+                if (isPlaying) {
+                    r2Video.pause();
+                    pauseIcon.style.display = 'none';
+                    playIcon.style.display = 'block';
+                } else {
+                    r2Video.play();
+                    if (!isMuted) {
+                        r2Video.muted = false;
+                    }
+                    pauseIcon.style.display = 'block';
+                    playIcon.style.display = 'none';
                 }
-                pauseIcon.style.display = 'block';
-                playIcon.style.display = 'none';
+            } else {
+                if (!currentPlayer || !playersReady[currentPlayerId]) return;
+
+                if (isPlaying) {
+                    // Stop video completely to avoid related videos UI
+                    const videoId = currentSection.getAttribute('data-video-id');
+                    currentPlayer.cueVideoById(videoId);
+                    currentPlayer.mute();
+                    pauseIcon.style.display = 'none';
+                    playIcon.style.display = 'block';
+                } else {
+                    // Play from start
+                    currentPlayer.seekTo(0);
+                    currentPlayer.playVideo();
+                    if (!isMuted) {
+                        currentPlayer.unMute();
+                        currentPlayer.setVolume(100);
+                    }
+                    pauseIcon.style.display = 'block';
+                    playIcon.style.display = 'none';
+                }
             }
             isPlaying = !isPlaying;
+        }
+
+        // R2 video click to play/pause (also unmutes on first interaction)
+        let r2FirstInteraction = {};
+
+        function toggleR2Video(videoId) {
+            const video = document.getElementById(videoId);
+            const btn = document.getElementById('r2-btn-' + videoId);
+            if (!video) return;
+
+            // First interaction - unmute the video
+            if (!r2FirstInteraction[videoId]) {
+                r2FirstInteraction[videoId] = true;
+                video.muted = false;
+                isMuted = false;
+                // Update global mute button
+                document.getElementById('mutedIcon').style.display = 'none';
+                document.getElementById('unmutedIcon').style.display = 'block';
+                document.getElementById('soundBtnText').textContent = 'Mute';
+            }
+
+            if (video.paused) {
+                // Play the video
+                video.play();
+                if (btn) btn.classList.remove('paused');
+                isPlaying = true;
+                document.getElementById('pauseIcon').style.display = 'block';
+                document.getElementById('playIcon').style.display = 'none';
+            } else {
+                // Pause the video - show play button
+                video.pause();
+                if (btn) btn.classList.add('paused');
+                isPlaying = false;
+                document.getElementById('pauseIcon').style.display = 'none';
+                document.getElementById('playIcon').style.display = 'block';
+            }
         }
 
         // Keyboard navigation
         const videoSections = document.querySelectorAll('.video-section');
         let currentIndex = 0;
 
+        // Keyboard navigation - works within current tab
         document.addEventListener('keydown', (e) => {
+            // Get sections from current tab
+            const currentTabContent = tabContents[currentTab];
+            if (!currentTabContent) return;
+
+            const sections = currentTabContent.querySelectorAll('.grid-section, .video-section');
+
             if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
                 e.preventDefault();
-                if (currentIndex < allSections.length - 1) {
+                if (currentIndex < sections.length - 1) {
                     currentIndex++;
-                    allSections[currentIndex].scrollIntoView({ behavior: 'smooth' });
+                    sections[currentIndex].scrollIntoView({ behavior: 'smooth' });
                 }
             } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
                 e.preventDefault();
                 if (currentIndex > 0) {
                     currentIndex--;
-                    allSections[currentIndex].scrollIntoView({ behavior: 'smooth' });
+                    sections[currentIndex].scrollIntoView({ behavior: 'smooth' });
                 }
             }
         });
 
-        // Keep currentIndex in sync with scroll
-        const feed = document.getElementById('feed');
-        feed.addEventListener('scroll', () => {
-            const scrollTop = feed.scrollTop;
-            const sectionHeight = window.innerHeight;
-            currentIndex = Math.round(scrollTop / sectionHeight);
+        // Keep currentIndex in sync with scroll for each tab
+        document.querySelectorAll('.video-container').forEach(container => {
+            container.addEventListener('scroll', () => {
+                const scrollTop = container.scrollTop;
+                const sectionHeight = window.innerHeight;
+                currentIndex = Math.round(scrollTop / sectionHeight);
+            });
         });
 
-        // All sections including grid
+        // All sections including grid (for reference)
         const allSections = document.querySelectorAll('.grid-section, .video-section');
 
         // Go to grid/video from grid (works within current tab)

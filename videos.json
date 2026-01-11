@@ -7,6 +7,7 @@
                 {
                     "id": "t1v1",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
+                    "thumbnail": "https://placehold.co/360x640/1a1a2e/FFF?text=HueRex",
                     "bgColor": "#1a1a2e",
                     "title": "HueRex",
                     "description": "Streamline your creative workflow by editing hue, saturation, and brightness across any selection instantly. Whether you need to shift every color at once, target specific hue groups, or organize visible swatches, this tool eliminates the manual hassle of updating individual elements.",
@@ -25,6 +26,7 @@
                 {
                     "id": "t1v2",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
+                    "thumbnail": "https://placehold.co/360x640/16213e/FFF?text=Zeta",
                     "bgColor": "#16213e",
                     "title": "Project Zeta",
                     "description": "An experimental interface exploring deep sea biomes through interactive data visualization.",
@@ -39,6 +41,7 @@
                 {
                     "id": "t1v3",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
+                    "thumbnail": "https://placehold.co/360x640/0f3460/FFF?text=Neon",
                     "bgColor": "#0f3460",
                     "title": "Neon Dreams",
                     "description": "Cyberpunk aesthetic study using CSS-only lighting effects and motion blur.",
@@ -52,6 +55,7 @@
                 {
                     "id": "t1v4",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
+                    "thumbnail": "https://placehold.co/360x640/533483/FFF?text=Purple",
                     "bgColor": "#533483",
                     "title": "Purple Haze",
                     "description": "Atmospheric motion graphics designed for lofi hip hop radio backgrounds.",
@@ -60,6 +64,7 @@
                 {
                     "id": "t1v5",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
+                    "thumbnail": "https://placehold.co/360x640/1a1a2e/FFF?text=Night",
                     "bgColor": "#1a1a2e",
                     "title": "Night Shift",
                     "description": "Dark mode dashboard prototype with focus on accessibility and contrast.",
@@ -68,6 +73,7 @@
                 {
                     "id": "t1v6",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
+                    "thumbnail": "https://placehold.co/360x640/16213e/FFF?text=Deep",
                     "bgColor": "#16213e",
                     "title": "Deep Dive",
                     "description": "Immersive scrolling experience telling the story of ocean exploration.",
@@ -76,6 +82,7 @@
                 {
                     "id": "t1v7",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
+                    "thumbnail": "https://placehold.co/360x640/0f3460/FFF?text=Void",
                     "bgColor": "#0f3460",
                     "title": "Void",
                     "description": "Minimalist portfolio concept using negative space as a primary design element.",
@@ -84,6 +91,7 @@
                 {
                     "id": "t1v8",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
+                    "thumbnail": "https://placehold.co/360x640/533483/FFF?text=Synth",
                     "bgColor": "#533483",
                     "title": "Synthwave",
                     "description": "Retro-futuristic UI kit inspired by 80s arcade games and music visualization.",
@@ -92,6 +100,7 @@
                 {
                     "id": "t1v9",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
+                    "thumbnail": "https://placehold.co/360x640/1a1a2e/FFF?text=Eclipse",
                     "bgColor": "#1a1a2e",
                     "title": "Eclipse",
                     "description": "Solar system simulation focusing on orbital mechanics and lighting.",
@@ -100,6 +109,7 @@
                 {
                     "id": "t1v10",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
+                    "thumbnail": "https://placehold.co/360x640/16213e/FFF?text=Obscura",
                     "bgColor": "#16213e",
                     "title": "Obscura",
                     "description": "Photography portfolio showcasing black and white architectural shots.",
@@ -114,6 +124,7 @@
                 {
                     "id": "t2v1",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
+                    "thumbnail": "https://placehold.co/360x640/2c3e50/FFF?text=Mountain",
                     "bgColor": "#2c3e50",
                     "title": "Mountain Trek",
                     "description": "Documentation of a 3-day hike through the Alps.",
@@ -122,6 +133,7 @@
                 {
                     "id": "t2v2",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
+                    "thumbnail": "https://placehold.co/360x640/34495e/FFF?text=City",
                     "bgColor": "#34495e",
                     "title": "City Lights",
                     "description": "Urban photography series capturing the city at night.",
@@ -130,6 +142,7 @@
                 {
                     "id": "t2v3",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
+                    "thumbnail": "https://placehold.co/360x640/2c3e50/FFF?text=Forest",
                     "bgColor": "#2c3e50",
                     "title": "Forest",
                     "description": "Cinematic B-roll from a weekend camping trip.",
@@ -138,6 +151,7 @@
                 {
                     "id": "t2v4",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
+                    "thumbnail": "https://placehold.co/360x640/34495e/FFF?text=River",
                     "bgColor": "#34495e",
                     "title": "River Flow",
                     "description": "Slow motion study of water dynamics.",
@@ -152,6 +166,7 @@
                 {
                     "id": "t3v1",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
+                    "thumbnail": "https://placehold.co/360x640/27ae60/FFF?text=Garden",
                     "bgColor": "#27ae60",
                     "title": "Garden Diary",
                     "description": "Weekly progress of my vegetable garden.",
@@ -160,6 +175,7 @@
                 {
                     "id": "t3v2",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
+                    "thumbnail": "https://placehold.co/360x640/2ecc71/FFF?text=Cooking",
                     "bgColor": "#2ecc71",
                     "title": "Cooking Vlog",
                     "description": "Trying out a new pasta recipe.",
@@ -168,6 +184,7 @@
                 {
                     "id": "t3v3",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
+                    "thumbnail": "https://placehold.co/360x640/27ae60/FFF?text=Road",
                     "bgColor": "#27ae60",
                     "title": "Road Trip",
                     "description": "Highlights from a cross-country drive.",
@@ -176,6 +193,7 @@
                 {
                     "id": "t3v4",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
+                    "thumbnail": "https://placehold.co/360x640/2ecc71/FFF?text=Morning",
                     "bgColor": "#2ecc71",
                     "title": "Morning Routine",
                     "description": "My daily start to a productive day.",
@@ -189,15 +207,18 @@
             "videos": [
                 {
                     "id": "t4v1",
-                    "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
-                    "bgColor": "#e67e22",
+                    "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/Sakleshpur_handbrake.mp4",
+                    "thumbnail": "https://placehold.co/640x360/08350b/FFF?text=Echo",
+                    "bgColor": "#08350b",
                     "title": "Short Film: Echo",
-                    "description": "A sci-fi short about memory and loss.",
+                    "description": "this is the first video i made using my new camera FUJIFILM XS-20",
+                    "isLandscape": true,
                     "comments": []
                 },
                 {
                     "id": "t4v2",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
+                    "thumbnail": "https://placehold.co/360x640/d35400/FFF?text=Doc",
                     "bgColor": "#d35400",
                     "title": "Documentary",
                     "description": "Interview with a local artisan.",
@@ -206,6 +227,7 @@
                 {
                     "id": "t4v3",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
+                    "thumbnail": "https://placehold.co/360x640/e67e22/FFF?text=Animation",
                     "bgColor": "#e67e22",
                     "title": "Animation",
                     "description": "Stop motion experiment with clay.",
@@ -214,6 +236,7 @@
                 {
                     "id": "t4v4",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
+                    "thumbnail": "https://placehold.co/360x640/d35400/FFF?text=Music",
                     "bgColor": "#d35400",
                     "title": "Music Video",
                     "description": "Unofficial video for a favorite track.",

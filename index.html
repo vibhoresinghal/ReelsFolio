@@ -77,7 +77,62 @@
             box-shadow: 0 clamp(15px, 3vh, 25px) clamp(40px, 8vh, 80px) rgba(0, 0, 0, 0.4);
             opacity: 0.2;
             transform: scale(0.9);
-            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+        }
+
+        /* Landscape modification */
+        /* Landscape modification */
+        /* Landscape modification */
+        .video-section.landscape-mode {
+            justify-content: center;
+            /* Center horizontally */
+        }
+
+        .video-section.landscape-mode .video-frame {
+            aspect-ratio: 16/9;
+            /* Constrain height to leave vertical space for text below */
+            width: min(85vw, calc(65vh * 16 / 9));
+            border-radius: 12px;
+            margin-right: 0;
+            margin-bottom: 5vh;
+            /* Push up slightly to give even more room at bottom */
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Landscape Mode Text Layout - Bottom Left (No overlap) */
+        /* Landscape Mode Text Layout - Centered Below */
+        .video-section.landscape-mode .content-info-left {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: clamp(70px, 12vh, 100px);
+            top: auto;
+            width: 90vw;
+            max-width: 800px;
+            text-align: center;
+            text-shadow: none;
+        }
+
+        .video-section.landscape-mode .content-desc {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: clamp(14px, 1.5vw, 16px);
+            font-weight: 500;
+            font-style: italic;
+            margin: 0;
+            display: inline-block;
+        }
+
+        /* Add quotes via CSS */
+        .video-section.landscape-mode .content-desc::before {
+            content: "“ ";
+        }
+
+        .video-section.landscape-mode .content-desc::after {
+            content: " ”";
+        }
+
+        /* Hide title in landscape mode */
+        .video-section.landscape-mode .content-title {
+            display: none;
         }
 
         .video-section.active .video-frame {
@@ -721,6 +776,7 @@
         let observer = null;
         let currentVideoId = null;
         let videosReady = {};
+        let isScrolling = false;
 
 
         // DOM Elements
@@ -759,10 +815,8 @@
                         <div class="grid-section ${tabIndex === 0 ? 'active' : ''}" data-bg-color="${tab.videos[0].bgColor}">
                             <div class="grid-container">
                                 ${tab.videos.map((video, vIndex) => `
-                                    <div class="grid-item" onclick="goToVideo(${vIndex + 1}, ${tabIndex})" 
-                                         onmouseenter="this.querySelector('video').play()" 
-                                         onmouseleave="this.querySelector('video').pause(); this.querySelector('video').currentTime = 0;">
-                                        <video src="${video.src}#t=0.1" muted playsinline preload="metadata" style="width: 100%; height: 100%; object-fit: cover;"></video>
+                                    <div class="grid-item" onclick="goToVideo(${vIndex + 1}, ${tabIndex})">
+                                        <img src="${video.thumbnail || 'https://placehold.co/360x640/png?text=Thumbnail'}" style="width: 100%; height: 100%; object-fit: cover;" draggable="false" />
                                         <span class="video-number">${vIndex + 1}</span>
                                     </div>
                                 `).join('')}
@@ -771,7 +825,7 @@
 
                         <!-- Video Sections -->
                         ${tab.videos.map(video => `
-                            <div class="video-section video-section-r2" data-video-id="${video.id}" data-bg-color="${video.bgColor}">
+                            <div class="video-section video-section-r2 ${video.isLandscape ? 'landscape-mode' : ''}" data-video-id="${video.id}" data-bg-color="${video.bgColor}">
                                 
                                 <!-- New Left Content: Title & Desc -->
                                 <div class="content-info-left">
@@ -1056,25 +1110,53 @@
         }
 
         // Keyboard Navigation
-        document.addEventListener('keydown', (e) => {
+        // Unified Navigation Logic
+        function navigate(direction) {
+            if (isScrolling) return;
+
             const tabData = videosData.tabs[currentTab];
             const tabEl = document.getElementById(`tab-${tabData.id}`);
             const container = tabEl.querySelector('.video-container');
             const sectionHeight = window.innerHeight;
 
+            // Calculate current index based on scroll position
             let currentScrollIndex = Math.round(container.scrollTop / sectionHeight);
             const totalSections = tabData.videos.length + 1; // +1 for grid
 
+            let newIndex = currentScrollIndex + direction;
+
+            // Boundary checks
+            if (newIndex >= 0 && newIndex < totalSections) {
+                isScrolling = true;
+                scrollToVideo(newIndex, currentTab);
+
+                // Cooldown to prevent rapid scrolling/double jumps
+                // Match this roughly with the CSS scroll duration
+                setTimeout(() => {
+                    isScrolling = false;
+                }, 800);
+            }
+        }
+
+        // Wheel/Mouse Navigation
+        document.addEventListener('wheel', (e) => {
+            // Prevent default scrolling to handle it manually (smooth feel)
+            e.preventDefault();
+
+            // Threshold to avoid super sensitive trackpads triggering too easily
+            // though preventing default mostly handles it, a threshold helps intention.
+            if (Math.abs(e.deltaY) < 10) return;
+
+            const direction = e.deltaY > 0 ? 1 : -1;
+            navigate(direction);
+        }, { passive: false });
+
+        // Keyboard Navigation
+        document.addEventListener('keydown', (e) => {
             if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
-                if (currentScrollIndex < totalSections - 1) {
-                    currentScrollIndex++;
-                    scrollToVideo(currentScrollIndex, currentTab);
-                }
+                navigate(1);
             } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
-                if (currentScrollIndex > 0) {
-                    currentScrollIndex--;
-                    scrollToVideo(currentScrollIndex, currentTab);
-                }
+                navigate(-1);
             }
         });
 

@@ -253,7 +253,118 @@
             gap: clamp(8px, 1.2vw, 12px);
         }
 
-        /* Toggle button design */
+        /* NEW: Left Info Section (Title + Desc) */
+        .content-info-left {
+            position: absolute;
+            left: calc(50% - min(650px, 48vw));
+            top: 50%;
+            transform: translateY(-50%) translateX(-50px);
+            width: clamp(250px, 25vw, 350px);
+            opacity: 0;
+            transition: all 0.6s ease-out 0.2s;
+            text-align: left;
+            pointer-events: none;
+            /* Let clicks pass through if needed */
+            z-index: 10;
+        }
+
+        .video-section.active .content-info-left {
+            opacity: 1;
+            transform: translateY(-50%) translateX(0);
+        }
+
+        /* Based on design: Description first, then Title */
+        .content-desc {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: clamp(12px, 1.2vw, 14px);
+            line-height: 1.5;
+            margin-bottom: clamp(12px, 2vh, 20px);
+            font-weight: 400;
+        }
+
+        .content-title {
+            color: white;
+            font-size: clamp(36px, 4.5vw, 56px);
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+        }
+
+        /* NEW: Right Info Section (Comments) */
+        .content-info-right {
+            position: absolute;
+            right: calc(50% - min(650px, 48vw));
+            top: 40%;
+            /* Positioned slightly higher to match design */
+            transform: translateY(-50%) translateX(50px);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            opacity: 0;
+            transition: all 0.6s ease-out 0.4s;
+            z-index: 10;
+        }
+
+        .video-section.active .content-info-right {
+            opacity: 1;
+            transform: translateY(-50%) translateX(0);
+        }
+
+        .comment-pill {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 12px 16px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            max-width: 280px;
+            color: white;
+            font-size: 13px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        /* Stagger animation for multiple comments */
+        .comment-pill:nth-child(2) {
+            animation-delay: 1s;
+        }
+
+        .comment-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 16px;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        /* Hide new decorative info on small screens */
+        @media (max-width: 1024px) {
+
+            .content-info-left,
+            .content-info-right {
+                display: none;
+            }
+        }
+
         .toggle-btn {
             display: flex;
             align-items: center;
@@ -658,10 +769,11 @@
                         <!-- Video Sections -->
                         ${tab.videos.map(video => `
                             <div class="video-section video-section-r2" data-video-id="${video.id}" data-bg-color="${video.bgColor}">
-                                <div class="info-bar left">
-                                    <div class="info-line long"></div>
-                                    <div class="info-line medium"></div>
-                                    <div class="info-line short"></div>
+                                
+                                <!-- New Left Content: Title & Desc -->
+                                <div class="content-info-left">
+                                    ${video.description ? `<p class="content-desc">${video.description}</p>` : ''}
+                                    ${video.title ? `<h2 class="content-title">${video.title}</h2>` : ''}
                                 </div>
 
                                 <div class="sticker sticker-star">
@@ -679,19 +791,18 @@
                                     </div>
                                 </div>
 
-                                <div class="info-bar right">
-                                    <div class="info-group">
-                                        <div class="info-dot"></div>
-                                        <div>
-                                            <div class="info-line short" style="margin-bottom: 6px;"></div>
-                                            <div class="info-line long"></div>
+                                <!-- New Right Content: Comments bubbles -->
+                                <div class="content-info-right">
+                                    ${video.comments ? video.comments.map(comment => `
+                                        <div class="comment-pill">
+                                            <div class="comment-icon" style="background: ${comment.type === 'avatar' ? (comment.avatarColor || '#3498db') : 'rgba(255,255,255,0.2)'}">
+                                                ${comment.type === 'heart' ? '❤️' : (comment.type === 'fire' ? '🔥' : '')}
+                                            </div>
+                                            <span>${comment.text}</span>
                                         </div>
-                                    </div>
-                                    <div class="toggle-btn">
-                                        <div class="line"></div>
-                                        <div class="circle"></div>
-                                    </div>
+                                    `).join('') : ''}
                                 </div>
+
                             </div>
                         `).join('')}
                     </div>

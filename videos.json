@@ -212,7 +212,7 @@
                 {
                     "id": "t4v1",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/Sakleshpur_handbrake.mp4",
-                    "thumbnail": "thumbnails/sakleshpur.png",
+                    "thumbnail": "Thumbnails/sakleshpur.png",
                     "bgColor": "#08350b",
                     "title": "A Weekend in Sakleshpur",
                     "description": "this is the first video i made using my new camera FUJIFILM XS-20",
@@ -222,7 +222,7 @@
                 {
                     "id": "t4v2",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/Delhi%20in%20a%20lapse.mp4",
-                    "thumbnail": "thumbnails/Delhi.png",
+                    "thumbnail": "Thumbnails/Delhi.png",
                     "bgColor": "#213E47",
                     "title": "Delhi in a lapse",
                     "description": "My first video ever",
@@ -232,7 +232,7 @@
                 {
                     "id": "t4v3",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/Leh_2018_16-9.mp4",
-                    "thumbnail": "thumbnails/Ladakh.png",
+                    "thumbnail": "Thumbnails/Ladakh.png",
                     "bgColor": "#2C435F",
                     "title": "Ladakh 2018",
                     "description": "That one college trip",

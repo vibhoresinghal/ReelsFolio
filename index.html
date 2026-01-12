@@ -53,10 +53,102 @@
             height: 100vh;
             width: 100vw;
             scroll-snap-align: center;
+            scroll-snap-stop: always;
+            /* Prevent skipping sections */
             display: flex;
             align-items: center;
             justify-content: center;
             position: relative;
+        }
+
+        /* Hero Landing Section */
+        .hero-section {
+            height: 100vh;
+            width: 100vw;
+            scroll-snap-align: center;
+            scroll-snap-stop: always;
+            /* Prevent skipping sections */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-video-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.25;
+            z-index: -1;
+        }
+
+        .hero-content {
+            text-align: center;
+            z-index: 10;
+        }
+
+        .hero-name {
+            font-size: clamp(48px, 10vw, 120px);
+            font-weight: 800;
+            color: white;
+            letter-spacing: -0.03em;
+            line-height: 1;
+            margin-bottom: 16px;
+        }
+
+        .hero-tagline {
+            font-size: clamp(14px, 2vw, 18px);
+            color: rgba(255, 255, 255, 0.6);
+            font-weight: 400;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: clamp(40px, 8vh, 80px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        .scroll-indicator span {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+        }
+
+        .scroll-indicator svg {
+            width: 24px;
+            height: 24px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        @keyframes bounce {
+
+            0%,
+            20%,
+            50%,
+            80%,
+            100% {
+                transform: translateY(0);
+            }
+
+            40% {
+                transform: translateY(10px);
+            }
+
+            60% {
+                transform: translateY(5px);
+            }
         }
 
         /* Video frame container - 9:16 aspect ratio (phone-like) */
@@ -607,6 +699,8 @@
             height: 100vh;
             width: 100vw;
             scroll-snap-align: center;
+            scroll-snap-stop: always;
+            /* Prevent skipping sections */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -696,6 +790,12 @@
             padding: clamp(4px, 0.8vw, 6px);
             border-radius: 50px;
             border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .tab-nav.hidden {
+            opacity: 0;
+            visibility: hidden;
         }
 
         .tab-btn {
@@ -757,6 +857,33 @@
                 overflow-y: auto;
             }
         }
+
+        /* Main scroll container for Hero → Tabs transition */
+        .main-scroll-container {
+            height: 100vh;
+            overflow-y: scroll;
+            overflow-x: hidden;
+            /* Prevent horizontal scroll */
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .main-scroll-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Tabs world container - full page section */
+        .tabs-world {
+            height: 100vh;
+            width: 100vw;
+            scroll-snap-align: start;
+            scroll-snap-stop: always;
+            position: relative;
+            overflow: hidden;
+            /* Prevent any scroll here */
+        }
     </style>
 </head>
 
@@ -764,11 +891,35 @@
     <!-- Background that transitions with each video -->
     <div class="bg-layer" id="bgLayer"></div>
 
-    <!-- Tab Navigation -->
-    <nav class="tab-nav" id="tabNav"></nav>
+    <!-- Main Vertical Scroll Container (Hero → Tabs) -->
+    <div class="main-scroll-container" id="mainScroll">
+        <!-- Hero Landing Section (Shared, Single Instance) -->
+        <div class="hero-section active" id="heroSection" data-bg-color="#0a0a0a">
+            <video class="hero-video-bg" src="https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4"
+                autoplay muted loop playsinline></video>
+            <div class="hero-content">
+                <h1 class="hero-name">Vibhore Singhal</h1>
+                <p class="hero-tagline">Creative Developer & Filmmaker</p>
+            </div>
+            <div class="scroll-indicator">
+                <span>Scroll</span>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path fill-rule="evenodd"
+                        d="M12.53 16.28a.75.75 0 01-1.06 0l-7.5-7.5a.75.75 0 011.06-1.06L12 14.69l6.97-6.97a.75.75 0 111.06 1.06l-7.5 7.5z"
+                        clip-rule="evenodd" />
+                </svg>
+            </div>
+        </div>
 
-    <!-- Horizontal Tabs Container -->
-    <div class="tabs-container" id="tabsContainer"></div>
+        <!-- Tabs World (Contains horizontal tabs + their vertical video scrollers) -->
+        <div class="tabs-world" id="tabsWorld">
+            <!-- Tab Navigation -->
+            <nav class="tab-nav hidden" id="tabNav"></nav>
+
+            <!-- Horizontal Tabs Container -->
+            <div class="tabs-container" id="tabsContainer"></div>
+        </div>
+    </div>
 
     <!-- Grid Button at Top (hidden, replaced by tabs) -->
     <button class="grid-btn hidden" id="gridBtn" onclick="goToVideo(0)">
@@ -851,7 +1002,7 @@
                 `<button class="tab-btn ${index === 0 ? 'active' : ''}" onclick="switchTab(${index})">${tab.label}</button>`
             ).join('');
 
-            // 2. Render Tabs Content
+            // 2. Render Tabs Content (No hero here - it's shared in HTML)
             tabsContainer.style.width = `${videosData.tabs.length * 100}vw`;
             tabsContainer.innerHTML = videosData.tabs.map((tab, tabIndex) => `
                 <div class="tab-content" id="tab-${tab.id}">
@@ -925,10 +1076,8 @@
                 </div>
             `).join('');
 
-            // Initialize background with first tab's first color
-            if (videosData.tabs[0] && videosData.tabs[0].videos[0]) {
-                bgLayer.style.backgroundColor = videosData.tabs[0].videos[0].bgColor;
-            }
+            // Initialize background with hero's dark color
+            bgLayer.style.backgroundColor = '#0a0a0a';
 
             // Initialize Observer
             initObserver();
@@ -937,13 +1086,32 @@
             document.querySelectorAll('.video-container').forEach(container => {
                 container.addEventListener('scroll', handleScroll);
             });
+
+            // Setup main scroll observer for hero
+            const mainScroll = document.getElementById('mainScroll');
+            mainScroll.addEventListener('scroll', () => {
+                const isOnHero = mainScroll.scrollTop < window.innerHeight * 0.5;
+                const heroSection = document.getElementById('heroSection');
+
+                if (isOnHero) {
+                    heroSection.classList.add('active');
+                    bgLayer.style.backgroundColor = '#0a0a0a';
+                    tabNav.classList.add('hidden');
+                    gridBtn.classList.add('hidden');
+                    controlBar.classList.add('hidden');
+                } else {
+                    heroSection.classList.remove('active');
+                }
+            });
         }
 
-        // Intersection Observer logic
+        // Intersection Observer logic (for grid and video sections within tabs)
         function initObserver() {
             observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     const parentTab = entry.target.closest('.tab-content');
+                    if (!parentTab) return; // Skip if not in a tab (e.g., shared hero)
+
                     // Find index of parent tab
                     const parentTabIndex = Array.from(tabsContainer.children).indexOf(parentTab);
 
@@ -962,14 +1130,16 @@
 
                         // Update UI Buttons
                         if (isGrid) {
+                            tabNav.classList.remove('hidden');
                             gridBtn.classList.add('hidden');
                             controlBar.classList.add('hidden');
                         } else {
+                            tabNav.classList.remove('hidden');
                             gridBtn.classList.remove('hidden');
                             controlBar.classList.remove('hidden');
                         }
 
-                        // Play Video if not grid
+                        // Play Video if video section
                         if (!isGrid) {
                             const videoId = entry.target.getAttribute('data-video-id');
                             playVideo(videoId);
@@ -1106,7 +1276,19 @@
             // Pause current video
             if (currentVideoId) {
                 pauseVideo(currentVideoId);
-                /* Also reset current video to grid? user usually prefers that */
+            }
+
+            // Reset scroll of the tab being left (after transition completes)
+            const oldTabData = videosData.tabs[currentTab];
+            if (oldTabData) {
+                const oldTabId = oldTabData.id;
+                setTimeout(() => {
+                    const oldTabEl = document.getElementById(`tab-${oldTabId}`);
+                    if (oldTabEl) {
+                        const oldContainer = oldTabEl.querySelector('.video-container');
+                        if (oldContainer) oldContainer.scrollTop = 0;
+                    }
+                }, 550); // Wait for transition (500ms) + small buffer
             }
 
             // Update UI
@@ -1120,17 +1302,21 @@
             // Update state
             currentTab = index;
 
-            // Update BG to the grid of new tab (simple logic)
+            // Update BG to the grid of new tab
             if (videosData && videosData.tabs[index]) {
                 bgLayer.style.backgroundColor = videosData.tabs[index].videos[0].bgColor;
             }
 
-            // Scroll new tab to top
+            // Scroll new tab to grid (index 0, grid is now first)
             const newTab = document.getElementById(`tab-${videosData.tabs[index].id}`);
             if (newTab) {
                 const container = newTab.querySelector('.video-container');
                 if (container) container.scrollTop = 0;
             }
+
+            // Ensure we're in the tabs-world, not on hero
+            const mainScroll = document.getElementById('mainScroll');
+            if (mainScroll) mainScroll.scrollTop = window.innerHeight;
         }
 
         function goToVideo(index, tabIndex) {
@@ -1190,8 +1376,13 @@
             }
         }
 
-        // Native scroll-snap handles trackpad/wheel scrolling smoothly
-        // No custom wheel handler needed - CSS scroll-snap-type: y mandatory does the work
+        // Block horizontal scroll on trackpad to prevent visual glitches
+        // (Tab switching on desktop only via clicking tab buttons)
+        document.addEventListener('wheel', (e) => {
+            if (Math.abs(e.deltaX) > Math.abs(e.deltaY) && Math.abs(e.deltaX) > 3) {
+                e.preventDefault();
+            }
+        }, { passive: false });
 
         // Keyboard Navigation
         document.addEventListener('keydown', (e) => {
@@ -1209,7 +1400,12 @@
         let touchEndY = 0;
         const minSwipeDistance = 80; // Minimum swipe distance in pixels
 
-        function isOnGridSection() {
+        function isOnGridOrHero() {
+            const mainScroll = document.getElementById('mainScroll');
+            const isOnHero = mainScroll && mainScroll.scrollTop < window.innerHeight * 0.5;
+
+            if (isOnHero) return true;
+
             const tabData = videosData.tabs[currentTab];
             const tabEl = document.getElementById(`tab-${tabData.id}`);
             const container = tabEl.querySelector('.video-container');
@@ -1221,9 +1417,9 @@
             const deltaX = touchEndX - touchStartX;
             const deltaY = touchEndY - touchStartY;
 
-            // Only process horizontal swipes (deltaX > deltaY) and when on grid
+            // Only process horizontal swipes (deltaX > deltaY) and when on grid or hero
             if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > minSwipeDistance) {
-                if (!isOnGridSection()) return;
+                if (!isOnGridOrHero()) return;
 
                 if (deltaX < 0) {
                     // Swipe left -> next tab

@@ -39,6 +39,7 @@
             height: 100vh;
             overflow-y: scroll;
             scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
             scrollbar-width: none;
             -ms-overflow-style: none;
         }
@@ -1189,18 +1190,8 @@
             }
         }
 
-        // Wheel/Mouse Navigation
-        document.addEventListener('wheel', (e) => {
-            // Prevent default scrolling to handle it manually (smooth feel)
-            e.preventDefault();
-
-            // Threshold to avoid super sensitive trackpads triggering too easily
-            // though preventing default mostly handles it, a threshold helps intention.
-            if (Math.abs(e.deltaY) < 10) return;
-
-            const direction = e.deltaY > 0 ? 1 : -1;
-            navigate(direction);
-        }, { passive: false });
+        // Native scroll-snap handles trackpad/wheel scrolling smoothly
+        // No custom wheel handler needed - CSS scroll-snap-type: y mandatory does the work
 
         // Keyboard Navigation
         document.addEventListener('keydown', (e) => {

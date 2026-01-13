@@ -784,8 +784,10 @@
             display: grid;
             scroll-snap-align: start;
             scroll-margin-top: 80px;
-            min-height: 100vh;
-            /* Ensure grid fills viewport to hide next video */
+            /* Fixed height to prevent any internal scrolling */
+            height: calc(100vh - 80px);
+            max-height: calc(100vh - 80px);
+            overflow: hidden;
             /* Fixed 5 columns - Tab 1 gets 5x2, Tabs 2-4 get 4 items in 1 row */
             grid-template-columns: repeat(5, auto);
             justify-content: center;
@@ -793,7 +795,7 @@
             justify-items: center;
             align-items: center;
             /* Consistent spacing across all tabs */
-            gap: clamp(10px, 2vw, 16px);
+            gap: clamp(8px, 1.5vw, 12px);
             padding: clamp(8px, 2vw, 16px);
             max-width: 95vw;
             width: 100%;
@@ -811,8 +813,8 @@
         .grid-item {
             /* Same 9:16 aspect ratio as the video frame */
             aspect-ratio: 9/16;
-            /* Calculate max height to fit 2 rows with gap and title space */
-            max-height: calc((100vh - 180px) / 2);
+            /* Smaller max height to fit 2 rows within (100vh - 80px - gaps - padding) */
+            max-height: calc((100vh - 180px) / 2.2);
             width: auto;
             border-radius: clamp(8px, 1.5vw, 12px);
             overflow: hidden;
@@ -868,8 +870,9 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
             transition: opacity 0.3s ease, visibility 0.3s ease;
             width: fit-content;
-            margin: 0 auto clamp(16px, 3vh, 24px) auto;
-            /* Bottom margin for spacing from grid */
+            /* Match spacing to scroll-margin-top positioning in grid view */
+            /* scroll-margin-top: 80px, tab top: ~20px, tab height: ~44px = 80-64 = 16px gap */
+            margin: 0 auto 16px auto;
         }
 
         /* Logo Button - Separate circular VS initials button */
@@ -1088,6 +1091,56 @@
         const gridBtn = document.getElementById('gridBtn');
         const controlBar = document.querySelector('.control-bar');
 
+        // Helper: Scroll to Tab 0 grid view with consistent positioning
+        // Uses direct scrollTo for precise control without any browser adjustments
+        function scrollToTab0Grid(container, smooth = true) {
+            const gridContainer = document.querySelector('#tab-zeta .grid-container');
+            const scrollContainer = container || document.querySelector('#tab-zeta .video-container');
+
+            if (gridContainer && scrollContainer) {
+                // Disable scroll-snap to prevent any interference
+                const originalSnap = scrollContainer.style.scrollSnapType;
+                scrollContainer.style.scrollSnapType = 'none';
+
+                // Also disable smooth scroll behavior from CSS if doing instant scroll
+                const originalBehavior = scrollContainer.style.scrollBehavior;
+                if (!smooth) {
+                    scrollContainer.style.scrollBehavior = 'auto';
+                }
+
+                // Calculate exact position: grid offsetTop minus scroll-margin-top (80px)
+                const targetScrollTop = Math.max(0, gridContainer.offsetTop - 80);
+
+                scrollContainer.scrollTo({
+                    top: targetScrollTop,
+                    behavior: smooth ? 'smooth' : 'auto'
+                });
+
+                // Re-enable scroll-snap and behavior after animation
+                const delay = smooth ? 800 : 100;
+                setTimeout(() => {
+                    scrollContainer.style.scrollSnapType = originalSnap || '';
+                    scrollContainer.style.scrollBehavior = originalBehavior || '';
+                    if (!scrollContainer.style.scrollSnapType) {
+                        scrollContainer.style.removeProperty('scroll-snap-type');
+                    }
+                    if (!scrollContainer.style.scrollBehavior) {
+                        scrollContainer.style.removeProperty('scroll-behavior');
+                    }
+                }, delay);
+            }
+        }
+
+        // Helper: Check if already at Tab 0 grid position
+        function isAtTab0GridPosition(container) {
+            const gridContainer = document.querySelector('#tab-zeta .grid-container');
+            if (!gridContainer || !container) return false;
+            // Check if scrollTop is close to where the grid would be positioned
+            const gridRect = gridContainer.getBoundingClientRect();
+            // Grid should be roughly 80px from top (due to scroll-margin-top)
+            return Math.abs(gridRect.top - 80) < 100;
+        }
+
         // Fetch JSON and initialize
         async function initApp() {
             try {
@@ -1281,21 +1334,14 @@
                             if (globalTabs) {
                                 if (parentTabIndex === 0) {
                                     globalTabs.classList.add('hidden');
-                                    // For Tab 0 grid: Check if profile-landing is still visible
-                                    // If profile is visible = landing view = hide VS button
-                                    // If profile is scrolled past = grid view = show VS button
+                                    // For Tab 0: Check scroll position to determine landing vs grid view
                                     if (logoBtn) {
                                         const container = entry.target.closest('.video-container');
-                                        const profileLanding = container?.querySelector('.profile-landing');
-                                        if (profileLanding) {
-                                            const profileRect = profileLanding.getBoundingClientRect();
-                                            const containerRect = container.getBoundingClientRect();
-                                            const isProfileHidden = profileRect.bottom < containerRect.top + 100;
-                                            if (isProfileHidden) {
-                                                logoBtn.classList.remove('hidden');
-                                            } else {
-                                                logoBtn.classList.add('hidden');
-                                            }
+                                        const isLandingView = container && container.scrollTop < 50;
+                                        if (isLandingView) {
+                                            logoBtn.classList.add('hidden');
+                                        } else {
+                                            logoBtn.classList.remove('hidden');
                                         }
                                     }
                                 } else {
@@ -1487,30 +1533,26 @@
         function switchTab(index) {
             if (index === currentTab) {
                 if (index === 0) {
-                    // If on Landing Page (Tab 0), scroll to Grid Container
+                    // If on Tab 0, check current position
                     const flowTabNav = document.getElementById('flowTabNav');
-                    if (flowTabNav && flowTabNav.nextElementSibling) {
-                        const container = flowTabNav.closest('.video-container');
+                    const container = flowTabNav?.closest('.video-container');
 
-                        // Temporarily disable scroll-snap
-                        if (container) {
-                            container.dataset.snap = container.style.scrollSnapType;
-                            container.style.scrollSnapType = 'none';
+                    if (container) {
+                        // If already on grid view, do nothing
+                        if (isAtTab0GridPosition(container)) {
+                            return; // Already on grid view, do nothing
                         }
 
-                        flowTabNav.nextElementSibling.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-                        // Restore scroll-snap
-                        if (container) {
-                            setTimeout(() => {
-                                container.style.scrollSnapType = container.dataset.snap || '';
-                                if (!container.style.scrollSnapType) container.style.removeProperty('scroll-snap-type');
-                                delete container.dataset.snap;
-                            }, 800);
+                        // Pause current video before scrolling to prevent interference
+                        if (currentVideoId) {
+                            pauseVideo(currentVideoId);
                         }
 
-                        // Force active state immediately
-                        const gridSection = flowTabNav.closest('.grid-section');
+                        // Scroll to Grid Container (helper handles scroll-snap)
+                        scrollToTab0Grid(container, true);
+
+                        // Force active state on grid section
+                        const gridSection = document.querySelector('#tab-zeta .grid-section');
                         if (gridSection) gridSection.classList.add('active');
                     }
                 } else {
@@ -1591,22 +1633,8 @@
                 if (container) {
                     if (index === 0) {
                         // Switching TO Zeta Tab: Auto-scroll to Grid View (skip profile)
-                        // This ensures we jump straight to content as requested
-                        const flowTabNav = document.getElementById('flowTabNav');
-                        if (flowTabNav) {
-                            // Temporarily disable smooth scrolling for instant jump
-                            container.style.scrollBehavior = 'auto';
-
-                            // Scroll to flowTabNav position minus sticky top offset (20px)
-                            container.scrollTop = Math.max(0, flowTabNav.offsetTop - 20);
-
-                            // Restore smooth scrolling after a brief delay ensuring the jump renders
-                            setTimeout(() => {
-                                container.style.scrollBehavior = ''; // Reverts to CSS value ('smooth')
-                            }, 50);
-                        } else {
-                            container.scrollTop = 0;
-                        }
+                        // Use scrollIntoView for consistent positioning with scroll-snap
+                        scrollToTab0Grid(container, false); // instant, no smooth
 
                         // Force active state immediately
                         const gridSection = newTab.querySelector('.grid-section');
@@ -1673,22 +1701,17 @@
             // Handle VS logo button visibility on Tab 0
             if (currentTab === 0) {
                 const container = e.target;
-                const profileLanding = container.querySelector('.profile-landing');
                 const logoBtn = document.getElementById('logoBtn');
 
-                if (profileLanding && logoBtn) {
-                    // Get the bottom position of the profile-landing section
-                    const profileRect = profileLanding.getBoundingClientRect();
-                    const containerRect = container.getBoundingClientRect();
+                if (logoBtn) {
+                    // Landing view = when at the very top (scrollTop near 0)
+                    // Grid view and below = show VS button
+                    const isLandingView = container.scrollTop < 50;
 
-                    // If profile section has scrolled past (its bottom is above the container top + some buffer)
-                    // Then show the VS button
-                    const isProfileHidden = profileRect.bottom < containerRect.top + 100;
-
-                    if (isProfileHidden) {
-                        logoBtn.classList.remove('hidden');
-                    } else {
+                    if (isLandingView) {
                         logoBtn.classList.add('hidden');
+                    } else {
+                        logoBtn.classList.remove('hidden');
                     }
                 }
             }

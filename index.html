@@ -784,6 +784,8 @@
             display: grid;
             scroll-snap-align: start;
             scroll-margin-top: 80px;
+            min-height: 100vh;
+            /* Ensure grid fills viewport to hide next video */
             /* Fixed 5 columns - Tab 1 gets 5x2, Tabs 2-4 get 4 items in 1 row */
             grid-template-columns: repeat(5, auto);
             justify-content: center;
@@ -1473,8 +1475,16 @@
                         // This ensures we jump straight to content as requested
                         const flowTabNav = document.getElementById('flowTabNav');
                         if (flowTabNav) {
+                            // Temporarily disable smooth scrolling for instant jump
+                            container.style.scrollBehavior = 'auto';
+
                             // Scroll to flowTabNav position minus sticky top offset (20px)
                             container.scrollTop = Math.max(0, flowTabNav.offsetTop - 20);
+
+                            // Restore smooth scrolling after a brief delay ensuring the jump renders
+                            setTimeout(() => {
+                                container.style.scrollBehavior = ''; // Reverts to CSS value ('smooth')
+                            }, 50);
                         } else {
                             container.scrollTop = 0;
                         }

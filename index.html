@@ -915,13 +915,23 @@
             visibility: hidden;
         }
 
-        /* Global tabs override for video sections */
+        /* Global tabs - fixed at top by default, can animate to landing position */
         .tab-nav.global-tabs {
             position: fixed;
             left: 50%;
+            /* Default: top position */
+            top: clamp(12px, 3vh, 20px);
             transform: translateX(-50%);
             margin: 0;
             z-index: 2000;
+            /* Smooth transition for position change */
+            transition: top 0.4s ease, opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        /* Landing position state - navbar moves down to between skills and grid */
+        .tab-nav.global-tabs.landing-position {
+            /* Position below the profile section (approximately 55% down from top) */
+            top: clamp(280px, 55vh, 450px);
         }
 
         .tab-nav.hidden {
@@ -1279,15 +1289,17 @@
                 </div>
             `).join('');
 
-            // Inject Moving Tab Bar into Tab 0 (Zeta) Grid
-            const firstTabGrid = document.querySelector('#tab-zeta .grid-container');
-            const firstTabGridSection = document.querySelector('#tab-zeta .grid-section');
-            if (firstTabGrid && firstTabGridSection) {
-                firstTabGridSection.insertBefore(flowTabNav, firstTabGrid);
-            }
+            // NOTE: We no longer inject a separate flow nav into Tab 0
+            // Instead, we use the global fixed nav for all tabs to avoid
+            // double nav bar issues during tab transitions
 
             // Initialize background with hero's purple color
             bgLayer.style.backgroundColor = '#2d1b4e';
+
+            // Initialize navbar in landing position (page starts on landing view)
+            if (globalTabs) {
+                globalTabs.classList.add('landing-position');
+            }
 
             // Initialize Observer
             initObserver();
@@ -1327,33 +1339,38 @@
                             gridBtn.classList.add('hidden');
                             controlBar.classList.add('hidden');
 
-                            // Global Tabs Logic: 
-                            // Tab 0: Hide Global (use Flow/Sticky)
-                            // Tab 1+: Show Global (Fixed)
+                            // Handle navbar position and logo button visibility
                             const logoBtn = document.getElementById('logoBtn');
                             if (globalTabs) {
-                                if (parentTabIndex === 0) {
-                                    globalTabs.classList.add('hidden');
-                                    // For Tab 0: Check scroll position to determine landing vs grid view
-                                    if (logoBtn) {
-                                        const container = entry.target.closest('.video-container');
-                                        const isLandingView = container && container.scrollTop < 50;
-                                        if (isLandingView) {
-                                            logoBtn.classList.add('hidden');
-                                        } else {
-                                            logoBtn.classList.remove('hidden');
-                                        }
-                                    }
+                                globalTabs.classList.remove('hidden');
+                            }
+
+                            // For Tab 0: Check scroll position to determine landing vs grid view
+                            if (parentTabIndex === 0) {
+                                const container = entry.target.closest('.video-container');
+                                const isLandingView = container && container.scrollTop < 50;
+
+                                if (isLandingView) {
+                                    // Landing view: navbar in middle, logo hidden
+                                    if (globalTabs) globalTabs.classList.add('landing-position');
+                                    if (logoBtn) logoBtn.classList.add('hidden');
                                 } else {
-                                    globalTabs.classList.remove('hidden');
-                                    // Show logo button on other tab grids
+                                    // Grid view: navbar at top, logo visible
+                                    if (globalTabs) globalTabs.classList.remove('landing-position');
                                     if (logoBtn) logoBtn.classList.remove('hidden');
                                 }
+                            } else {
+                                // Other tabs: navbar at top, logo visible
+                                if (globalTabs) globalTabs.classList.remove('landing-position');
+                                if (logoBtn) logoBtn.classList.remove('hidden');
                             }
                         } else {
                             gridBtn.classList.remove('hidden');
                             controlBar.classList.remove('hidden');
-                            if (globalTabs) globalTabs.classList.remove('hidden');
+                            if (globalTabs) {
+                                globalTabs.classList.remove('hidden');
+                                globalTabs.classList.remove('landing-position'); // Always top for video views
+                            }
                             // Show logo button when viewing videos
                             const logoBtn = document.getElementById('logoBtn');
                             if (logoBtn) logoBtn.classList.remove('hidden');
@@ -1617,16 +1634,9 @@
             // Scroll new tab to grid (index 0, grid is now first)
             const newTab = document.getElementById(`tab-${videosData.tabs[index].id}`);
 
-            // Hybrid Tab Bar Logic
+            // Global nav is always visible - just ensure it's shown
             if (globalTabs) {
-                if (index === 0) {
-                    // Tab 0: Use Flow Bar (initially hidden if at top, handled by Observer)
-                    // But since we scroll to top below, we anticipate it being hidden.
-                    globalTabs.classList.add('hidden');
-                } else {
-                    // Tab 1+: Always show Fixed Global Bar
-                    globalTabs.classList.remove('hidden');
-                }
+                globalTabs.classList.remove('hidden');
             }
             if (newTab) {
                 const container = newTab.querySelector('.video-container');
@@ -1698,16 +1708,23 @@
 
         let scrollTimeout;
         function handleScroll(e) {
-            // Handle VS logo button visibility on Tab 0
+            // Handle navbar position and VS logo button visibility on Tab 0
             if (currentTab === 0) {
                 const container = e.target;
                 const logoBtn = document.getElementById('logoBtn');
+                const isLandingView = container.scrollTop < 50;
 
+                // Animate navbar position
+                if (globalTabs) {
+                    if (isLandingView) {
+                        globalTabs.classList.add('landing-position');
+                    } else {
+                        globalTabs.classList.remove('landing-position');
+                    }
+                }
+
+                // Toggle logo button visibility
                 if (logoBtn) {
-                    // Landing view = when at the very top (scrollTop near 0)
-                    // Grid view and below = show VS button
-                    const isLandingView = container.scrollTop < 50;
-
                     if (isLandingView) {
                         logoBtn.classList.add('hidden');
                     } else {

@@ -77,13 +77,13 @@
         .profile-header {
             display: flex;
             align-items: center;
-            gap: clamp(24px, 4vw, 48px);
-            margin-bottom: clamp(24px, 4vh, 40px);
+            gap: clamp(16px, 3vw, 32px);
+            margin-bottom: clamp(16px, 3vh, 24px);
         }
 
         .profile-photo {
-            width: clamp(100px, 15vw, 160px);
-            height: clamp(100px, 15vw, 160px);
+            width: clamp(80px, 12vw, 120px);
+            height: clamp(80px, 12vw, 120px);
             border-radius: 50%;
             object-fit: cover;
             border: 4px solid #d4a855;
@@ -97,7 +97,7 @@
         }
 
         .profile-name {
-            font-size: clamp(28px, 5vw, 48px);
+            font-size: clamp(22px, 4vw, 36px);
             font-weight: 700;
             color: white;
             margin: 0;
@@ -105,7 +105,7 @@
         }
 
         .profile-title {
-            font-size: clamp(14px, 2vw, 18px);
+            font-size: clamp(12px, 1.5vw, 15px);
             color: rgba(255, 255, 255, 0.7);
             margin: 0 0 12px 0;
         }
@@ -160,7 +160,7 @@
         }
 
         .stat-value {
-            font-size: clamp(24px, 4vw, 36px);
+            font-size: clamp(20px, 3vw, 28px);
             font-weight: 700;
             color: white;
             display: block;
@@ -176,13 +176,14 @@
         /* Skills/Icons Row */
         .profile-skills {
             display: flex;
-            gap: clamp(16px, 3vw, 24px);
-            margin: clamp(24px, 4vh, 40px) 0;
+            gap: clamp(12px, 2vw, 18px);
+            /* Reduced top margin further to move circles up, INCREASED bottom margin MAX for more gap */
+            margin: clamp(0px, 0.5vh, 4px) 0 clamp(80px, 12vh, 120px) 0;
         }
 
         .skill-circle {
-            width: clamp(48px, 6vw, 64px);
-            height: clamp(48px, 6vw, 64px);
+            width: clamp(36px, 4.5vw, 48px);
+            height: clamp(36px, 4.5vw, 48px);
             border-radius: 50%;
             background: rgba(124, 58, 237, 0.4);
             display: flex;
@@ -776,14 +777,14 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: clamp(20px, 4vh, 40px) 20px;
+            padding: clamp(10px, 2vh, 20px) 20px;
             width: 100%;
         }
 
         .grid-container {
             display: grid;
             scroll-snap-align: start;
-            scroll-margin-top: 80px;
+            scroll-margin-top: 90px;
             /* Fixed height to prevent any internal scrolling */
             height: calc(100vh - 80px);
             max-height: calc(100vh - 80px);
@@ -881,7 +882,7 @@
             top: clamp(12px, 3vh, 20px);
             left: 50%;
             /* Position to the left of the tab bar - will be calculated with transform */
-            transform: translateX(calc(-50% - clamp(200px, 25vw, 300px)));
+            transform: translateX(calc(-50% - clamp(175px, 21vw, 250px)));
             width: clamp(40px, 6vw, 50px);
             height: clamp(40px, 6vw, 50px);
             border-radius: 50%;
@@ -906,7 +907,7 @@
 
         .logo-btn:hover {
             background: rgba(255, 255, 255, 0.15);
-            transform: translateX(calc(-50% - clamp(200px, 25vw, 300px))) scale(1.05);
+            transform: translateX(calc(-50% - clamp(175px, 21vw, 250px))) scale(1.05);
             color: white;
         }
 
@@ -924,14 +925,13 @@
             transform: translateX(-50%);
             margin: 0;
             z-index: 2000;
-            /* Smooth transition for position change */
-            transition: top 0.4s ease, opacity 0.3s ease, visibility 0.3s ease;
+            /* Snappier transition for opacity/visibility only - top handled by JS */
+            transition: opacity 0.3s ease, visibility 0.3s ease;
         }
 
         /* Landing position state - navbar moves down to between skills and grid */
         .tab-nav.global-tabs.landing-position {
-            /* Position below the profile section (approximately 55% down from top) */
-            top: clamp(280px, 55vh, 450px);
+            /* Position handled by JS for perfect sync with scroll */
         }
 
         .tab-nav.hidden {
@@ -1118,8 +1118,8 @@
                     scrollContainer.style.scrollBehavior = 'auto';
                 }
 
-                // Calculate exact position: grid offsetTop minus scroll-margin-top (80px)
-                const targetScrollTop = Math.max(0, gridContainer.offsetTop - 80);
+                // Calculate exact position: grid offsetTop minus scroll-margin-top (90px)
+                const targetScrollTop = Math.max(0, gridContainer.offsetTop - 90);
 
                 scrollContainer.scrollTo({
                     top: targetScrollTop,
@@ -1147,8 +1147,8 @@
             if (!gridContainer || !container) return false;
             // Check if scrollTop is close to where the grid would be positioned
             const gridRect = gridContainer.getBoundingClientRect();
-            // Grid should be roughly 80px from top (due to scroll-margin-top)
-            return Math.abs(gridRect.top - 80) < 100;
+            // Grid should be roughly 90px from top (due to scroll-margin-top)
+            return Math.abs(gridRect.top - 90) < 100;
         }
 
         // Fetch JSON and initialize
@@ -1189,7 +1189,7 @@
                     <div class="video-container">
                         <!-- Grid Sections -->
                         <!-- Add padding to 'grid-section' for tabs > 0 to account for Fixed Global Header -->
-                        <div class="grid-section ${tabIndex === 0 ? 'active' : ''}" data-bg-color="${tab.videos[0].bgColor}" style="min-height: 100vh; position: relative; z-index: 1; ${tabIndex > 0 ? 'padding-top: 80px;' : ''}">
+                        <div class="grid-section ${tabIndex === 0 ? 'active' : ''}" data-bg-color="${tab.videos[0].bgColor}" style="min-height: 100vh; position: relative; z-index: 1; ${tabIndex > 0 ? 'padding-top: 90px;' : ''}">
                             ${tabIndex === 0 ? `
                             <!-- Profile Header (only in first tab) -->
                             <div class="profile-landing">
@@ -1304,10 +1304,15 @@
             // Initialize Observer
             initObserver();
 
-            // Setup scroll listeners for navigation
             document.querySelectorAll('.video-container').forEach(container => {
                 container.addEventListener('scroll', handleScroll);
             });
+
+            // Initial sync for first tab
+            const firstContainer = document.querySelector('#tab-zeta .video-container');
+            if (firstContainer) {
+                handleScroll({ target: firstContainer });
+            }
         }
 
         // Intersection Observer logic (for grid and video sections within tabs)
@@ -1348,14 +1353,13 @@
                             // For Tab 0: Check scroll position to determine landing vs grid view
                             if (parentTabIndex === 0) {
                                 const container = entry.target.closest('.video-container');
-                                const isLandingView = container && container.scrollTop < 50;
+                                // Trigger earlier (15px instead of 50px)
+                                const isLandingView = container && container.scrollTop < 15;
 
                                 if (isLandingView) {
-                                    // Landing view: navbar in middle, logo hidden
                                     if (globalTabs) globalTabs.classList.add('landing-position');
                                     if (logoBtn) logoBtn.classList.add('hidden');
                                 } else {
-                                    // Grid view: navbar at top, logo visible
                                     if (globalTabs) globalTabs.classList.remove('landing-position');
                                     if (logoBtn) logoBtn.classList.remove('hidden');
                                 }
@@ -1549,36 +1553,32 @@
 
         function switchTab(index) {
             if (index === currentTab) {
-                if (index === 0) {
-                    // If on Tab 0, check current position
-                    const flowTabNav = document.getElementById('flowTabNav');
-                    const container = flowTabNav?.closest('.video-container');
+                const currentTabId = videosData.tabs[index].id;
+                const currentTabEl = document.getElementById(`tab-${currentTabId}`);
+                const container = currentTabEl?.querySelector('.video-container');
 
-                    if (container) {
+                if (container) {
+                    if (index === 0) {
                         // If already on grid view, do nothing
                         if (isAtTab0GridPosition(container)) {
-                            return; // Already on grid view, do nothing
+                            return;
                         }
 
-                        // Pause current video before scrolling to prevent interference
+                        // Pause current video before scrolling
                         if (currentVideoId) {
                             pauseVideo(currentVideoId);
                         }
 
-                        // Scroll to Grid Container (helper handles scroll-snap)
+                        // Scroll to Grid Container in Zeta tab
                         scrollToTab0Grid(container, true);
 
                         // Force active state on grid section
-                        const gridSection = document.querySelector('#tab-zeta .grid-section');
+                        const gridSection = currentTabEl.querySelector('.grid-section');
                         if (gridSection) gridSection.classList.add('active');
-                    }
-                } else {
-                    // For other tabs, scroll to top
-                    const currentTabEl = document.getElementById(`tab-${videosData.tabs[index].id}`);
-                    const container = currentTabEl.querySelector('.video-container');
-                    const gridSection = currentTabEl.querySelector('.grid-section');
+                    } else {
+                        // For other tabs, scroll to top (where grid is)
+                        const gridSection = currentTabEl.querySelector('.grid-section');
 
-                    if (container) {
                         // Temporarily disable scroll-snap
                         const originalSnap = container.style.scrollSnapType;
                         container.style.scrollSnapType = 'none';
@@ -1590,8 +1590,9 @@
                             container.style.scrollSnapType = originalSnap || '';
                             if (!container.style.scrollSnapType) container.style.removeProperty('scroll-snap-type');
                         }, 800);
+
+                        if (gridSection) gridSection.classList.add('active');
                     }
-                    if (gridSection) gridSection.classList.add('active');
                 }
                 return;
             }
@@ -1631,13 +1632,16 @@
                 bgLayer.style.backgroundColor = videosData.tabs[index].videos[0].bgColor;
             }
 
-            // Scroll new tab to grid (index 0, grid is now first)
+            // Update Navbar Position immediately for the new tab
             const newTab = document.getElementById(`tab-${videosData.tabs[index].id}`);
-
-            // Global nav is always visible - just ensure it's shown
-            if (globalTabs) {
-                globalTabs.classList.remove('hidden');
+            if (newTab) {
+                const container = newTab.querySelector('.video-container');
+                if (container) {
+                    handleScroll({ target: container });
+                }
             }
+
+            // Scroll new tab to grid (index 0, grid is now first)
             if (newTab) {
                 const container = newTab.querySelector('.video-container');
                 if (container) {
@@ -1708,27 +1712,42 @@
 
         let scrollTimeout;
         function handleScroll(e) {
-            // Handle navbar position and VS logo button visibility on Tab 0
-            if (currentTab === 0) {
-                const container = e.target;
-                const logoBtn = document.getElementById('logoBtn');
-                const isLandingView = container.scrollTop < 50;
+            const container = e.target;
+            const tabEl = container.closest('.tab-content');
+            if (!tabEl) return;
 
-                // Animate navbar position
-                if (globalTabs) {
-                    if (isLandingView) {
-                        globalTabs.classList.add('landing-position');
-                    } else {
-                        globalTabs.classList.remove('landing-position');
-                    }
-                }
+            const tabIdx = Array.from(tabsContainer.children).indexOf(tabEl);
+            const gridContainer = tabEl.querySelector('.grid-container');
+            const logoBtn = document.getElementById('logoBtn');
 
-                // Toggle logo button visibility
+            if (globalTabs && gridContainer) {
+                const rect = gridContainer.getBoundingClientRect();
+                const navHeight = globalTabs.offsetHeight || 50;
+
+                // Sticky limits (matches CSS clamp(12, 3vh, 20))
+                const stickyTop = Math.max(12, Math.min(20, window.innerHeight * 0.03));
+
+                // We want the spacing between navbar bottom and grid top to be fixed
+                // When "stuck" at the top: gap = 90 - navHeight - stickyTop
+                const gap = 90 - navHeight - stickyTop;
+
+                // Target Top = Current Grid Top - navHeight - gap
+                let targetTop = rect.top - navHeight - gap;
+
+                // Clamp so it never goes above the sticky position
+                const finalTop = Math.max(stickyTop, targetTop);
+
+                // Apply position immediately for seamless "glued" effect
+                globalTabs.style.top = finalTop + 'px';
+
+                // Toggle logo button and classes based on proximity to sticky position
                 if (logoBtn) {
-                    if (isLandingView) {
-                        logoBtn.classList.add('hidden');
-                    } else {
+                    if (finalTop <= stickyTop + 2) {
                         logoBtn.classList.remove('hidden');
+                        globalTabs.classList.remove('landing-position');
+                    } else {
+                        logoBtn.classList.add('hidden');
+                        globalTabs.classList.add('landing-position');
                     }
                 }
             }

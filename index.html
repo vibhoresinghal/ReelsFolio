@@ -856,6 +856,7 @@
             position: sticky;
             top: clamp(12px, 3vh, 20px);
             display: flex;
+            align-items: center;
             justify-content: center;
             gap: clamp(4px, 1vw, 8px);
             z-index: 1001;
@@ -869,6 +870,46 @@
             width: fit-content;
             margin: 0 auto clamp(16px, 3vh, 24px) auto;
             /* Bottom margin for spacing from grid */
+        }
+
+        /* Logo Button - Separate circular VS initials button */
+        .logo-btn {
+            position: fixed;
+            top: clamp(12px, 3vh, 20px);
+            left: 50%;
+            /* Position to the left of the tab bar - will be calculated with transform */
+            transform: translateX(calc(-50% - clamp(200px, 25vw, 300px)));
+            width: clamp(40px, 6vw, 50px);
+            height: clamp(40px, 6vw, 50px);
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: inherit;
+            font-size: clamp(13px, 2vw, 16px);
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.85);
+            transition: all 0.3s ease, opacity 0.3s ease, visibility 0.3s ease;
+            z-index: 2001;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .logo-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateX(calc(-50% - clamp(200px, 25vw, 300px))) scale(1.05);
+            color: white;
+        }
+
+        .logo-btn.hidden {
+            opacity: 0;
+            visibility: hidden;
         }
 
         /* Global tabs override for video sections */
@@ -975,6 +1016,10 @@
         <!-- Tabs World (Contains horizontal tabs + their vertical video scrollers) -->
         <div class="tabs-world" id="tabsWorld">
             <!-- Global Fixed Tabs (for video sections) -->
+            <!-- VS Logo Button (separate from tabs) -->
+            <button class="logo-btn hidden" id="logoBtn" onclick="goToLanding()" title="Go to Profile">VS</button>
+
+            <!-- Global Fixed Tabs (for video sections) -->
             <nav class="tab-nav global-tabs hidden" id="globalTabs"></nav>
 
             <!-- Horizontal Tabs Container -->
@@ -1058,7 +1103,7 @@
         function renderApp() {
             if (!videosData || !videosData.tabs) return;
 
-            // 1. Generate Tabs Navigation HTML (shared)
+            // 1. Generate Tabs Navigation HTML (shared - no logo button inside)
             const tabButtonsHTML = videosData.tabs.map((tab, index) =>
                 `<button class="tab-btn ${index === 0 ? 'active' : ''}" data-index="${index}" onclick="switchTab(${index})">${tab.label}</button>`
             ).join('');
@@ -1232,14 +1277,40 @@
                             // Global Tabs Logic: 
                             // Tab 0: Hide Global (use Flow/Sticky)
                             // Tab 1+: Show Global (Fixed)
+                            const logoBtn = document.getElementById('logoBtn');
                             if (globalTabs) {
-                                if (parentTabIndex === 0) globalTabs.classList.add('hidden');
-                                else globalTabs.classList.remove('hidden');
+                                if (parentTabIndex === 0) {
+                                    globalTabs.classList.add('hidden');
+                                    // For Tab 0 grid: Check if profile-landing is still visible
+                                    // If profile is visible = landing view = hide VS button
+                                    // If profile is scrolled past = grid view = show VS button
+                                    if (logoBtn) {
+                                        const container = entry.target.closest('.video-container');
+                                        const profileLanding = container?.querySelector('.profile-landing');
+                                        if (profileLanding) {
+                                            const profileRect = profileLanding.getBoundingClientRect();
+                                            const containerRect = container.getBoundingClientRect();
+                                            const isProfileHidden = profileRect.bottom < containerRect.top + 100;
+                                            if (isProfileHidden) {
+                                                logoBtn.classList.remove('hidden');
+                                            } else {
+                                                logoBtn.classList.add('hidden');
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    globalTabs.classList.remove('hidden');
+                                    // Show logo button on other tab grids
+                                    if (logoBtn) logoBtn.classList.remove('hidden');
+                                }
                             }
                         } else {
                             gridBtn.classList.remove('hidden');
                             controlBar.classList.remove('hidden');
                             if (globalTabs) globalTabs.classList.remove('hidden');
+                            // Show logo button when viewing videos
+                            const logoBtn = document.getElementById('logoBtn');
+                            if (logoBtn) logoBtn.classList.remove('hidden');
                         }
 
                         // Play Video if video section
@@ -1364,6 +1435,54 @@
         }
 
         // --- Navigation Functions ---
+
+        // Navigate to the landing/profile section (top of Tab 0)
+        function goToLanding() {
+            // If not on tab 0, switch to it first
+            if (currentTab !== 0) {
+                // Pause current video
+                if (currentVideoId) {
+                    pauseVideo(currentVideoId);
+                }
+
+                // Update UI - tab buttons
+                document.querySelectorAll('.tab-btn').forEach(btn => {
+                    const btnIndex = parseInt(btn.getAttribute('data-index'));
+                    btn.classList.toggle('active', btnIndex === 0);
+                });
+
+                // Slide to tab 0
+                tabsContainer.style.transform = 'translateX(0)';
+                currentTab = 0;
+
+                // Update BG
+                if (videosData && videosData.tabs[0]) {
+                    bgLayer.style.backgroundColor = videosData.tabs[0].videos[0].bgColor;
+                }
+
+                // Hide global tabs (tab 0 uses flow nav)
+                if (globalTabs) globalTabs.classList.add('hidden');
+            }
+
+            // Scroll to top of tab 0 (landing/profile section)
+            const zetaTab = document.getElementById('tab-zeta');
+            if (zetaTab) {
+                const container = zetaTab.querySelector('.video-container');
+                if (container) {
+                    // Temporarily disable scroll-snap for smooth animation
+                    const originalSnap = container.style.scrollSnapType;
+                    container.style.scrollSnapType = 'none';
+
+                    container.scrollTo({ top: 0, behavior: 'smooth' });
+
+                    // Restore scroll-snap after animation
+                    setTimeout(() => {
+                        container.style.scrollSnapType = originalSnap || '';
+                        if (!container.style.scrollSnapType) container.style.removeProperty('scroll-snap-type');
+                    }, 800);
+                }
+            }
+        }
 
         function switchTab(index) {
             if (index === currentTab) {
@@ -1551,7 +1670,28 @@
 
         let scrollTimeout;
         function handleScroll(e) {
-            // Optional: Debounce or logic to sync things if needed
+            // Handle VS logo button visibility on Tab 0
+            if (currentTab === 0) {
+                const container = e.target;
+                const profileLanding = container.querySelector('.profile-landing');
+                const logoBtn = document.getElementById('logoBtn');
+
+                if (profileLanding && logoBtn) {
+                    // Get the bottom position of the profile-landing section
+                    const profileRect = profileLanding.getBoundingClientRect();
+                    const containerRect = container.getBoundingClientRect();
+
+                    // If profile section has scrolled past (its bottom is above the container top + some buffer)
+                    // Then show the VS button
+                    const isProfileHidden = profileRect.bottom < containerRect.top + 100;
+
+                    if (isProfileHidden) {
+                        logoBtn.classList.remove('hidden');
+                    } else {
+                        logoBtn.classList.add('hidden');
+                    }
+                }
+            }
         }
 
         // Keyboard Navigation

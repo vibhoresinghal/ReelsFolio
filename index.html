@@ -932,6 +932,7 @@
         /* Landing position state - navbar moves down to between skills and grid */
         .tab-nav.global-tabs.landing-position {
             /* Position handled by JS for perfect sync with scroll */
+            z-index: 2000;
         }
 
         .tab-nav.hidden {
@@ -1344,40 +1345,14 @@
                             gridBtn.classList.add('hidden');
                             controlBar.classList.add('hidden');
 
-                            // Handle navbar position and logo button visibility
-                            const logoBtn = document.getElementById('logoBtn');
+                            // Handle navbar visibility (positioning is now handled by handleScroll)
                             if (globalTabs) {
                                 globalTabs.classList.remove('hidden');
-                            }
-
-                            // For Tab 0: Check scroll position to determine landing vs grid view
-                            if (parentTabIndex === 0) {
-                                const container = entry.target.closest('.video-container');
-                                // Trigger earlier (15px instead of 50px)
-                                const isLandingView = container && container.scrollTop < 15;
-
-                                if (isLandingView) {
-                                    if (globalTabs) globalTabs.classList.add('landing-position');
-                                    if (logoBtn) logoBtn.classList.add('hidden');
-                                } else {
-                                    if (globalTabs) globalTabs.classList.remove('landing-position');
-                                    if (logoBtn) logoBtn.classList.remove('hidden');
-                                }
-                            } else {
-                                // Other tabs: navbar at top, logo visible
-                                if (globalTabs) globalTabs.classList.remove('landing-position');
-                                if (logoBtn) logoBtn.classList.remove('hidden');
                             }
                         } else {
                             gridBtn.classList.remove('hidden');
                             controlBar.classList.remove('hidden');
-                            if (globalTabs) {
-                                globalTabs.classList.remove('hidden');
-                                globalTabs.classList.remove('landing-position'); // Always top for video views
-                            }
-                            // Show logo button when viewing videos
-                            const logoBtn = document.getElementById('logoBtn');
-                            if (logoBtn) logoBtn.classList.remove('hidden');
+                            // handleScroll handles the rest for video views
                         }
 
                         // Play Video if video section
@@ -1527,8 +1502,11 @@
                     bgLayer.style.backgroundColor = videosData.tabs[0].videos[0].bgColor;
                 }
 
-                // Hide global tabs (tab 0 uses flow nav)
-                if (globalTabs) globalTabs.classList.add('hidden');
+                // Ensure global tabs are visible (Zeta uses them now)
+                if (globalTabs) {
+                    globalTabs.classList.remove('hidden');
+                    globalTabs.style.zIndex = "2000";
+                }
             }
 
             // Scroll to top of tab 0 (landing/profile section)
@@ -1541,6 +1519,9 @@
                     container.style.scrollSnapType = 'none';
 
                     container.scrollTo({ top: 0, behavior: 'smooth' });
+
+                    // Update navbar position IMMEDIATELY for the landing view
+                    handleScroll({ target: container });
 
                     // Restore scroll-snap after animation
                     setTimeout(() => {
@@ -1717,8 +1698,26 @@
             if (!tabEl) return;
 
             const tabIdx = Array.from(tabsContainer.children).indexOf(tabEl);
-            const gridContainer = tabEl.querySelector('.grid-container');
+
+            // CRITICAL: Only allow the currently active tab to update the global navbar
+            // This prevents background tabs (resetting their scroll) from moving the navbar
+            if (tabIdx !== currentTab) return;
+
             const logoBtn = document.getElementById('logoBtn');
+
+            // Only Zeta tab (index 0) has the profile header and needs dynamic navbar positioning.
+            // For all other tabs, the navbar should stay fixed at the top with the logo visible.
+            if (tabIdx !== 0) {
+                if (globalTabs) {
+                    const stickyTop = Math.max(12, Math.min(20, window.innerHeight * 0.03));
+                    globalTabs.style.top = stickyTop + 'px';
+                    globalTabs.classList.remove('landing-position');
+                    if (logoBtn) logoBtn.classList.remove('hidden');
+                }
+                return;
+            }
+
+            const gridContainer = tabEl.querySelector('.grid-container');
 
             if (globalTabs && gridContainer) {
                 const rect = gridContainer.getBoundingClientRect();

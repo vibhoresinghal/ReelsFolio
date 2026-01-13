@@ -61,93 +61,155 @@
             position: relative;
         }
 
-        /* Hero Landing Section */
+        /* Hero Landing Section - Profile Header (scrolls with page) */
         .hero-section {
-            height: 100vh;
             width: 100vw;
-            scroll-snap-align: center;
-            scroll-snap-stop: always;
-            /* Prevent skipping sections */
             display: flex;
             flex-direction: column;
+            align-items: center;
+            padding: clamp(30px, 5vh, 50px) 20px clamp(20px, 3vh, 30px);
+            position: relative;
+            background: linear-gradient(180deg, #2d1b4e 0%, #1a0f2e 100%);
+            /* No scroll-snap - this scrolls naturally */
+        }
+
+        /* Profile Header */
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: clamp(24px, 4vw, 48px);
+            margin-bottom: clamp(24px, 4vh, 40px);
+        }
+
+        .profile-photo {
+            width: clamp(100px, 15vw, 160px);
+            height: clamp(100px, 15vw, 160px);
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #d4a855;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .profile-info {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .profile-name {
+            font-size: clamp(28px, 5vw, 48px);
+            font-weight: 700;
+            color: white;
+            margin: 0;
+            line-height: 1.1;
+        }
+
+        .profile-title {
+            font-size: clamp(14px, 2vw, 18px);
+            color: rgba(255, 255, 255, 0.7);
+            margin: 0 0 12px 0;
+        }
+
+        .profile-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .profile-btn {
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .profile-btn.primary {
+            background: #7c3aed;
+            color: white;
+            border: none;
+        }
+
+        .profile-btn.primary:hover {
+            background: #6d28d9;
+            transform: translateY(-2px);
+        }
+
+        .profile-btn.secondary {
+            background: transparent;
+            color: white;
+            border: 2px solid #7c3aed;
+        }
+
+        .profile-btn.secondary:hover {
+            background: rgba(124, 58, 237, 0.2);
+            transform: translateY(-2px);
+        }
+
+        /* Stats */
+        .profile-stats {
+            display: flex;
+            gap: clamp(32px, 6vw, 64px);
+            margin-top: 16px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: clamp(24px, 4vw, 36px);
+            font-weight: 700;
+            color: white;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: clamp(11px, 1.5vw, 13px);
+            color: rgba(255, 255, 255, 0.6);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Skills/Icons Row */
+        .profile-skills {
+            display: flex;
+            gap: clamp(16px, 3vw, 24px);
+            margin: clamp(24px, 4vh, 40px) 0;
+        }
+
+        .skill-circle {
+            width: clamp(48px, 6vw, 64px);
+            height: clamp(48px, 6vw, 64px);
+            border-radius: 50%;
+            background: rgba(124, 58, 237, 0.4);
+            display: flex;
             align-items: center;
             justify-content: center;
-            position: relative;
-            overflow: hidden;
+            transition: all 0.2s ease;
         }
 
-        .hero-video-bg {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            opacity: 0.25;
-            z-index: -1;
+        .skill-circle:hover {
+            background: rgba(124, 58, 237, 0.6);
+            transform: scale(1.1);
         }
 
-        .hero-content {
-            text-align: center;
-            z-index: 10;
-        }
-
-        .hero-name {
-            font-size: clamp(48px, 10vw, 120px);
-            font-weight: 800;
+        .skill-circle svg {
+            width: 50%;
+            height: 50%;
             color: white;
-            letter-spacing: -0.03em;
-            line-height: 1;
-            margin-bottom: 16px;
         }
 
-        .hero-tagline {
-            font-size: clamp(14px, 2vw, 18px);
-            color: rgba(255, 255, 255, 0.6);
-            font-weight: 400;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-        }
-
-        .scroll-indicator {
-            position: absolute;
-            bottom: clamp(40px, 8vh, 80px);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 12px;
-            animation: bounce 2s ease-in-out infinite;
-        }
-
-        .scroll-indicator span {
-            font-size: 12px;
-            color: rgba(255, 255, 255, 0.5);
-            letter-spacing: 0.15em;
-            text-transform: uppercase;
-        }
-
-        .scroll-indicator svg {
-            width: 24px;
-            height: 24px;
-            color: rgba(255, 255, 255, 0.5);
-        }
-
-        @keyframes bounce {
-
-            0%,
-            20%,
-            50%,
-            80%,
-            100% {
-                transform: translateY(0);
+        @media (max-width: 768px) {
+            .profile-header {
+                flex-direction: column;
+                text-align: center;
             }
 
-            40% {
-                transform: translateY(10px);
-            }
-
-            60% {
-                transform: translateY(5px);
+            .profile-info {
+                align-items: center;
             }
         }
 
@@ -696,20 +758,32 @@
 
         /* Grid Section - scrollable section before videos */
         .grid-section {
-            height: 100vh;
+            min-height: 100vh;
             width: 100vw;
-            scroll-snap-align: center;
+            scroll-snap-align: start;
             scroll-snap-stop: always;
-            /* Prevent skipping sections */
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
+            padding-top: 30px;
             position: relative;
-            background: #1a1a2e;
+            background: linear-gradient(180deg, #2d1b4e 0%, #1a0f2e 100%);
+        }
+
+        /* Profile landing header (only in first tab's grid) */
+        .profile-landing {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: clamp(20px, 4vh, 40px) 20px;
+            width: 100%;
         }
 
         .grid-container {
             display: grid;
+            scroll-snap-align: start;
+            scroll-margin-top: 80px;
             /* Fixed 5 columns - Tab 1 gets 5x2, Tabs 2-4 get 4 items in 1 row */
             grid-template-columns: repeat(5, auto);
             justify-content: center;
@@ -775,13 +849,12 @@
             font-weight: 500;
         }
 
-        /* Tab Navigation */
+        /* Tab Navigation - sticky on landing, becomes fixed at top when scrolling */
         .tab-nav {
-            position: fixed;
+            position: sticky;
             top: clamp(12px, 3vh, 20px);
-            left: 50%;
-            transform: translateX(-50%);
             display: flex;
+            justify-content: center;
             gap: clamp(4px, 1vw, 8px);
             z-index: 1001;
             background: rgba(0, 0, 0, 0.3);
@@ -791,6 +864,18 @@
             border-radius: 50px;
             border: 1px solid rgba(255, 255, 255, 0.1);
             transition: opacity 0.3s ease, visibility 0.3s ease;
+            width: fit-content;
+            margin: 0 auto clamp(16px, 3vh, 24px) auto;
+            /* Bottom margin for spacing from grid */
+        }
+
+        /* Global tabs override for video sections */
+        .tab-nav.global-tabs {
+            position: fixed;
+            left: 50%;
+            transform: translateX(-50%);
+            margin: 0;
+            z-index: 2000;
         }
 
         .tab-nav.hidden {
@@ -858,31 +943,23 @@
             }
         }
 
-        /* Main scroll container for Hero → Tabs transition */
+        /* Main scroll container */
         .main-scroll-container {
             height: 100vh;
-            overflow-y: scroll;
-            overflow-x: hidden;
-            /* Prevent horizontal scroll */
-            scroll-snap-type: y mandatory;
-            scroll-behavior: smooth;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
+            width: 100vw;
+            overflow: hidden;
         }
 
         .main-scroll-container::-webkit-scrollbar {
             display: none;
         }
 
-        /* Tabs world container - full page section */
+        /* Tabs world container - full page */
         .tabs-world {
             height: 100vh;
             width: 100vw;
-            scroll-snap-align: start;
-            scroll-snap-stop: always;
             position: relative;
             overflow: hidden;
-            /* Prevent any scroll here */
         }
     </style>
 </head>
@@ -891,30 +968,12 @@
     <!-- Background that transitions with each video -->
     <div class="bg-layer" id="bgLayer"></div>
 
-    <!-- Main Vertical Scroll Container (Hero → Tabs) -->
+    <!-- Main Container -->
     <div class="main-scroll-container" id="mainScroll">
-        <!-- Hero Landing Section (Shared, Single Instance) -->
-        <div class="hero-section active" id="heroSection" data-bg-color="#0a0a0a">
-            <video class="hero-video-bg" src="https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4"
-                autoplay muted loop playsinline></video>
-            <div class="hero-content">
-                <h1 class="hero-name">Vibhore Singhal</h1>
-                <p class="hero-tagline">Creative Developer & Filmmaker</p>
-            </div>
-            <div class="scroll-indicator">
-                <span>Scroll</span>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                    <path fill-rule="evenodd"
-                        d="M12.53 16.28a.75.75 0 01-1.06 0l-7.5-7.5a.75.75 0 011.06-1.06L12 14.69l6.97-6.97a.75.75 0 111.06 1.06l-7.5 7.5z"
-                        clip-rule="evenodd" />
-                </svg>
-            </div>
-        </div>
-
         <!-- Tabs World (Contains horizontal tabs + their vertical video scrollers) -->
         <div class="tabs-world" id="tabsWorld">
-            <!-- Tab Navigation -->
-            <nav class="tab-nav hidden" id="tabNav"></nav>
+            <!-- Global Fixed Tabs (for video sections) -->
+            <nav class="tab-nav global-tabs hidden" id="globalTabs"></nav>
 
             <!-- Horizontal Tabs Container -->
             <div class="tabs-container" id="tabsContainer"></div>
@@ -977,8 +1036,8 @@
 
         // DOM Elements
         const bgLayer = document.getElementById('bgLayer');
-        const tabNav = document.getElementById('tabNav');
         const tabsContainer = document.getElementById('tabsContainer');
+        const globalTabs = document.getElementById('globalTabs');
         const gridBtn = document.getElementById('gridBtn');
         const controlBar = document.querySelector('.control-bar');
 
@@ -997,18 +1056,62 @@
         function renderApp() {
             if (!videosData || !videosData.tabs) return;
 
-            // 1. Render Tabs Navigation
-            tabNav.innerHTML = videosData.tabs.map((tab, index) =>
-                `<button class="tab-btn ${index === 0 ? 'active' : ''}" onclick="switchTab(${index})">${tab.label}</button>`
+            // 1. Generate Tabs Navigation HTML (shared)
+            const tabButtonsHTML = videosData.tabs.map((tab, index) =>
+                `<button class="tab-btn ${index === 0 ? 'active' : ''}" data-index="${index}" onclick="switchTab(${index})">${tab.label}</button>`
             ).join('');
 
-            // 2. Render Tabs Content (No hero here - it's shared in HTML)
+            // Populate Global Fixed Tabs
+            if (globalTabs) globalTabs.innerHTML = tabButtonsHTML;
+
+            // Create Single Moving Sticky Tab Bar
+            const flowTabNav = document.createElement('nav');
+            flowTabNav.className = 'tab-nav';
+            flowTabNav.id = 'flowTabNav';
+            flowTabNav.innerHTML = tabButtonsHTML;
+            // High Z-index to float on top of content (handled by CSS now)
+            // Relies on .tab-nav CSS for position: sticky and top value
+
+            // 2. Render Tabs Content with profile header in first tab
             tabsContainer.style.width = `${videosData.tabs.length * 100}vw`;
             tabsContainer.innerHTML = videosData.tabs.map((tab, tabIndex) => `
                 <div class="tab-content" id="tab-${tab.id}">
                     <div class="video-container">
-                        <!-- Grid Section -->
-                        <div class="grid-section ${tabIndex === 0 ? 'active' : ''}" data-bg-color="${tab.videos[0].bgColor}">
+                        <!-- Grid Sections -->
+                        <!-- Add padding to 'grid-section' for tabs > 0 to account for Fixed Global Header -->
+                        <div class="grid-section ${tabIndex === 0 ? 'active' : ''}" data-bg-color="${tab.videos[0].bgColor}" style="min-height: 100vh; position: relative; z-index: 1; ${tabIndex > 0 ? 'padding-top: 80px;' : ''}">
+                            ${tabIndex === 0 ? `
+                            <!-- Profile Header (only in first tab) -->
+                            <div class="profile-landing">
+                                <div class="profile-header">
+                                    <img src="https://pub-145d32622a7e4d2586d93017e4e1221c.r2.dev/profile.jpg" alt="Vibhore Singhal" class="profile-photo" onerror="this.src='https://ui-avatars.com/api/?name=Vibhore+Singhal&size=200&background=d4a855&color=fff'">
+                                    <div class="profile-info">
+                                        <h1 class="profile-name">Vibhore Singhal</h1>
+                                        <p class="profile-title">Senior UX Designer at Zeta</p>
+                                        <div class="profile-actions">
+                                            <a href="mailto:vibhore@example.com" class="profile-btn primary">Message</a>
+                                            <a href="#" class="profile-btn secondary">Resume</a>
+                                        </div>
+                                        <div class="profile-stats">
+                                            <div class="stat-item">
+                                                <span class="stat-value">5</span>
+                                                <span class="stat-label">Years of Experience</span>
+                                            </div>
+                                            <div class="stat-item">
+                                                <span class="stat-value">26</span>
+                                                <span class="stat-label">Age</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="profile-skills">
+                                    <a href="#" class="skill-circle" title="Figma"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 5.5A3.5 3.5 0 018.5 2H12v7H8.5A3.5 3.5 0 015 5.5zM12 2h3.5a3.5 3.5 0 110 7H12V2zm0 9h3.5a3.5 3.5 0 110 7H12v-7zm-7 3.5A3.5 3.5 0 018.5 11H12v7H8.5A3.5 3.5 0 015 14.5zm0 7A3.5 3.5 0 018.5 18H12v3.5a3.5 3.5 0 11-7 0z"/></svg></a>
+                                    <a href="#" class="skill-circle" title="Video"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 5a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2v-3.586l3.293 3.293A1 1 0 0023 14V10a1 1 0 00-1.707-.707L18 12.586V9a2 2 0 00-2-2H4z"/></svg></a>
+                                    <a href="#" class="skill-circle" title="Design"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg></a>
+                                    <a href="#" class="skill-circle" title="Code"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg></a>
+                                </div>
+                            </div>
+                            ` : ''}
                             <div class="grid-container">
                                 ${tab.videos.map((video, vIndex) => `
                                     <div class="grid-item" onclick="goToVideo(${vIndex + 1}, ${tabIndex})">
@@ -1020,7 +1123,7 @@
                         </div>
 
                         <!-- Video Sections -->
-                        ${tab.videos.map(video => `
+            ${tab.videos.map(video => `
                             <div class="video-section video-section-r2 ${video.isLandscape ? 'landscape-mode' : ''}" data-video-id="${video.id}" data-bg-color="${video.bgColor}">
                                 
                                 <!-- New Left Content: Title & Desc -->
@@ -1076,8 +1179,15 @@
                 </div>
             `).join('');
 
-            // Initialize background with hero's dark color
-            bgLayer.style.backgroundColor = '#0a0a0a';
+            // Inject Moving Tab Bar into Tab 0 (Zeta) Grid
+            const firstTabGrid = document.querySelector('#tab-zeta .grid-container');
+            const firstTabGridSection = document.querySelector('#tab-zeta .grid-section');
+            if (firstTabGrid && firstTabGridSection) {
+                firstTabGridSection.insertBefore(flowTabNav, firstTabGrid);
+            }
+
+            // Initialize background with hero's purple color
+            bgLayer.style.backgroundColor = '#2d1b4e';
 
             // Initialize Observer
             initObserver();
@@ -1085,23 +1195,6 @@
             // Setup scroll listeners for navigation
             document.querySelectorAll('.video-container').forEach(container => {
                 container.addEventListener('scroll', handleScroll);
-            });
-
-            // Setup main scroll observer for hero
-            const mainScroll = document.getElementById('mainScroll');
-            mainScroll.addEventListener('scroll', () => {
-                const isOnHero = mainScroll.scrollTop < window.innerHeight * 0.5;
-                const heroSection = document.getElementById('heroSection');
-
-                if (isOnHero) {
-                    heroSection.classList.add('active');
-                    bgLayer.style.backgroundColor = '#0a0a0a';
-                    tabNav.classList.add('hidden');
-                    gridBtn.classList.add('hidden');
-                    controlBar.classList.add('hidden');
-                } else {
-                    heroSection.classList.remove('active');
-                }
             });
         }
 
@@ -1130,13 +1223,21 @@
 
                         // Update UI Buttons
                         if (isGrid) {
-                            tabNav.classList.remove('hidden');
+                            // Hide grid button and control bar
                             gridBtn.classList.add('hidden');
                             controlBar.classList.add('hidden');
+
+                            // Global Tabs Logic: 
+                            // Tab 0: Hide Global (use Flow/Sticky)
+                            // Tab 1+: Show Global (Fixed)
+                            if (globalTabs) {
+                                if (parentTabIndex === 0) globalTabs.classList.add('hidden');
+                                else globalTabs.classList.remove('hidden');
+                            }
                         } else {
-                            tabNav.classList.remove('hidden');
                             gridBtn.classList.remove('hidden');
                             controlBar.classList.remove('hidden');
+                            if (globalTabs) globalTabs.classList.remove('hidden');
                         }
 
                         // Play Video if video section
@@ -1153,7 +1254,7 @@
                         }
                     }
                 });
-            }, { threshold: 0.6 });
+            }, { threshold: 0.5 });
 
             document.querySelectorAll('.grid-section, .video-section').forEach(section => {
                 observer.observe(section);
@@ -1264,11 +1365,53 @@
 
         function switchTab(index) {
             if (index === currentTab) {
-                // Scroll current tab to top (grid view)
-                const currentTabEl = document.getElementById(`tab-${videosData.tabs[index].id}`);
-                const container = currentTabEl.querySelector('.video-container');
-                if (container) {
-                    container.scrollTo({ top: 0, behavior: 'smooth' });
+                if (index === 0) {
+                    // If on Landing Page (Tab 0), scroll to Grid Container
+                    const flowTabNav = document.getElementById('flowTabNav');
+                    if (flowTabNav && flowTabNav.nextElementSibling) {
+                        const container = flowTabNav.closest('.video-container');
+
+                        // Temporarily disable scroll-snap
+                        if (container) {
+                            container.dataset.snap = container.style.scrollSnapType;
+                            container.style.scrollSnapType = 'none';
+                        }
+
+                        flowTabNav.nextElementSibling.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+                        // Restore scroll-snap
+                        if (container) {
+                            setTimeout(() => {
+                                container.style.scrollSnapType = container.dataset.snap || '';
+                                if (!container.style.scrollSnapType) container.style.removeProperty('scroll-snap-type');
+                                delete container.dataset.snap;
+                            }, 800);
+                        }
+
+                        // Force active state immediately
+                        const gridSection = flowTabNav.closest('.grid-section');
+                        if (gridSection) gridSection.classList.add('active');
+                    }
+                } else {
+                    // For other tabs, scroll to top
+                    const currentTabEl = document.getElementById(`tab-${videosData.tabs[index].id}`);
+                    const container = currentTabEl.querySelector('.video-container');
+                    const gridSection = currentTabEl.querySelector('.grid-section');
+
+                    if (container) {
+                        // Temporarily disable scroll-snap
+                        const originalSnap = container.style.scrollSnapType;
+                        container.style.scrollSnapType = 'none';
+
+                        container.scrollTo({ top: 0, behavior: 'smooth' });
+
+                        // Restore scroll-snap
+                        setTimeout(() => {
+                            container.style.scrollSnapType = originalSnap || '';
+                            if (!container.style.scrollSnapType) container.style.removeProperty('scroll-snap-type');
+                        }, 800);
+                    }
+                    if (gridSection) gridSection.classList.add('active');
                 }
                 return;
             }
@@ -1291,9 +1434,10 @@
                 }, 550); // Wait for transition (500ms) + small buffer
             }
 
-            // Update UI
-            document.querySelectorAll('.tab-btn').forEach((btn, i) => {
-                btn.classList.toggle('active', i === index);
+            // Update UI - tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                const btnIndex = parseInt(btn.getAttribute('data-index'));
+                btn.classList.toggle('active', btnIndex === index);
             });
 
             // Slide content
@@ -1309,14 +1453,45 @@
 
             // Scroll new tab to grid (index 0, grid is now first)
             const newTab = document.getElementById(`tab-${videosData.tabs[index].id}`);
+
+            // Hybrid Tab Bar Logic
+            if (globalTabs) {
+                if (index === 0) {
+                    // Tab 0: Use Flow Bar (initially hidden if at top, handled by Observer)
+                    // But since we scroll to top below, we anticipate it being hidden.
+                    globalTabs.classList.add('hidden');
+                } else {
+                    // Tab 1+: Always show Fixed Global Bar
+                    globalTabs.classList.remove('hidden');
+                }
+            }
             if (newTab) {
                 const container = newTab.querySelector('.video-container');
-                if (container) container.scrollTop = 0;
-            }
+                if (container) {
+                    if (index === 0) {
+                        // Switching TO Zeta Tab: Auto-scroll to Grid View (skip profile)
+                        // This ensures we jump straight to content as requested
+                        const flowTabNav = document.getElementById('flowTabNav');
+                        if (flowTabNav) {
+                            // Scroll to flowTabNav position minus sticky top offset (20px)
+                            container.scrollTop = Math.max(0, flowTabNav.offsetTop - 20);
+                        } else {
+                            container.scrollTop = 0;
+                        }
 
-            // Ensure we're in the tabs-world, not on hero
-            const mainScroll = document.getElementById('mainScroll');
-            if (mainScroll) mainScroll.scrollTop = window.innerHeight;
+                        // Force active state immediately
+                        const gridSection = newTab.querySelector('.grid-section');
+                        if (gridSection) gridSection.classList.add('active');
+                    } else {
+                        // Other tabs: Scroll to absolute top
+                        container.scrollTop = 0;
+
+                        // Force active state immediately
+                        const gridSection = newTab.querySelector('.grid-section');
+                        if (gridSection) gridSection.classList.add('active');
+                    }
+                }
+            }
         }
 
         function goToVideo(index, tabIndex) {
@@ -1333,12 +1508,34 @@
             if (!tabData) return;
 
             const tabEl = document.getElementById(`tab-${tabData.id}`);
-            const sections = tabEl.querySelectorAll('.video-section, .grid-section');
-            // index 0 is grid, 1 is first video... 
-            // The grid item click passes 1 for first video. 
-            // Selector query includes grid section first.
-            if (sections[index]) {
-                sections[index].scrollIntoView({ behavior: 'smooth' });
+            const container = tabEl.querySelector('.video-container');
+            // Ensure we select grid section first, then videos
+            const sections = Array.from(tabEl.querySelectorAll('.grid-section, .video-section'));
+            // Default querySelectorAll returns in document order (Grid is first)
+
+            if (sections[index] && container) {
+                // Calculate exact scroll position
+                const rect = sections[index].getBoundingClientRect();
+                const containerRect = container.getBoundingClientRect();
+                const targetTop = rect.top + container.scrollTop - containerRect.top;
+
+                // Temporarily disable scroll-snap to allow smooth animation
+                const originalSnapType = container.style.scrollSnapType;
+                container.style.scrollSnapType = 'none';
+
+                container.scrollTo({
+                    top: targetTop,
+                    behavior: 'smooth'
+                });
+
+                // Restore scroll-snap after animation (approx 800ms)
+                setTimeout(() => {
+                    container.style.scrollSnapType = originalSnapType || '';
+                    // Re-apply explicit Snap Type if it was empty (from CSS class)
+                    if (!container.style.scrollSnapType) {
+                        container.style.removeProperty('scroll-snap-type');
+                    }
+                }, 800);
             }
         }
 

@@ -757,58 +757,133 @@
             height: clamp(18px, 4vw, 24px);
         }
 
-        /* Grid Section - scrollable section before videos */
-        .grid-section {
-            min-height: 100vh;
+        /* Grid Section - UNIFIED FIXED OVERLAY */
+        .grid-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100vw;
-            scroll-snap-align: start;
-            scroll-snap-stop: always;
-            display: flex;
+            height: 100vh;
+            display: none;
             flex-direction: column;
             align-items: center;
             justify-content: flex-start;
-            padding-top: 30px;
-            position: relative;
-            background: linear-gradient(180deg, #2d1b4e 0%, #1a0f2e 100%);
+            padding-top: 80px;
+            z-index: 3000;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
         }
 
-        /* Profile landing header (only in first tab's grid) */
-        .profile-landing {
+        .grid-overlay.visible {
             display: flex;
-            flex-direction: column;
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .grid-overlay-header {
+            display: flex;
             align-items: center;
-            padding: clamp(10px, 2vh, 20px) 20px;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            padding: 0 20px;
             width: 100%;
+            max-width: 800px;
+        }
+
+        .grid-tab-nav {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 6px;
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .grid-tab-btn {
+            padding: 10px 20px;
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+            font-weight: 500;
+            font-family: inherit;
+            cursor: pointer;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .grid-tab-btn:hover {
+            color: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .grid-tab-btn.active {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .grid-close-btn {
+            position: fixed;
+            top: clamp(12px, 3vh, 20px);
+            right: clamp(12px, 3vh, 20px);
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 3001;
+            transition: all 0.3s ease;
+        }
+
+        .grid-close-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+        }
+
+        /* Grid panel for each tab's content */
+        .grid-panel {
+            display: none;
+            width: 100%;
+            max-width: 95vw;
+            justify-content: center;
+        }
+
+        .grid-panel.active {
+            display: flex;
         }
 
         .grid-container {
             display: grid;
-            scroll-snap-align: start;
-            scroll-margin-top: 90px;
-            /* Fixed height to prevent any internal scrolling */
-            height: calc(100vh - 80px);
-            max-height: calc(100vh - 80px);
-            overflow: hidden;
-            /* Fixed 5 columns - Tab 1 gets 5x2, Tabs 2-4 get 4 items in 1 row */
+            height: auto;
+            max-height: calc(100vh - 180px);
+            overflow-y: auto;
+            padding-bottom: 40px;
             grid-template-columns: repeat(5, auto);
             justify-content: center;
-            align-content: center;
+            align-content: start;
             justify-items: center;
             align-items: center;
-            /* Consistent spacing across all tabs */
             gap: clamp(8px, 1.5vw, 12px);
             padding: clamp(8px, 2vw, 16px);
             max-width: 95vw;
             width: 100%;
-            /* No internal scroll - fit everything in viewport */
-            opacity: 0.2;
-            transform: scale(0.9);
-            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
-        }
-
-        .grid-section.active .grid-container {
             opacity: 1;
             transform: scale(1);
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
         }
 
         .grid-item {
@@ -914,6 +989,37 @@
         .logo-btn.active {
             background: rgba(124, 58, 237, 0.6);
             border-color: rgba(124, 58, 237, 0.8);
+            color: white;
+        }
+
+        /* Grid Overlay Button - Symmetrical to Logo Button */
+        .grid-overlay-btn {
+            position: fixed;
+            top: clamp(12px, 3vh, 20px);
+            left: 50%;
+            /* Symmetrical opposite of logo-btn */
+            transform: translateX(calc(-50% + clamp(175px, 21vw, 250px)));
+            width: clamp(40px, 6vw, 50px);
+            height: clamp(40px, 6vw, 50px);
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: inherit;
+            color: rgba(255, 255, 255, 0.85);
+            transition: all 0.3s ease;
+            z-index: 2001;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .grid-overlay-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateX(calc(-50% + clamp(175px, 21vw, 250px))) scale(1.05);
             color: white;
         }
 
@@ -1471,9 +1577,34 @@
             <!-- Global Fixed Tabs (for video sections) -->
             <nav class="tab-nav global-tabs" id="globalTabs"></nav>
 
+            <!-- Grid Overlay Button -->
+            <button class="grid-overlay-btn" id="gridOverlayBtn" onclick="toggleCurrentGrid()" title="View Grid">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
+                    style="width: 24px; height: 24px;">
+                    <path fill-rule="evenodd"
+                        d="M3 6a3 3 0 013-3h2.25a3 3 0 013 3v2.25a3 3 0 01-3 3H6a3 3 0 01-3-3V6zm9.75 0a3 3 0 013-3H21a3 3 0 013 3v2.25a3 3 0 01-3 3h-2.25a3 3 0 01-3-3V6zM3 15.75a3 3 0 013-3h2.25a3 3 0 013 3v2.25a3 3 0 01-3 3H6a3 3 0 01-3-3v-2.25zm9.75 0a3 3 0 013-3H21a3 3 0 013 3v2.25a3 3 0 01-3 3h-2.25a3 3 0 01-3-3v-2.25z"
+                        clip-rule="evenodd" />
+                </svg>
+            </button>
+
             <!-- Horizontal Tabs Container -->
             <div class="tabs-container" id="tabsContainer"></div>
         </div>
+    </div>
+
+    <!-- Unified Grid Overlay -->
+    <div class="grid-overlay" id="gridOverlay" onclick="handleGridOverlayClick(event)">
+        <button class="grid-close-btn" onclick="closeGridOverlay()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                stroke-linejoin="round" style="width: 24px; height: 24px;">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        </button>
+        <div class="grid-overlay-header">
+            <nav class="grid-tab-nav" id="gridTabNav"></nav>
+        </div>
+        <div id="gridPanelsContainer"></div>
     </div>
 
     <!-- Floating Item Modal -->
@@ -1557,61 +1688,7 @@
         const gridBtn = document.getElementById('gridBtn');
         const controlBar = document.querySelector('.control-bar');
 
-        // Helper: Scroll to Tab 0 grid view with consistent positioning
-        // Uses direct scrollTo for precise control without any browser adjustments
-        function scrollToTab0Grid(container, smooth = true) {
-            const gridSection = document.getElementById('tab0-grid');
-            const scrollContainer = container || document.querySelector('#tab-zeta .video-container');
-
-            if (gridSection && scrollContainer) {
-                // Disable scroll-snap to prevent any interference
-                const originalSnap = scrollContainer.style.scrollSnapType;
-                scrollContainer.style.scrollSnapType = 'none';
-
-                // Also disable smooth scroll behavior from CSS if doing instant scroll
-                const originalBehavior = scrollContainer.style.scrollBehavior;
-                if (!smooth) {
-                    scrollContainer.style.scrollBehavior = 'auto';
-                }
-
-                // Use the grid-section's offsetTop (relative to video-container)
-                const targetScrollTop = gridSection.offsetTop;
-
-                scrollContainer.scrollTo({
-                    top: targetScrollTop,
-                    behavior: smooth ? 'smooth' : 'auto'
-                });
-
-                // Re-enable scroll-snap and behavior after animation
-                const delay = smooth ? 800 : 100;
-                setTimeout(() => {
-                    scrollContainer.style.scrollSnapType = originalSnap || '';
-                    scrollContainer.style.scrollBehavior = originalBehavior || '';
-                    if (!scrollContainer.style.scrollSnapType) {
-                        scrollContainer.style.removeProperty('scroll-snap-type');
-                    }
-                    if (!scrollContainer.style.scrollBehavior) {
-                        scrollContainer.style.removeProperty('scroll-behavior');
-                    }
-                }, delay);
-            }
-        }
-
-        // Helper: Check if already at Tab 0 grid position
-        function isAtTab0GridPosition(container) {
-            const gridSection = document.getElementById('tab0-grid');
-            if (!gridSection || !container) return false;
-
-            // If hidden, definitely not at position
-            if (window.getComputedStyle(gridSection).display === 'none') return false;
-
-            // Check if grid section is visible near the top of viewport
-            const gridRect = gridSection.getBoundingClientRect();
-            // Grid should be near the top of the viewport (within 100px) and have height
-            return gridRect.height > 0 && Math.abs(gridRect.top) < 100;
-        }
-
-        // Fetch JSON and initialize
+        // Initialize
         async function initApp() {
             try {
                 const response = await fetch('videos.json');
@@ -1670,15 +1747,12 @@
             }
 
             // 2. Render Tabs Content with NEW landing section in first tab
-            tabsContainer.style.height = `${videosData.tabs.length * 100}vh`;
-            tabsContainer.style.width = '100vw';
             tabsContainer.innerHTML = videosData.tabs.map((tab, tabIndex) => `
                 <div class="tab-content" id="tab-${tab.id}">
                     <div class="video-container">
                         ${tabIndex === 0 ? `
-                        <!-- NEW LANDING SECTION -->
+                        <!-- LANDING SECTION (Only in Tab 0) -->
                         <div class="landing-section active" data-bg-color="${landing.bgColor || '#2d1b4e'}">
-                            <!-- Profile Info - Left Side -->
                             <div class="landing-profile-info">
                                 <p class="landing-bio">${landing.bio || ''}</p>
                                 <h1 class="landing-name">${landing.name || 'Vibhore Singhal'}</h1>
@@ -1686,189 +1760,50 @@
                                     ${generateLocationTagsHTML(landing.locations)}
                                 </div>
                             </div>
-
-                            <!-- Central Video Frame -->
                             <div class="landing-video-frame" onclick="toggleVideo('landing-video')">
                                 <video id="landing-video" src="${landing.profileVideo || ''}" muted loop playsinline></video>
                                 <div class="play-overlay-btn" id="btn-landing-video">
                                     <svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" /></svg>
                                 </div>
-
                             </div>
-
-                            <!-- Floating Items -->
                             ${generateFloatingItemsHTML(floatingItems)}
-
-                            <!-- Decorative Stickers -->
                             <div class="landing-sticker star" style="top: 8%; left: 5%; width: 80px; height: 80px;">
-                                <svg viewBox="0 0 100 100" fill="currentColor">
-                                    <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35"/>
-                                </svg>
+                                <svg viewBox="0 0 100 100" fill="currentColor"><polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35"/></svg>
                             </div>
                             <div class="landing-sticker heart" style="top: 12%; right: 32%; width: 50px; height: 50px;">
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z" />
-                                </svg>
+                                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z" /></svg>
                             </div>
-                            <div class="landing-sticker plus" style="bottom: 35%; left: 35%; width: 40px; height: 40px;">
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z" clip-rule="evenodd" />
-                                </svg>
-                            </div>
-                            <div class="landing-sticker sparkle" style="bottom: 25%; right: 5%; width: 35px; height: 35px;">
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M9 4.5a.75.75 0 01.721.544l.813 2.846a3.75 3.75 0 002.576 2.576l2.846.813a.75.75 0 010 1.442l-2.846.813a3.75 3.75 0 00-2.576 2.576l-.813 2.846a.75.75 0 01-1.442 0l-.813-2.846a3.75 3.75 0 00-2.576-2.576l-2.846-.813a.75.75 0 010-1.442l2.846-.813a3.75 3.75 0 002.576-2.576l.813-2.846A.75.75 0 019 4.5z" clip-rule="evenodd" />
-                                </svg>
-                            </div>
-
-                            <!-- Bottom Toggle Element -->
-                            <div class="landing-toggle">
-                                <div class="toggle-line"></div>
-                                <div class="toggle-circle"></div>
-                            </div>
-
                             <!-- Scroll Indicator -->
                             <div class="landing-scroll-indicator" onclick="scrollToFirstVideo()">
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M12.53 16.28a.75.75 0 01-1.06 0l-7.5-7.5a.75.75 0 011.06-1.06L12 14.69l6.97-6.97a.75.75 0 111.06 1.06l-7.5 7.5z" clip-rule="evenodd" />
-                                </svg>
+                                <svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12.53 16.28a.75.75 0 01-1.06 0l-7.5-7.5a.75.75 0 011.06-1.06L12 14.69l6.97-6.97a.75.75 0 111.06 1.06l-7.5 7.5z" clip-rule="evenodd" /></svg>
                             </div>
                         </div>
                         ` : ''}
 
-                        ${tabIndex === 0 ? `
-                        <!-- Grid Section (for Tab 0: after landing, before videos - accessed via Zeta tab click) -->
-                        <div id="tab0-grid" class="grid-section" data-bg-color="${tab.videos[0].bgColor}" style="min-height: 100vh; position: relative; z-index: 1; padding-top: 90px; display: none;">
-                            <div class="grid-container">
-                                ${tab.videos.map((video, vIndex) => `
-                                    <div class="grid-item" onclick="goToVideo(${vIndex + 2}, ${tabIndex})">
-                                        <img src="${video.thumbnail || 'https://placehold.co/360x640/png?text=Thumbnail'}" style="width: 100%; height: 100%; object-fit: cover;" draggable="false" />
-                                        <span class="video-number">${vIndex + 1}</span>
-                                    </div>
-                                `).join('')}
-                            </div>
-                        </div>
-
-                        <!-- Video Sections (for Tab 0: after grid) -->
-            ${tab.videos.map(video => `
+                        <!-- VIDEO SECTIONS (Directly following landing or at start) -->
+                        ${tab.videos.map(video => `
                             <div class="video-section video-section-r2 ${video.isLandscape ? 'landscape-mode' : ''}" data-video-id="${video.id}" data-bg-color="${video.bgColor}">
-                                
-                                <!-- New Left Content: Title & Desc -->
                                 <div class="content-info-left">
                                     ${video.description ? `<p class="content-desc">${video.description}</p>` : ''}
                                     ${video.title ? `<h2 class="content-title">${video.title}</h2>` : ''}
-                                    ${video.link ? `<a class="content-link" href="${video.link.url}" target="_blank" rel="noopener noreferrer">
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                                            <path fill-rule="evenodd" d="M19.902 4.098a3.75 3.75 0 00-5.304 0l-4.5 4.5a3.75 3.75 0 001.035 6.037.75.75 0 01-.646 1.353 5.25 5.25 0 01-1.449-8.45l4.5-4.5a5.25 5.25 0 117.424 7.424l-1.757 1.757a.75.75 0 11-1.06-1.06l1.757-1.757a3.75 3.75 0 000-5.304zm-7.389 4.267a.75.75 0 011-.353 5.25 5.25 0 011.449 8.45l-4.5 4.5a5.25 5.25 0 11-7.424-7.424l1.757-1.757a.75.75 0 111.06 1.06l-1.757 1.757a3.75 3.75 0 105.304 5.304l4.5-4.5a3.75 3.75 0 00-1.035-6.037.75.75 0 01-.354-1z" clip-rule="evenodd" />
-                                        </svg>
-                                        ${video.link.text}
-                                    </a>` : ''}
+                                    ${video.link ? `<a class="content-link" href="${video.link.url}" target="_blank" rel="noopener noreferrer"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M19.902 4.098a3.75 3.75 0 00-5.304 0l-4.5 4.5a3.75 3.75 0 001.035 6.037.75.75 0 01-.646 1.353 5.25 5.25 0 01-1.449-8.45l4.5-4.5a5.25 5.25 0 117.424 7.424l-1.757 1.757a.75.75 0 11-1.06-1.06l1.757-1.757a3.75 3.75 0 000-5.304zm-7.389 4.267a.75.75 0 011-.353 5.25 5.25 0 011.449 8.45l-4.5 4.5a5.25 5.25 0 11-7.424-7.424l1.757-1.757a.75.75 0 111.06 1.06l-1.757 1.757a3.75 3.75 0 105.304 5.304l4.5-4.5a3.75 3.75 0 00-1.035-6.037.75.75 0 01-.354-1z" clip-rule="evenodd" /></svg>${video.link.text}</a>` : ''}
                                 </div>
-
-                                <div class="sticker sticker-star" style="color: #FFD700; width: 60px; height: 60px;">
-                                    <svg viewBox="0 0 24 24" fill="currentColor">
-                                        <path fill-rule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z" clip-rule="evenodd" />
-                                    </svg>
-                                </div>
-                                <div class="sticker sticker-heart" style="color: #FF8800; width: 50px; height: 50px;">
-                                    <svg viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z" />
-                                    </svg>
-                                </div>
-                                <div class="sticker sticker-sparkle" style="color: #FFD700; width: 40px; height: 40px;">
-                                    <svg viewBox="0 0 24 24" fill="currentColor">
-                                        <path fill-rule="evenodd" d="M9 4.5a.75.75 0 01.721.544l.813 2.846a3.75 3.75 0 002.576 2.576l2.846.813a.75.75 0 010 1.442l-2.846.813a3.75 3.75 0 00-2.576 2.576l-.813 2.846a.75.75 0 01-1.442 0l-.813-2.846a3.75 3.75 0 00-2.576-2.576l-2.846-.813a.75.75 0 010-1.442l2.846-.813a3.75 3.75 0 002.576-2.576l.813-2.846A.75.75 0 019 4.5zM1.5 6a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5h-1.5A.75.75 0 011.5 6zm2.25 10.5a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5h-1.5a.75.75 0 01-.75-.75zm13.5-9a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5h-1.5a.75.75 0 01-.75-.75zm2.25 10.5a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5h-1.5a.75.75 0 01-.75-.75z" clip-rule="evenodd" />
-                                    </svg>
-                                </div>
-
                                 <div class="video-frame" onclick="toggleVideo('${video.id}')">
                                     <video id="${video.id}" src="${video.src}" muted playsinline preload="metadata" onended="scrollToNextVideo(this)"></video>
-                                    <div class="play-overlay-btn" id="btn-${video.id}">
-                                         <svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" /></svg>
-                                    </div>
+                                    <div class="play-overlay-btn" id="btn-${video.id}"><svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" /></svg></div>
                                 </div>
-
-                                <!-- New Right Content: Comments bubbles -->
                                 <div class="content-info-right">
                                     ${video.comments ? video.comments.map(comment => `
                                         <div class="comment-pill">
-                                            <div class="comment-icon" style="background: ${comment.type === 'avatar' ? (comment.avatarColor || '#3498db') : 'rgba(255,255,255,0.2)'}; color: white;">
+                                            <div class="comment-icon" style="background: ${comment.type === 'avatar' ? (comment.avatarColor || '#3498db') : 'rgba(255,255,255,0.2)'};">
                                                 ${comment.type === 'heart' ? '<svg viewBox="0 0 24 24" fill="currentColor" style="width: 18px; height: 18px;"><path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z" /></svg>' : (comment.type === 'fire' ? '<svg viewBox="0 0 24 24" fill="currentColor" style="width: 18px; height: 18px;"><path fill-rule="evenodd" d="M12.963 2.286a.75.75 0 00-1.071-.136 9.742 9.742 0 00-3.539 6.177 7.547 7.547 0 01-1.705-1.715.75.75 0 00-1.152-.082A9 9 0 1015.68 4.534a7.46 7.46 0 01-2.717-2.248zM15.75 14.25a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" clip-rule="evenodd" /></svg>' : '')}
                                             </div>
                                             <span>${comment.text}</span>
                                         </div>
                                     `).join('') : ''}
                                 </div>
-
                             </div>
                         `).join('')}
-                        ` : `
-                        <!-- Grid Section (for other tabs: at the start) -->
-                        <div class="grid-section active" data-bg-color="${tab.videos[0].bgColor}" style="min-height: 100vh; position: relative; z-index: 1; padding-top: 90px;">
-                            <div class="grid-container">
-                                ${tab.videos.map((video, vIndex) => `
-                                    <div class="grid-item" onclick="goToVideo(${vIndex + 1}, ${tabIndex})">
-                                        <img src="${video.thumbnail || 'https://placehold.co/360x640/png?text=Thumbnail'}" style="width: 100%; height: 100%; object-fit: cover;" draggable="false" />
-                                        <span class="video-number">${vIndex + 1}</span>
-                                    </div>
-                                `).join('')}
-                            </div>
-                        </div>
-
-                        <!-- Video Sections (for other tabs) -->
-            ${tab.videos.map(video => `
-                            <div class="video-section video-section-r2 ${video.isLandscape ? 'landscape-mode' : ''}" data-video-id="${video.id}" data-bg-color="${video.bgColor}">
-                                
-                                <!-- New Left Content: Title & Desc -->
-                                <div class="content-info-left">
-                                    ${video.description ? `<p class="content-desc">${video.description}</p>` : ''}
-                                    ${video.title ? `<h2 class="content-title">${video.title}</h2>` : ''}
-                                    ${video.link ? `<a class="content-link" href="${video.link.url}" target="_blank" rel="noopener noreferrer">
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                                            <path fill-rule="evenodd" d="M19.902 4.098a3.75 3.75 0 00-5.304 0l-4.5 4.5a3.75 3.75 0 001.035 6.037.75.75 0 01-.646 1.353 5.25 5.25 0 01-1.449-8.45l4.5-4.5a5.25 5.25 0 117.424 7.424l-1.757 1.757a.75.75 0 11-1.06-1.06l1.757-1.757a3.75 3.75 0 000-5.304zm-7.389 4.267a.75.75 0 011-.353 5.25 5.25 0 011.449 8.45l-4.5 4.5a5.25 5.25 0 11-7.424-7.424l1.757-1.757a.75.75 0 111.06 1.06l-1.757 1.757a3.75 3.75 0 105.304 5.304l4.5-4.5a3.75 3.75 0 00-1.035-6.037.75.75 0 01-.354-1z" clip-rule="evenodd" />
-                                        </svg>
-                                        ${video.link.text}
-                                    </a>` : ''}
-                                </div>
-
-                                <div class="sticker sticker-star" style="color: #FFD700; width: 60px; height: 60px;">
-                                    <svg viewBox="0 0 24 24" fill="currentColor">
-                                        <path fill-rule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z" clip-rule="evenodd" />
-                                    </svg>
-                                </div>
-                                <div class="sticker sticker-heart" style="color: #FF8800; width: 50px; height: 50px;">
-                                    <svg viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z" />
-                                    </svg>
-                                </div>
-                                <div class="sticker sticker-sparkle" style="color: #FFD700; width: 40px; height: 40px;">
-                                    <svg viewBox="0 0 24 24" fill="currentColor">
-                                        <path fill-rule="evenodd" d="M9 4.5a.75.75 0 01.721.544l.813 2.846a3.75 3.75 0 002.576 2.576l2.846.813a.75.75 0 010 1.442l-2.846.813a3.75 3.75 0 00-2.576 2.576l-.813 2.846a.75.75 0 01-1.442 0l-.813-2.846a3.75 3.75 0 00-2.576-2.576l-2.846-.813a.75.75 0 010-1.442l2.846-.813a3.75 3.75 0 002.576-2.576l.813-2.846A.75.75 0 019 4.5zM1.5 6a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5h-1.5A.75.75 0 011.5 6zm2.25 10.5a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5h-1.5a.75.75 0 01-.75-.75zm13.5-9a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5h-1.5a.75.75 0 01-.75-.75zm2.25 10.5a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5h-1.5a.75.75 0 01-.75-.75z" clip-rule="evenodd" />
-                                    </svg>
-                                </div>
-
-                                <div class="video-frame" onclick="toggleVideo('${video.id}')">
-                                    <video id="${video.id}" src="${video.src}" muted playsinline preload="metadata" onended="scrollToNextVideo(this)"></video>
-                                    <div class="play-overlay-btn" id="btn-${video.id}">
-                                         <svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" /></svg>
-                                    </div>
-                                </div>
-
-                                <!-- New Right Content: Comments bubbles -->
-                                <div class="content-info-right">
-                                    ${video.comments ? video.comments.map(comment => `
-                                        <div class="comment-pill">
-                                            <div class="comment-icon" style="background: ${comment.type === 'avatar' ? (comment.avatarColor || '#3498db') : 'rgba(255,255,255,0.2)'}; color: white;">
-                                                ${comment.type === 'heart' ? '<svg viewBox="0 0 24 24" fill="currentColor" style="width: 18px; height: 18px;"><path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z" /></svg>' : (comment.type === 'fire' ? '<svg viewBox="0 0 24 24" fill="currentColor" style="width: 18px; height: 18px;"><path fill-rule="evenodd" d="M12.963 2.286a.75.75 0 00-1.071-.136 9.742 9.742 0 00-3.539 6.177 7.547 7.547 0 01-1.705-1.715.75.75 0 00-1.152-.082A9 9 0 1015.68 4.534a7.46 7.46 0 01-2.717-2.248zM15.75 14.25a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" clip-rule="evenodd" /></svg>' : '')}
-                                            </div>
-                                            <span>${comment.text}</span>
-                                        </div>
-                                    `).join('') : ''}
-                                </div>
-
-                            </div>
-                        `).join('')}
-                        `}
                     </div>
                 </div>
             `).join('');
@@ -1892,6 +1827,12 @@
             if (firstContainer) {
                 handleScroll({ target: firstContainer });
             }
+        }
+
+        // Minimal scroll handler - most logic is handled by Intersection Observer
+        function handleScroll(e) {
+            // The Intersection Observer handles video activation and UI updates
+            // This function exists for future enhancements if needed
         }
 
         // Intersection Observer logic (for landing, grid and video sections within tabs)
@@ -1923,23 +1864,12 @@
                         }
 
                         if (isLanding) {
-                            gridBtn.classList.add('hidden');
-                            controlBar.classList.remove('hidden');
+                            if (controlBar) controlBar.classList.remove('hidden');
                             if (logoBtn) logoBtn.classList.add('active');
                             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
                             playVideo('landing-video');
-                            const tab0Grid = document.getElementById('tab0-grid');
-                            if (tab0Grid) tab0Grid.style.display = 'none';
-                        } else if (isGrid) {
-                            gridBtn.classList.add('hidden');
-                            controlBar.classList.add('hidden');
-                            if (logoBtn) logoBtn.classList.remove('active');
-                            document.querySelectorAll('.tab-btn').forEach((btn, idx) => {
-                                btn.classList.toggle('active', idx === parentTabIndex);
-                            });
                         } else if (isVideo) {
-                            gridBtn.classList.remove('hidden');
-                            controlBar.classList.remove('hidden');
+                            if (controlBar) controlBar.classList.remove('hidden');
                             if (logoBtn) logoBtn.classList.remove('active');
                             document.querySelectorAll('.tab-btn').forEach((btn, idx) => {
                                 btn.classList.toggle('active', idx === parentTabIndex);
@@ -1961,8 +1891,8 @@
                 });
             }, { threshold: 0.5 });
 
-            // Observe all section types
-            document.querySelectorAll('.landing-section, .grid-section, .video-section').forEach(section => {
+            // Observe all section types (Grid is now an overlay, not observed)
+            document.querySelectorAll('.landing-section, .video-section').forEach(section => {
                 observer.observe(section);
             });
         }
@@ -2014,9 +1944,7 @@
             } else {
                 // If it's the last video, move to first video of next tab
                 if (currentTab < videosData.tabs.length - 1) {
-                    // Next tab's first video index is 1 (index 0 is grid)
-                    // For Tab 0 it would be 2, but we are moving TO next tabs (1, 2, 3...)
-                    switchTab(currentTab + 1, 1);
+                    switchTab(currentTab + 1, 0); // Next tab's first content
                 } else {
                     // Last video of last tab - show play button again
                     toggleVideo(videoEl.id);
@@ -2131,124 +2059,44 @@
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 closeFloatingModal();
+                closeGridOverlay();
             }
         });
 
         // Scroll to first video from landing section
         function scrollToFirstVideo() {
-            const zetaTab = document.getElementById('tab-zeta');
-            if (!zetaTab) return;
-
-            const container = zetaTab.querySelector('.video-container');
-            const firstVideoSection = zetaTab.querySelector('.video-section');
-
-            if (container && firstVideoSection) {
-                // Scroll to first video (index 2 in T0: 0=landing, 1=grid, 2=video 1)
-                scrollToVideo(2, 0, true);
-
-                // Update UI - deactivate VS button, activate Zeta tab
-                const logoBtn = document.getElementById('logoBtn');
-                if (logoBtn) logoBtn.classList.add('active'); // Wait, should it be active? 
-                // Actually if we move to videos, VS should NOT be active, Zeta Tab should.
-                if (logoBtn) logoBtn.classList.remove('active');
-                document.querySelectorAll('.tab-btn').forEach((btn, idx) => {
-                    btn.classList.toggle('active', idx === 0);
-                });
-            }
+            // First video in Tab 0 is index 1 (Index 0 is Landing)
+            scrollToVideo(1, 0, true);
         }
 
         // --- Navigation Functions ---
 
         // Navigate to the landing/profile section (top of Tab 0)
         function goToLanding() {
-            // Pause current video
-            if (currentVideoId) {
-                pauseVideo(currentVideoId);
-            }
+            if (currentVideoId) pauseVideo(currentVideoId);
 
-            // If not on tab 0, switch to it first
+            // If not on tab 0, switch to it (LANDING position is index 0)
             if (currentTab !== 0) {
-                // Slide to tab 0
-                tabsContainer.style.transform = 'translateX(0)';
-                currentTab = 0;
-
-                // Update BG
-                if (videosData && videosData.landingSection) {
-                    bgLayer.style.backgroundColor = videosData.landingSection.bgColor || '#2d1b4e';
-                }
+                switchTab(0, 0);
+            } else {
+                // Already on tab 0, just scroll to top
+                scrollToVideo(0, 0, true);
             }
 
             // Update UI - deactivate all tab buttons, activate VS button
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             const logoBtn = document.getElementById('logoBtn');
             if (logoBtn) logoBtn.classList.add('active');
-
-            // Scroll to top of tab 0 (landing/profile section)
-            const zetaTab = document.getElementById('tab-zeta');
-            if (zetaTab) {
-                const container = zetaTab.querySelector('.video-container');
-                if (container) {
-                    // Temporarily disable scroll-snap for smooth animation
-                    const originalSnap = container.style.scrollSnapType;
-                    container.style.scrollSnapType = 'none';
-
-                    container.scrollTo({ top: 0, behavior: 'smooth' });
-
-                    // Hide Tab 0 Grid
-                    const tab0Grid = document.getElementById('tab0-grid');
-                    if (tab0Grid) tab0Grid.style.display = 'none';
-
-                    // Restore scroll-snap after animation
-                    setTimeout(() => {
-                        container.style.scrollSnapType = originalSnap || '';
-                        if (!container.style.scrollSnapType) container.style.removeProperty('scroll-snap-type');
-                    }, 800);
-                }
-            }
         }
 
         function switchTab(index, targetSectionIndex = null) {
             if (index === currentTab && targetSectionIndex === null) {
-                const currentTabId = videosData.tabs[index].id;
-                const currentTabEl = document.getElementById(`tab-${currentTabId}`);
-                const container = currentTabEl?.querySelector('.video-container');
-
-                if (container) {
-                    if (index === 0) {
-                        const isAtGrid = isAtTab0GridPosition(container);
-                        if (isAtGrid) return;
-
-                        if (currentVideoId) pauseVideo(currentVideoId);
-                        const tab0Grid = document.getElementById('tab0-grid');
-                        if (tab0Grid) tab0Grid.style.display = 'block';
-                        scrollToTab0Grid(container, true);
-                    } else {
-                        const gridSection = currentTabEl.querySelector('.grid-section');
-                        const originalSnap = container.style.scrollSnapType;
-                        container.style.scrollSnapType = 'none';
-                        container.scrollTo({ top: 0, behavior: 'smooth' });
-                        setTimeout(() => {
-                            container.style.scrollSnapType = originalSnap || '';
-                        }, 800);
-                        if (gridSection) gridSection.classList.add('active');
-                    }
-                }
+                // If already on tab, clicking it scrolls to top of content
+                scrollToVideo(0, index, true);
                 return;
             }
 
             if (currentVideoId) pauseVideo(currentVideoId);
-
-            const oldTabData = videosData.tabs[currentTab];
-            if (oldTabData && targetSectionIndex === null) {
-                const oldTabId = oldTabData.id;
-                setTimeout(() => {
-                    const oldTabEl = document.getElementById(`tab-${oldTabId}`);
-                    if (oldTabEl) {
-                        const oldContainer = oldTabEl.querySelector('.video-container');
-                        if (oldContainer) oldContainer.scrollTop = 0;
-                    }
-                }, 550);
-            }
 
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 const btnIndex = parseInt(btn.getAttribute('data-index'));
@@ -2263,25 +2111,83 @@
             const container = newTabEl?.querySelector('.video-container');
 
             if (targetSectionIndex !== null) {
-                setTimeout(() => {
+                if (container) {
                     scrollToVideo(targetSectionIndex, index, false);
-                }, 50);
+                }
             } else {
-                if (newTabEl && container) {
-                    if (index === 0) {
-                        const tab0Grid = newTabEl.querySelector('#tab0-grid');
-                        if (tab0Grid) tab0Grid.style.display = 'block';
-                        scrollToTab0Grid(container, false);
-                    } else {
-                        container.scrollTop = 0;
-                        const gridSection = newTabEl.querySelector('.grid-section');
-                        if (gridSection) gridSection.classList.add('active');
-                    }
+                // Manual tab click -> scroll to top of content
+                if (container) {
+                    scrollToVideo(0, index, false);
                 }
             }
 
             if (newTabData.videos[0]) {
                 bgLayer.style.backgroundColor = newTabData.videos[0].bgColor;
+            }
+        }
+
+        function toggleCurrentGrid() {
+            openGridOverlay(currentTab);
+        }
+
+        function openGridOverlay(activeTabIndex = 0) {
+            const gridOverlay = document.getElementById('gridOverlay');
+            const gridTabNav = document.getElementById('gridTabNav');
+            const gridPanelsContainer = document.getElementById('gridPanelsContainer');
+
+            // Generate tab navigation
+            gridTabNav.innerHTML = videosData.tabs.map((tab, index) =>
+                `<button class="grid-tab-btn ${index === activeTabIndex ? 'active' : ''}" 
+                         data-tab-index="${index}" 
+                         onclick="switchGridTab(${index})">${tab.label}</button>`
+            ).join('');
+
+            // Generate grid panels for all tabs
+            gridPanelsContainer.innerHTML = videosData.tabs.map((tab, tabIndex) => `
+                <div class="grid-panel ${tabIndex === activeTabIndex ? 'active' : ''}" data-panel-index="${tabIndex}">
+                    <div class="grid-container">
+                        ${tab.videos.map((video, vIndex) => `
+                            <div class="grid-item" onclick="goToVideoFromGrid(${tabIndex === 0 ? vIndex + 1 : vIndex}, ${tabIndex})">
+                                <img src="${video.thumbnail || 'https://placehold.co/360x640/png?text=Thumbnail'}" style="width: 100%; height: 100%; object-fit: cover;" draggable="false" />
+                                <span class="video-number">${vIndex + 1}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+
+            gridOverlay.classList.add('visible');
+        }
+
+        function switchGridTab(tabIndex) {
+            // Update tab buttons
+            document.querySelectorAll('.grid-tab-btn').forEach((btn, idx) => {
+                btn.classList.toggle('active', idx === tabIndex);
+            });
+            // Update panels
+            document.querySelectorAll('.grid-panel').forEach((panel, idx) => {
+                panel.classList.toggle('active', idx === tabIndex);
+            });
+        }
+
+        function closeGridOverlay() {
+            const gridOverlay = document.getElementById('gridOverlay');
+            gridOverlay.classList.remove('visible');
+        }
+
+        function handleGridOverlayClick(event) {
+            // Close if clicking on the overlay background (not on content)
+            if (event.target.id === 'gridOverlay') {
+                closeGridOverlay();
+            }
+        }
+
+        function goToVideoFromGrid(index, tabIndex) {
+            closeGridOverlay();
+            if (tabIndex !== currentTab) {
+                switchTab(tabIndex, index);
+            } else {
+                scrollToVideo(index, currentTab);
             }
         }
 
@@ -2291,12 +2197,7 @@
             } else {
                 scrollToVideo(index, currentTab);
             }
-        }
-
-
-        function handleScroll(e) {
-            // Navbar is now always fixed at top - minimal scroll handling
-            // The intersection observer handles most state changes
+            closeGridOverlay();
         }
 
         function scrollToVideo(index, tabIdx, smooth = true) {
@@ -2305,7 +2206,7 @@
 
             const tabEl = document.getElementById(`tab-${tabData.id}`);
             const container = tabEl.querySelector('.video-container');
-            const sections = Array.from(tabEl.querySelectorAll('.landing-section, .grid-section, .video-section'));
+            const sections = Array.from(tabEl.querySelectorAll('.landing-section, .video-section'));
 
             if (sections[index] && container) {
                 const rect = sections[index].getBoundingClientRect();
@@ -2327,7 +2228,6 @@
             }
         }
 
-        // Unified Navigation Logic
         function navigate(direction) {
             if (isScrolling) return;
 
@@ -2336,39 +2236,25 @@
             const container = tabEl.querySelector('.video-container');
             const sectionHeight = window.innerHeight;
 
-            // Calculate current index based on scroll position
             let currentScrollIndex = Math.round(container.scrollTop / sectionHeight);
-
-            // Tab 0 has Landing (0) + Grid (1) + Videos (2+). Others have Grid (0) + Videos (1+).
-            const totalSections = tabData.videos.length + (currentTab === 0 ? 2 : 1);
-
-            // Total videos is tabData.videos.length.
-            // For Tab 0: Sections are Landing, Grid, V1...Vn. Total = n + 2.
-            // For others: Sections are Grid, V1...Vn. Total = n + 1.
+            const totalSections = tabData.videos.length + (currentTab === 0 ? 1 : 0);
 
             let newIndex = currentScrollIndex + direction;
 
-            // Boundary checks
             if (newIndex >= totalSections) {
                 if (currentTab < videosData.tabs.length - 1) {
-                    // Next tab's first video is index 1 (except Tab 0 which we aren't moving TO from a previous tab in this check)
-                    switchTab(currentTab + 1, 1);
+                    switchTab(currentTab + 1, 0); // Next tab's first video (index 0 since no grid)
                 }
             } else if (newIndex < 0) {
                 if (currentTab > 0) {
-                    // Previous tab's last video
                     const prevTabData = videosData.tabs[currentTab - 1];
-                    const lastVideoIdx = prevTabData.videos.length + (currentTab - 1 === 0 ? 1 : 0);
+                    const lastVideoIdx = prevTabData.videos.length - 1;
                     switchTab(currentTab - 1, lastVideoIdx);
                 }
             } else {
                 isScrolling = true;
                 scrollToVideo(newIndex, currentTab);
-
-                // Cooldown to prevent rapid scrolling/double jumps
-                setTimeout(() => {
-                    isScrolling = false;
-                }, 800);
+                setTimeout(() => { isScrolling = false; }, 800);
             }
         }
 
@@ -2398,13 +2284,13 @@
             if (e.deltaY > 50 && isAtBottom) {
                 if (currentTab < videosData.tabs.length - 1) {
                     lastTabSwitchTime = now;
-                    switchTab(currentTab + 1, 1); // Start at first video
+                    switchTab(currentTab + 1, 0); // Start at first video of next tab
                 }
             } else if (e.deltaY < -50 && isAtTop) {
                 if (currentTab > 0) {
                     lastTabSwitchTime = now;
                     const prevTabData = videosData.tabs[currentTab - 1];
-                    const lastVideoIdx = prevTabData.videos.length + (currentTab - 1 === 0 ? 1 : 0);
+                    const lastVideoIdx = prevTabData.videos.length - 1 + (currentTab - 1 === 0 ? 1 : 0);
                     switchTab(currentTab - 1, lastVideoIdx);
                 }
             }
@@ -2456,13 +2342,13 @@
                 if (deltaY < 0 && isAtBottom) {
                     // Swipe up at bottom -> next tab
                     if (currentTab < videosData.tabs.length - 1) {
-                        switchTab(currentTab + 1, 1);
+                        switchTab(currentTab + 1, 0);
                     }
                 } else if (deltaY > 0 && isAtTop) {
                     // Swipe down at top -> previous tab
                     if (currentTab > 0) {
                         const prevTabData = videosData.tabs[currentTab - 1];
-                        const lastVideoIdx = prevTabData.videos.length + (currentTab - 1 === 0 ? 1 : 0);
+                        const lastVideoIdx = prevTabData.videos.length - 1 + (currentTab - 1 === 0 ? 1 : 0);
                         switchTab(currentTab - 1, lastVideoIdx);
                     }
                 }

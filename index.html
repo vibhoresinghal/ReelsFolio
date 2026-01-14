@@ -2090,9 +2090,12 @@
         }
 
         function switchTab(index, targetSectionIndex = null) {
+            // For Tab 0, first video is at index 1 (after landing), for others it's index 0
+            const firstVideoIndex = index === 0 ? 1 : 0;
+
             if (index === currentTab && targetSectionIndex === null) {
-                // If already on tab, clicking it scrolls to top of content
-                scrollToVideo(0, index, true);
+                // If already on tab, clicking it scrolls to first video
+                scrollToVideo(firstVideoIndex, index, true);
                 return;
             }
 
@@ -2115,9 +2118,9 @@
                     scrollToVideo(targetSectionIndex, index, false);
                 }
             } else {
-                // Manual tab click -> scroll to top of content
+                // Manual tab click -> scroll to first video
                 if (container) {
-                    scrollToVideo(0, index, false);
+                    scrollToVideo(firstVideoIndex, index, false);
                 }
             }
 

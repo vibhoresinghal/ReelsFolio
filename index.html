@@ -911,9 +911,10 @@
             color: white;
         }
 
-        .logo-btn.hidden {
-            opacity: 0;
-            visibility: hidden;
+        .logo-btn.active {
+            background: rgba(124, 58, 237, 0.6);
+            border-color: rgba(124, 58, 237, 0.8);
+            color: white;
         }
 
         /* Global tabs - fixed at top by default, can animate to landing position */
@@ -1121,6 +1122,46 @@
             color: white;
             font-size: 12px;
             font-weight: 500;
+        }
+
+        /* Landing video frame play overlay - same as video-frame */
+        .landing-video-frame {
+            cursor: pointer;
+        }
+
+        .landing-video-frame .play-overlay-btn {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 100;
+            opacity: 1;
+            pointer-events: auto;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            color: white;
+        }
+
+        /* Hide button when playing */
+        .landing-video-frame .play-overlay-btn.playing {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .landing-video-frame .play-overlay-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%) scale(1.05);
         }
 
         /* Floating Items */
@@ -1435,10 +1476,10 @@
         <div class="tabs-world" id="tabsWorld">
             <!-- Global Fixed Tabs (for video sections) -->
             <!-- VS Logo Button (separate from tabs) -->
-            <button class="logo-btn hidden" id="logoBtn" onclick="goToLanding()" title="Go to Profile">VS</button>
+            <button class="logo-btn active" id="logoBtn" onclick="goToLanding()" title="Go to Profile">VS</button>
 
             <!-- Global Fixed Tabs (for video sections) -->
-            <nav class="tab-nav global-tabs hidden" id="globalTabs"></nav>
+            <nav class="tab-nav global-tabs" id="globalTabs"></nav>
 
             <!-- Horizontal Tabs Container -->
             <div class="tabs-container" id="tabsContainer"></div>
@@ -1529,10 +1570,10 @@
         // Helper: Scroll to Tab 0 grid view with consistent positioning
         // Uses direct scrollTo for precise control without any browser adjustments
         function scrollToTab0Grid(container, smooth = true) {
-            const gridContainer = document.querySelector('#tab-zeta .grid-container');
+            const gridSection = document.querySelector('#tab-zeta .grid-section');
             const scrollContainer = container || document.querySelector('#tab-zeta .video-container');
 
-            if (gridContainer && scrollContainer) {
+            if (gridSection && scrollContainer) {
                 // Disable scroll-snap to prevent any interference
                 const originalSnap = scrollContainer.style.scrollSnapType;
                 scrollContainer.style.scrollSnapType = 'none';
@@ -1543,8 +1584,8 @@
                     scrollContainer.style.scrollBehavior = 'auto';
                 }
 
-                // Calculate exact position: grid offsetTop minus scroll-margin-top (90px)
-                const targetScrollTop = Math.max(0, gridContainer.offsetTop - 90);
+                // Use the grid-section's offsetTop (relative to video-container)
+                const targetScrollTop = gridSection.offsetTop;
 
                 scrollContainer.scrollTo({
                     top: targetScrollTop,
@@ -1568,12 +1609,12 @@
 
         // Helper: Check if already at Tab 0 grid position
         function isAtTab0GridPosition(container) {
-            const gridContainer = document.querySelector('#tab-zeta .grid-container');
-            if (!gridContainer || !container) return false;
-            // Check if scrollTop is close to where the grid would be positioned
-            const gridRect = gridContainer.getBoundingClientRect();
-            // Grid should be roughly 90px from top (due to scroll-margin-top)
-            return Math.abs(gridRect.top - 90) < 100;
+            const gridSection = document.querySelector('#tab-zeta .grid-section');
+            if (!gridSection || !container) return false;
+            // Check if grid section is visible near the top of viewport
+            const gridRect = gridSection.getBoundingClientRect();
+            // Grid should be near the top of the viewport (within 150px)
+            return gridRect.top >= 0 && gridRect.top < 150;
         }
 
         // Fetch JSON and initialize
@@ -1596,7 +1637,7 @@
 
             // 1. Generate Tabs Navigation HTML (shared - no logo button inside)
             const tabButtonsHTML = videosData.tabs.map((tab, index) =>
-                `<button class="tab-btn ${index === 0 ? 'active' : ''}" data-index="${index}" onclick="switchTab(${index})">${tab.label}</button>`
+                `<button class="tab-btn" data-index="${index}" onclick="switchTab(${index})">${tab.label}</button>`
             ).join('');
 
             // Populate Global Fixed Tabs
@@ -1652,8 +1693,11 @@
                             </div>
 
                             <!-- Central Video Frame -->
-                            <div class="landing-video-frame">
-                                <video src="${landing.profileVideo || ''}" muted loop playsinline autoplay></video>
+                            <div class="landing-video-frame" onclick="toggleVideo('landing-video')">
+                                <video id="landing-video" src="${landing.profileVideo || ''}" muted loop playsinline></video>
+                                <div class="play-overlay-btn" id="btn-landing-video">
+                                    <svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" /></svg>
+                                </div>
                                 <span class="video-time">1:00</span>
                             </div>
 
@@ -1697,11 +1741,12 @@
                         </div>
                         ` : ''}
 
-                        <!-- Grid Section -->
-                        <div class="grid-section ${tabIndex === 0 ? '' : 'active'}" data-bg-color="${tab.videos[0].bgColor}" style="min-height: 100vh; position: relative; z-index: 1; padding-top: 90px;">
+                        ${tabIndex === 0 ? `
+                        <!-- Grid Section (for Tab 0: after landing, before videos - accessed via Zeta tab click) -->
+                        <div class="grid-section" data-bg-color="${tab.videos[0].bgColor}" style="min-height: 100vh; position: relative; z-index: 1; padding-top: 90px;">
                             <div class="grid-container">
                                 ${tab.videos.map((video, vIndex) => `
-                                    <div class="grid-item" onclick="goToVideo(${tabIndex === 0 ? vIndex + 2 : vIndex + 1}, ${tabIndex})">
+                                    <div class="grid-item" onclick="goToVideo(${vIndex + 1}, ${tabIndex})">
                                         <img src="${video.thumbnail || 'https://placehold.co/360x640/png?text=Thumbnail'}" style="width: 100%; height: 100%; object-fit: cover;" draggable="false" />
                                         <span class="video-number">${vIndex + 1}</span>
                                     </div>
@@ -1709,7 +1754,7 @@
                             </div>
                         </div>
 
-                        <!-- Video Sections -->
+                        <!-- Video Sections (for Tab 0: after grid) -->
             ${tab.videos.map(video => `
                             <div class="video-section video-section-r2 ${video.isLandscape ? 'landscape-mode' : ''}" data-video-id="${video.id}" data-bg-color="${video.bgColor}">
                                 
@@ -1762,6 +1807,73 @@
 
                             </div>
                         `).join('')}
+                        ` : `
+                        <!-- Grid Section (for other tabs: at the start) -->
+                        <div class="grid-section active" data-bg-color="${tab.videos[0].bgColor}" style="min-height: 100vh; position: relative; z-index: 1; padding-top: 90px;">
+                            <div class="grid-container">
+                                ${tab.videos.map((video, vIndex) => `
+                                    <div class="grid-item" onclick="goToVideo(${vIndex + 1}, ${tabIndex})">
+                                        <img src="${video.thumbnail || 'https://placehold.co/360x640/png?text=Thumbnail'}" style="width: 100%; height: 100%; object-fit: cover;" draggable="false" />
+                                        <span class="video-number">${vIndex + 1}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <!-- Video Sections (for other tabs) -->
+            ${tab.videos.map(video => `
+                            <div class="video-section video-section-r2 ${video.isLandscape ? 'landscape-mode' : ''}" data-video-id="${video.id}" data-bg-color="${video.bgColor}">
+                                
+                                <!-- New Left Content: Title & Desc -->
+                                <div class="content-info-left">
+                                    ${video.description ? `<p class="content-desc">${video.description}</p>` : ''}
+                                    ${video.title ? `<h2 class="content-title">${video.title}</h2>` : ''}
+                                    ${video.link ? `<a class="content-link" href="${video.link.url}" target="_blank" rel="noopener noreferrer">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M19.902 4.098a3.75 3.75 0 00-5.304 0l-4.5 4.5a3.75 3.75 0 001.035 6.037.75.75 0 01-.646 1.353 5.25 5.25 0 01-1.449-8.45l4.5-4.5a5.25 5.25 0 117.424 7.424l-1.757 1.757a.75.75 0 11-1.06-1.06l1.757-1.757a3.75 3.75 0 000-5.304zm-7.389 4.267a.75.75 0 011-.353 5.25 5.25 0 011.449 8.45l-4.5 4.5a5.25 5.25 0 11-7.424-7.424l1.757-1.757a.75.75 0 111.06 1.06l-1.757 1.757a3.75 3.75 0 105.304 5.304l4.5-4.5a3.75 3.75 0 00-1.035-6.037.75.75 0 01-.354-1z" clip-rule="evenodd" />
+                                        </svg>
+                                        ${video.link.text}
+                                    </a>` : ''}
+                                </div>
+
+                                <div class="sticker sticker-star" style="color: #FFD700; width: 60px; height: 60px;">
+                                    <svg viewBox="0 0 24 24" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                <div class="sticker sticker-heart" style="color: #FF8800; width: 50px; height: 50px;">
+                                    <svg viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z" />
+                                    </svg>
+                                </div>
+                                <div class="sticker sticker-sparkle" style="color: #FFD700; width: 40px; height: 40px;">
+                                    <svg viewBox="0 0 24 24" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M9 4.5a.75.75 0 01.721.544l.813 2.846a3.75 3.75 0 002.576 2.576l2.846.813a.75.75 0 010 1.442l-2.846.813a3.75 3.75 0 00-2.576 2.576l-.813 2.846a.75.75 0 01-1.442 0l-.813-2.846a3.75 3.75 0 00-2.576-2.576l-2.846-.813a.75.75 0 010-1.442l2.846-.813a3.75 3.75 0 002.576-2.576l.813-2.846A.75.75 0 019 4.5zM1.5 6a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5h-1.5A.75.75 0 011.5 6zm2.25 10.5a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5h-1.5a.75.75 0 01-.75-.75zm13.5-9a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5h-1.5a.75.75 0 01-.75-.75zm2.25 10.5a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5h-1.5a.75.75 0 01-.75-.75z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+
+                                <div class="video-frame" onclick="toggleVideo('${video.id}')">
+                                    <video id="${video.id}" src="${video.src}" muted playsinline preload="metadata" onended="scrollToNextVideo(this)"></video>
+                                    <div class="play-overlay-btn" id="btn-${video.id}">
+                                         <svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" /></svg>
+                                    </div>
+                                </div>
+
+                                <!-- New Right Content: Comments bubbles -->
+                                <div class="content-info-right">
+                                    ${video.comments ? video.comments.map(comment => `
+                                        <div class="comment-pill">
+                                            <div class="comment-icon" style="background: ${comment.type === 'avatar' ? (comment.avatarColor || '#3498db') : 'rgba(255,255,255,0.2)'}; color: white;">
+                                                ${comment.type === 'heart' ? '<svg viewBox="0 0 24 24" fill="currentColor" style="width: 18px; height: 18px;"><path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z" /></svg>' : (comment.type === 'fire' ? '<svg viewBox="0 0 24 24" fill="currentColor" style="width: 18px; height: 18px;"><path fill-rule="evenodd" d="M12.963 2.286a.75.75 0 00-1.071-.136 9.742 9.742 0 00-3.539 6.177 7.547 7.547 0 01-1.705-1.715.75.75 0 00-1.152-.082A9 9 0 1015.68 4.534a7.46 7.46 0 01-2.717-2.248zM15.75 14.25a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" clip-rule="evenodd" /></svg>' : '')}
+                                            </div>
+                                            <span>${comment.text}</span>
+                                        </div>
+                                    `).join('') : ''}
+                                </div>
+
+                            </div>
+                        `).join('')}
+                        `}
                     </div>
                 </div>
             `).join('');
@@ -1772,11 +1884,6 @@
 
             // Initialize background with hero's purple color
             bgLayer.style.backgroundColor = '#2d1b4e';
-
-            // Initialize navbar in landing position (page starts on landing view)
-            if (globalTabs) {
-                globalTabs.classList.add('landing-position');
-            }
 
             // Initialize Observer
             initObserver();
@@ -1818,35 +1925,52 @@
                         const isVideo = entry.target.classList.contains('video-section');
                         const logoBtn = document.getElementById('logoBtn');
 
+                        // Navbar always visible and at top
+                        if (globalTabs) {
+                            globalTabs.classList.remove('hidden');
+                            globalTabs.classList.remove('landing-position');
+                        }
+
                         if (isLanding) {
-                            // Landing section: hide controls, show tabs at top, hide logo
+                            // Landing section: show controls, VS button active, play landing video
                             gridBtn.classList.add('hidden');
-                            controlBar.classList.add('hidden');
-                            if (globalTabs) {
-                                globalTabs.classList.remove('hidden');
-                                globalTabs.classList.add('landing-position');
+                            controlBar.classList.remove('hidden'); // Show control bar for landing video
+
+                            // VS button active state
+                            if (logoBtn) {
+                                logoBtn.classList.add('active');
                             }
-                            if (logoBtn) logoBtn.classList.add('hidden');
+
+                            // Deactivate all tab buttons (VS is the "active" one)
+                            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+
+                            // Play landing video
+                            playVideo('landing-video');
                         } else if (isGrid) {
                             // Hide grid button and control bar
                             gridBtn.classList.add('hidden');
                             controlBar.classList.add('hidden');
 
-                            // Handle navbar position and logo button visibility
-                            if (globalTabs) {
-                                globalTabs.classList.remove('hidden');
-                                globalTabs.classList.remove('landing-position');
+                            // VS button not active
+                            if (logoBtn) logoBtn.classList.remove('active');
+
+                            // Set first tab as active when on grid (for tab 0)
+                            if (parentTabIndex === 0) {
+                                document.querySelectorAll('.tab-btn').forEach((btn, idx) => {
+                                    btn.classList.toggle('active', idx === 0);
+                                });
                             }
-                            if (logoBtn) logoBtn.classList.remove('hidden');
                         } else if (isVideo) {
                             gridBtn.classList.remove('hidden');
                             controlBar.classList.remove('hidden');
-                            if (globalTabs) {
-                                globalTabs.classList.remove('hidden');
-                                globalTabs.classList.remove('landing-position'); // Always top for video views
-                            }
-                            // Show logo button when viewing videos
-                            if (logoBtn) logoBtn.classList.remove('hidden');
+
+                            // VS button not active
+                            if (logoBtn) logoBtn.classList.remove('active');
+
+                            // Set appropriate tab as active
+                            document.querySelectorAll('.tab-btn').forEach((btn, idx) => {
+                                btn.classList.toggle('active', idx === parentTabIndex);
+                            });
 
                             // Play Video
                             const videoId = entry.target.getAttribute('data-video-id');
@@ -1854,10 +1978,13 @@
                         }
                     } else {
                         entry.target.classList.remove('active');
-                        // Pause Video if it's a video section
+                        // Pause Video if it's a video section or landing section
                         if (entry.target.classList.contains('video-section')) {
                             const videoId = entry.target.getAttribute('data-video-id');
                             pauseVideo(videoId);
+                        }
+                        if (entry.target.classList.contains('landing-section')) {
+                            pauseVideo('landing-video');
                         }
                     }
                 });
@@ -1889,7 +2016,13 @@
 
             // Update overlay button
             const btn = document.getElementById('btn-' + videoId);
-            if (btn) btn.classList.remove('paused');
+            if (btn) {
+                if (videoId === 'landing-video') {
+                    btn.classList.add('playing'); // Hide button when playing
+                } else {
+                    btn.classList.remove('paused');
+                }
+            }
         }
 
         function pauseVideo(videoId) {
@@ -1919,18 +2052,30 @@
             const btn = document.getElementById('btn-' + videoId);
             if (!video) return;
 
-
+            const isLandingVideo = videoId === 'landing-video';
 
             if (video.paused) {
                 video.play();
-                if (btn) btn.classList.remove('paused');
+                if (btn) {
+                    if (isLandingVideo) {
+                        btn.classList.add('playing'); // Hide button when playing
+                    } else {
+                        btn.classList.remove('paused');
+                    }
+                }
                 userPaused[videoId] = false; // User resumed
                 isPlaying = true;
                 document.getElementById('pauseIcon').style.display = 'block';
                 document.getElementById('playIcon').style.display = 'none';
             } else {
                 video.pause();
-                if (btn) btn.classList.add('paused');
+                if (btn) {
+                    if (isLandingVideo) {
+                        btn.classList.remove('playing'); // Show button when paused
+                    } else {
+                        btn.classList.add('paused');
+                    }
+                }
                 userPaused[videoId] = true; // User explicitly paused
                 isPlaying = false;
                 document.getElementById('pauseIcon').style.display = 'none';
@@ -2027,6 +2172,13 @@
 
                 firstVideoSection.scrollIntoView({ behavior: 'smooth' });
 
+                // Update UI - deactivate VS button, activate Zeta tab
+                const logoBtn = document.getElementById('logoBtn');
+                if (logoBtn) logoBtn.classList.remove('active');
+                document.querySelectorAll('.tab-btn').forEach((btn, idx) => {
+                    btn.classList.toggle('active', idx === 0);
+                });
+
                 // Restore scroll-snap after animation
                 setTimeout(() => {
                     container.style.scrollSnapType = originalSnap || '';
@@ -2039,31 +2191,27 @@
 
         // Navigate to the landing/profile section (top of Tab 0)
         function goToLanding() {
+            // Pause current video
+            if (currentVideoId) {
+                pauseVideo(currentVideoId);
+            }
+
             // If not on tab 0, switch to it first
             if (currentTab !== 0) {
-                // Pause current video
-                if (currentVideoId) {
-                    pauseVideo(currentVideoId);
-                }
-
-                // Update UI - tab buttons
-                document.querySelectorAll('.tab-btn').forEach(btn => {
-                    const btnIndex = parseInt(btn.getAttribute('data-index'));
-                    btn.classList.toggle('active', btnIndex === 0);
-                });
-
                 // Slide to tab 0
                 tabsContainer.style.transform = 'translateX(0)';
                 currentTab = 0;
 
                 // Update BG
-                if (videosData && videosData.tabs[0]) {
-                    bgLayer.style.backgroundColor = videosData.tabs[0].videos[0].bgColor;
+                if (videosData && videosData.landingSection) {
+                    bgLayer.style.backgroundColor = videosData.landingSection.bgColor || '#2d1b4e';
                 }
-
-                // Hide global tabs (tab 0 uses flow nav)
-                if (globalTabs) globalTabs.classList.add('hidden');
             }
+
+            // Update UI - deactivate all tab buttons, activate VS button
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            const logoBtn = document.getElementById('logoBtn');
+            if (logoBtn) logoBtn.classList.add('active');
 
             // Scroll to top of tab 0 (landing/profile section)
             const zetaTab = document.getElementById('tab-zeta');
@@ -2246,45 +2394,8 @@
 
         let scrollTimeout;
         function handleScroll(e) {
-            const container = e.target;
-            const tabEl = container.closest('.tab-content');
-            if (!tabEl) return;
-
-            const tabIdx = Array.from(tabsContainer.children).indexOf(tabEl);
-            const gridContainer = tabEl.querySelector('.grid-container');
-            const logoBtn = document.getElementById('logoBtn');
-
-            if (globalTabs && gridContainer) {
-                const rect = gridContainer.getBoundingClientRect();
-                const navHeight = globalTabs.offsetHeight || 50;
-
-                // Sticky limits (matches CSS clamp(12, 3vh, 20))
-                const stickyTop = Math.max(12, Math.min(20, window.innerHeight * 0.03));
-
-                // We want the spacing between navbar bottom and grid top to be fixed
-                // When "stuck" at the top: gap = 90 - navHeight - stickyTop
-                const gap = 90 - navHeight - stickyTop;
-
-                // Target Top = Current Grid Top - navHeight - gap
-                let targetTop = rect.top - navHeight - gap;
-
-                // Clamp so it never goes above the sticky position
-                const finalTop = Math.max(stickyTop, targetTop);
-
-                // Apply position immediately for seamless "glued" effect
-                globalTabs.style.top = finalTop + 'px';
-
-                // Toggle logo button and classes based on proximity to sticky position
-                if (logoBtn) {
-                    if (finalTop <= stickyTop + 2) {
-                        logoBtn.classList.remove('hidden');
-                        globalTabs.classList.remove('landing-position');
-                    } else {
-                        logoBtn.classList.add('hidden');
-                        globalTabs.classList.add('landing-position');
-                    }
-                }
-            }
+            // Navbar is now always fixed at top - minimal scroll handling
+            // The intersection observer handles most state changes
         }
 
         // Keyboard Navigation

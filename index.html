@@ -969,14 +969,15 @@
         /* Tab Content */
         .tabs-container {
             display: flex;
-            width: 400vw;
-            /* Will be updated dynamically */
-            height: 100vh;
+            flex-direction: column;
+            width: 100vw;
+            /* Height will be updated dynamically */
+            height: 400vh;
             transition: transform 0.5s ease-in-out;
         }
 
         .tab-content {
-            flex: 0 0 100vw;
+            flex: 0 0 100vh;
             width: 100vw;
             height: 100vh;
             overflow: hidden;
@@ -1111,18 +1112,7 @@
             object-fit: cover;
         }
 
-        .landing-video-frame .video-time {
-            position: absolute;
-            top: 12px;
-            left: 12px;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(4px);
-            padding: 4px 8px;
-            border-radius: 6px;
-            color: white;
-            font-size: 12px;
-            font-weight: 500;
-        }
+
 
         /* Landing video frame play overlay - same as video-frame */
         .landing-video-frame {
@@ -1570,7 +1560,7 @@
         // Helper: Scroll to Tab 0 grid view with consistent positioning
         // Uses direct scrollTo for precise control without any browser adjustments
         function scrollToTab0Grid(container, smooth = true) {
-            const gridSection = document.querySelector('#tab-zeta .grid-section');
+            const gridSection = document.getElementById('tab0-grid');
             const scrollContainer = container || document.querySelector('#tab-zeta .video-container');
 
             if (gridSection && scrollContainer) {
@@ -1609,12 +1599,16 @@
 
         // Helper: Check if already at Tab 0 grid position
         function isAtTab0GridPosition(container) {
-            const gridSection = document.querySelector('#tab-zeta .grid-section');
+            const gridSection = document.getElementById('tab0-grid');
             if (!gridSection || !container) return false;
+
+            // If hidden, definitely not at position
+            if (window.getComputedStyle(gridSection).display === 'none') return false;
+
             // Check if grid section is visible near the top of viewport
             const gridRect = gridSection.getBoundingClientRect();
-            // Grid should be near the top of the viewport (within 150px)
-            return gridRect.top >= 0 && gridRect.top < 150;
+            // Grid should be near the top of the viewport (within 100px) and have height
+            return gridRect.height > 0 && Math.abs(gridRect.top) < 100;
         }
 
         // Fetch JSON and initialize
@@ -1676,7 +1670,8 @@
             }
 
             // 2. Render Tabs Content with NEW landing section in first tab
-            tabsContainer.style.width = `${videosData.tabs.length * 100}vw`;
+            tabsContainer.style.height = `${videosData.tabs.length * 100}vh`;
+            tabsContainer.style.width = '100vw';
             tabsContainer.innerHTML = videosData.tabs.map((tab, tabIndex) => `
                 <div class="tab-content" id="tab-${tab.id}">
                     <div class="video-container">
@@ -1698,7 +1693,7 @@
                                 <div class="play-overlay-btn" id="btn-landing-video">
                                     <svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" /></svg>
                                 </div>
-                                <span class="video-time">1:00</span>
+
                             </div>
 
                             <!-- Floating Items -->
@@ -1743,10 +1738,10 @@
 
                         ${tabIndex === 0 ? `
                         <!-- Grid Section (for Tab 0: after landing, before videos - accessed via Zeta tab click) -->
-                        <div class="grid-section" data-bg-color="${tab.videos[0].bgColor}" style="min-height: 100vh; position: relative; z-index: 1; padding-top: 90px;">
+                        <div id="tab0-grid" class="grid-section" data-bg-color="${tab.videos[0].bgColor}" style="min-height: 100vh; position: relative; z-index: 1; padding-top: 90px; display: none;">
                             <div class="grid-container">
                                 ${tab.videos.map((video, vIndex) => `
-                                    <div class="grid-item" onclick="goToVideo(${vIndex + 1}, ${tabIndex})">
+                                    <div class="grid-item" onclick="goToVideo(${vIndex + 2}, ${tabIndex})">
                                         <img src="${video.thumbnail || 'https://placehold.co/360x640/png?text=Thumbnail'}" style="width: 100%; height: 100%; object-fit: cover;" draggable="false" />
                                         <span class="video-number">${vIndex + 1}</span>
                                     </div>
@@ -1904,81 +1899,57 @@
             observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     const parentTab = entry.target.closest('.tab-content');
-                    if (!parentTab) return; // Skip if not in a tab (e.g., shared hero)
+                    if (!parentTab) return;
 
-                    // Find index of parent tab
                     const parentTabIndex = Array.from(tabsContainer.children).indexOf(parentTab);
 
-                    if (parentTabIndex !== currentTab) return;
-
                     if (entry.isIntersecting) {
-                        // Set Active Class
+                        // Only activate if it's the current tab
+                        if (parentTabIndex !== currentTab) return;
+
                         entry.target.classList.add('active');
 
-                        // Set Background Color
                         const bgColor = entry.target.getAttribute('data-bg-color');
                         if (bgColor) bgLayer.style.backgroundColor = bgColor;
 
-                        // Identify section type
                         const isLanding = entry.target.classList.contains('landing-section');
                         const isGrid = entry.target.classList.contains('grid-section');
                         const isVideo = entry.target.classList.contains('video-section');
                         const logoBtn = document.getElementById('logoBtn');
 
-                        // Navbar always visible and at top
                         if (globalTabs) {
                             globalTabs.classList.remove('hidden');
                             globalTabs.classList.remove('landing-position');
                         }
 
                         if (isLanding) {
-                            // Landing section: show controls, VS button active, play landing video
                             gridBtn.classList.add('hidden');
-                            controlBar.classList.remove('hidden'); // Show control bar for landing video
-
-                            // VS button active state
-                            if (logoBtn) {
-                                logoBtn.classList.add('active');
-                            }
-
-                            // Deactivate all tab buttons (VS is the "active" one)
+                            controlBar.classList.remove('hidden');
+                            if (logoBtn) logoBtn.classList.add('active');
                             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-
-                            // Play landing video
                             playVideo('landing-video');
+                            const tab0Grid = document.getElementById('tab0-grid');
+                            if (tab0Grid) tab0Grid.style.display = 'none';
                         } else if (isGrid) {
-                            // Hide grid button and control bar
                             gridBtn.classList.add('hidden');
                             controlBar.classList.add('hidden');
-
-                            // VS button not active
                             if (logoBtn) logoBtn.classList.remove('active');
-
-                            // Set first tab as active when on grid (for tab 0)
-                            if (parentTabIndex === 0) {
-                                document.querySelectorAll('.tab-btn').forEach((btn, idx) => {
-                                    btn.classList.toggle('active', idx === 0);
-                                });
-                            }
-                        } else if (isVideo) {
-                            gridBtn.classList.remove('hidden');
-                            controlBar.classList.remove('hidden');
-
-                            // VS button not active
-                            if (logoBtn) logoBtn.classList.remove('active');
-
-                            // Set appropriate tab as active
                             document.querySelectorAll('.tab-btn').forEach((btn, idx) => {
                                 btn.classList.toggle('active', idx === parentTabIndex);
                             });
-
-                            // Play Video
+                        } else if (isVideo) {
+                            gridBtn.classList.remove('hidden');
+                            controlBar.classList.remove('hidden');
+                            if (logoBtn) logoBtn.classList.remove('active');
+                            document.querySelectorAll('.tab-btn').forEach((btn, idx) => {
+                                btn.classList.toggle('active', idx === parentTabIndex);
+                            });
                             const videoId = entry.target.getAttribute('data-video-id');
                             playVideo(videoId);
                         }
                     } else {
+                        // Always deactivate if leaving viewport
                         entry.target.classList.remove('active');
-                        // Pause Video if it's a video section or landing section
                         if (entry.target.classList.contains('video-section')) {
                             const videoId = entry.target.getAttribute('data-video-id');
                             pauseVideo(videoId);
@@ -2041,9 +2012,15 @@
             if (nextSection && nextSection.classList.contains('video-section')) {
                 nextSection.scrollIntoView({ behavior: 'smooth' });
             } else {
-                // If it's the last video, maybe loop back to grid? Or just stop.
-                // For now, let's stop.
-                toggleVideo(videoEl.id); // Show play button again
+                // If it's the last video, move to first video of next tab
+                if (currentTab < videosData.tabs.length - 1) {
+                    // Next tab's first video index is 1 (index 0 is grid)
+                    // For Tab 0 it would be 2, but we are moving TO next tabs (1, 2, 3...)
+                    switchTab(currentTab + 1, 1);
+                } else {
+                    // Last video of last tab - show play button again
+                    toggleVideo(videoEl.id);
+                }
             }
         }
 
@@ -2166,24 +2143,17 @@
             const firstVideoSection = zetaTab.querySelector('.video-section');
 
             if (container && firstVideoSection) {
-                // Temporarily disable scroll-snap
-                const originalSnap = container.style.scrollSnapType;
-                container.style.scrollSnapType = 'none';
-
-                firstVideoSection.scrollIntoView({ behavior: 'smooth' });
+                // Scroll to first video (index 2 in T0: 0=landing, 1=grid, 2=video 1)
+                scrollToVideo(2, 0, true);
 
                 // Update UI - deactivate VS button, activate Zeta tab
                 const logoBtn = document.getElementById('logoBtn');
+                if (logoBtn) logoBtn.classList.add('active'); // Wait, should it be active? 
+                // Actually if we move to videos, VS should NOT be active, Zeta Tab should.
                 if (logoBtn) logoBtn.classList.remove('active');
                 document.querySelectorAll('.tab-btn').forEach((btn, idx) => {
                     btn.classList.toggle('active', idx === 0);
                 });
-
-                // Restore scroll-snap after animation
-                setTimeout(() => {
-                    container.style.scrollSnapType = originalSnap || '';
-                    if (!container.style.scrollSnapType) container.style.removeProperty('scroll-snap-type');
-                }, 800);
             }
         }
 
@@ -2224,6 +2194,10 @@
 
                     container.scrollTo({ top: 0, behavior: 'smooth' });
 
+                    // Hide Tab 0 Grid
+                    const tab0Grid = document.getElementById('tab0-grid');
+                    if (tab0Grid) tab0Grid.style.display = 'none';
+
                     // Restore scroll-snap after animation
                     setTimeout(() => {
                         container.style.scrollSnapType = originalSnap || '';
@@ -2233,60 +2207,39 @@
             }
         }
 
-        function switchTab(index) {
-            if (index === currentTab) {
+        function switchTab(index, targetSectionIndex = null) {
+            if (index === currentTab && targetSectionIndex === null) {
                 const currentTabId = videosData.tabs[index].id;
                 const currentTabEl = document.getElementById(`tab-${currentTabId}`);
                 const container = currentTabEl?.querySelector('.video-container');
 
                 if (container) {
                     if (index === 0) {
-                        // If already on grid view, do nothing
-                        if (isAtTab0GridPosition(container)) {
-                            return;
-                        }
+                        const isAtGrid = isAtTab0GridPosition(container);
+                        if (isAtGrid) return;
 
-                        // Pause current video before scrolling
-                        if (currentVideoId) {
-                            pauseVideo(currentVideoId);
-                        }
-
-                        // Scroll to Grid Container in Zeta tab
+                        if (currentVideoId) pauseVideo(currentVideoId);
+                        const tab0Grid = document.getElementById('tab0-grid');
+                        if (tab0Grid) tab0Grid.style.display = 'block';
                         scrollToTab0Grid(container, true);
-
-                        // Force active state on grid section
-                        const gridSection = currentTabEl.querySelector('.grid-section');
-                        if (gridSection) gridSection.classList.add('active');
                     } else {
-                        // For other tabs, scroll to top (where grid is)
                         const gridSection = currentTabEl.querySelector('.grid-section');
-
-                        // Temporarily disable scroll-snap
                         const originalSnap = container.style.scrollSnapType;
                         container.style.scrollSnapType = 'none';
-
                         container.scrollTo({ top: 0, behavior: 'smooth' });
-
-                        // Restore scroll-snap
                         setTimeout(() => {
                             container.style.scrollSnapType = originalSnap || '';
-                            if (!container.style.scrollSnapType) container.style.removeProperty('scroll-snap-type');
                         }, 800);
-
                         if (gridSection) gridSection.classList.add('active');
                     }
                 }
                 return;
             }
 
-            // Pause current video
-            if (currentVideoId) {
-                pauseVideo(currentVideoId);
-            }
+            if (currentVideoId) pauseVideo(currentVideoId);
 
-            // Reset scroll of the tab being left (after transition completes)
             const oldTabData = videosData.tabs[currentTab];
-            if (oldTabData) {
+            if (oldTabData && targetSectionIndex === null) {
                 const oldTabId = oldTabData.id;
                 setTimeout(() => {
                     const oldTabEl = document.getElementById(`tab-${oldTabId}`);
@@ -2294,111 +2247,86 @@
                         const oldContainer = oldTabEl.querySelector('.video-container');
                         if (oldContainer) oldContainer.scrollTop = 0;
                     }
-                }, 550); // Wait for transition (500ms) + small buffer
+                }, 550);
             }
 
-            // Update UI - tab buttons
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 const btnIndex = parseInt(btn.getAttribute('data-index'));
                 btn.classList.toggle('active', btnIndex === index);
             });
 
-            // Slide content
-            tabsContainer.style.transform = `translateX(-${index * 100}vw)`;
-
-            // Update state
+            tabsContainer.style.transform = `translateY(-${index * 100}vh)`;
             currentTab = index;
 
-            // Update BG to the grid of new tab
-            if (videosData && videosData.tabs[index]) {
-                bgLayer.style.backgroundColor = videosData.tabs[index].videos[0].bgColor;
-            }
+            const newTabData = videosData.tabs[index];
+            const newTabEl = document.getElementById(`tab-${newTabData.id}`);
+            const container = newTabEl?.querySelector('.video-container');
 
-            // Update Navbar Position immediately for the new tab
-            const newTab = document.getElementById(`tab-${videosData.tabs[index].id}`);
-            if (newTab) {
-                const container = newTab.querySelector('.video-container');
-                if (container) {
-                    handleScroll({ target: container });
-                }
-            }
-
-            // Scroll new tab to grid (index 0, grid is now first)
-            if (newTab) {
-                const container = newTab.querySelector('.video-container');
-                if (container) {
+            if (targetSectionIndex !== null) {
+                setTimeout(() => {
+                    scrollToVideo(targetSectionIndex, index, false);
+                }, 50);
+            } else {
+                if (newTabEl && container) {
                     if (index === 0) {
-                        // Switching TO Zeta Tab: Auto-scroll to Grid View (skip profile)
-                        // Use scrollIntoView for consistent positioning with scroll-snap
-                        scrollToTab0Grid(container, false); // instant, no smooth
-
-                        // Force active state immediately
-                        const gridSection = newTab.querySelector('.grid-section');
-                        if (gridSection) gridSection.classList.add('active');
+                        const tab0Grid = newTabEl.querySelector('#tab0-grid');
+                        if (tab0Grid) tab0Grid.style.display = 'block';
+                        scrollToTab0Grid(container, false);
                     } else {
-                        // Other tabs: Scroll to absolute top
                         container.scrollTop = 0;
-
-                        // Force active state immediately
-                        const gridSection = newTab.querySelector('.grid-section');
+                        const gridSection = newTabEl.querySelector('.grid-section');
                         if (gridSection) gridSection.classList.add('active');
                     }
                 }
+            }
+
+            if (newTabData.videos[0]) {
+                bgLayer.style.backgroundColor = newTabData.videos[0].bgColor;
             }
         }
 
         function goToVideo(index, tabIndex) {
             if (tabIndex !== undefined && tabIndex !== currentTab) {
-                switchTab(tabIndex);
-                setTimeout(() => scrollToVideo(index, tabIndex), 500); // wait for slide
+                switchTab(tabIndex, index);
             } else {
                 scrollToVideo(index, currentTab);
             }
         }
 
-        function scrollToVideo(index, tabIdx) {
-            const tabData = videosData.tabs[tabIdx];
-            if (!tabData) return;
 
-            const tabEl = document.getElementById(`tab-${tabData.id}`);
-            const container = tabEl.querySelector('.video-container');
-            // Ensure we select grid section first, then videos
-            const sections = Array.from(tabEl.querySelectorAll('.grid-section, .video-section'));
-            // Default querySelectorAll returns in document order (Grid is first)
-
-            if (sections[index] && container) {
-                // Calculate exact scroll position
-                const rect = sections[index].getBoundingClientRect();
-                const containerRect = container.getBoundingClientRect();
-                const targetTop = rect.top + container.scrollTop - containerRect.top;
-
-                // Temporarily disable scroll-snap to allow smooth animation
-                const originalSnapType = container.style.scrollSnapType;
-                container.style.scrollSnapType = 'none';
-
-                container.scrollTo({
-                    top: targetTop,
-                    behavior: 'smooth'
-                });
-
-                // Restore scroll-snap after animation (approx 800ms)
-                setTimeout(() => {
-                    container.style.scrollSnapType = originalSnapType || '';
-                    // Re-apply explicit Snap Type if it was empty (from CSS class)
-                    if (!container.style.scrollSnapType) {
-                        container.style.removeProperty('scroll-snap-type');
-                    }
-                }, 800);
-            }
-        }
-
-        let scrollTimeout;
         function handleScroll(e) {
             // Navbar is now always fixed at top - minimal scroll handling
             // The intersection observer handles most state changes
         }
 
-        // Keyboard Navigation
+        function scrollToVideo(index, tabIdx, smooth = true) {
+            const tabData = videosData.tabs[tabIdx];
+            if (!tabData) return;
+
+            const tabEl = document.getElementById(`tab-${tabData.id}`);
+            const container = tabEl.querySelector('.video-container');
+            const sections = Array.from(tabEl.querySelectorAll('.landing-section, .grid-section, .video-section'));
+
+            if (sections[index] && container) {
+                const rect = sections[index].getBoundingClientRect();
+                const containerRect = container.getBoundingClientRect();
+                const targetTop = rect.top + container.scrollTop - containerRect.top;
+
+                const originalSnapType = container.style.scrollSnapType;
+                container.style.scrollSnapType = 'none';
+
+                container.scrollTo({
+                    top: targetTop,
+                    behavior: smooth ? 'smooth' : 'auto'
+                });
+
+                setTimeout(() => {
+                    container.style.scrollSnapType = originalSnapType || '';
+                    if (!container.style.scrollSnapType) container.style.removeProperty('scroll-snap-type');
+                }, smooth ? 800 : 50);
+            }
+        }
+
         // Unified Navigation Logic
         function navigate(direction) {
             if (isScrolling) return;
@@ -2410,17 +2338,34 @@
 
             // Calculate current index based on scroll position
             let currentScrollIndex = Math.round(container.scrollTop / sectionHeight);
-            const totalSections = tabData.videos.length + 1; // +1 for grid
+
+            // Tab 0 has Landing (0) + Grid (1) + Videos (2+). Others have Grid (0) + Videos (1+).
+            const totalSections = tabData.videos.length + (currentTab === 0 ? 2 : 1);
+
+            // Total videos is tabData.videos.length.
+            // For Tab 0: Sections are Landing, Grid, V1...Vn. Total = n + 2.
+            // For others: Sections are Grid, V1...Vn. Total = n + 1.
 
             let newIndex = currentScrollIndex + direction;
 
             // Boundary checks
-            if (newIndex >= 0 && newIndex < totalSections) {
+            if (newIndex >= totalSections) {
+                if (currentTab < videosData.tabs.length - 1) {
+                    // Next tab's first video is index 1 (except Tab 0 which we aren't moving TO from a previous tab in this check)
+                    switchTab(currentTab + 1, 1);
+                }
+            } else if (newIndex < 0) {
+                if (currentTab > 0) {
+                    // Previous tab's last video
+                    const prevTabData = videosData.tabs[currentTab - 1];
+                    const lastVideoIdx = prevTabData.videos.length + (currentTab - 1 === 0 ? 1 : 0);
+                    switchTab(currentTab - 1, lastVideoIdx);
+                }
+            } else {
                 isScrolling = true;
                 scrollToVideo(newIndex, currentTab);
 
                 // Cooldown to prevent rapid scrolling/double jumps
-                // Match this roughly with the CSS scroll duration
                 setTimeout(() => {
                     isScrolling = false;
                 }, 800);
@@ -2429,9 +2374,39 @@
 
         // Block horizontal scroll on trackpad to prevent visual glitches
         // (Tab switching on desktop only via clicking tab buttons)
+        let lastTabSwitchTime = 0;
         document.addEventListener('wheel', (e) => {
+            // Block horizontal scroll
             if (Math.abs(e.deltaX) > Math.abs(e.deltaY) && Math.abs(e.deltaX) > 3) {
                 e.preventDefault();
+                return;
+            }
+
+            // Sequential tab scrolling
+            const now = Date.now();
+            if (now - lastTabSwitchTime < 1200) return; // Cooldown for tab switching
+
+            const tabData = videosData.tabs[currentTab];
+            const tabEl = document.getElementById(`tab-${tabData.id}`);
+            const container = tabEl.querySelector('.video-container');
+
+            if (!container) return;
+
+            const isAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 50;
+            const isAtTop = container.scrollTop <= 50;
+
+            if (e.deltaY > 50 && isAtBottom) {
+                if (currentTab < videosData.tabs.length - 1) {
+                    lastTabSwitchTime = now;
+                    switchTab(currentTab + 1, 1); // Start at first video
+                }
+            } else if (e.deltaY < -50 && isAtTop) {
+                if (currentTab > 0) {
+                    lastTabSwitchTime = now;
+                    const prevTabData = videosData.tabs[currentTab - 1];
+                    const lastVideoIdx = prevTabData.videos.length + (currentTab - 1 === 0 ? 1 : 0);
+                    switchTab(currentTab - 1, lastVideoIdx);
+                }
             }
         }, { passive: false });
 
@@ -2468,19 +2443,27 @@
             const deltaX = touchEndX - touchStartX;
             const deltaY = touchEndY - touchStartY;
 
-            // Only process horizontal swipes (deltaX > deltaY) and when on grid or hero
-            if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > minSwipeDistance) {
-                if (!isOnGridOrHero()) return;
+            // Check for vertical swipes when at boundaries
+            if (Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > minSwipeDistance) {
+                const tabData = videosData.tabs[currentTab];
+                const tabEl = document.getElementById(`tab-${tabData.id}`);
+                const container = tabEl.querySelector('.video-container');
+                if (!container) return;
 
-                if (deltaX < 0) {
-                    // Swipe left -> next tab
+                const isAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 50;
+                const isAtTop = container.scrollTop <= 50;
+
+                if (deltaY < 0 && isAtBottom) {
+                    // Swipe up at bottom -> next tab
                     if (currentTab < videosData.tabs.length - 1) {
-                        switchTab(currentTab + 1);
+                        switchTab(currentTab + 1, 1);
                     }
-                } else {
-                    // Swipe right -> previous tab
+                } else if (deltaY > 0 && isAtTop) {
+                    // Swipe down at top -> previous tab
                     if (currentTab > 0) {
-                        switchTab(currentTab - 1);
+                        const prevTabData = videosData.tabs[currentTab - 1];
+                        const lastVideoIdx = prevTabData.videos.length + (currentTab - 1 === 0 ? 1 : 0);
+                        switchTab(currentTab - 1, lastVideoIdx);
                     }
                 }
             }

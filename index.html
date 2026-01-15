@@ -1,12 +1,23 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ReelsFolio</title>
+    <meta name="description"
+        content="Vibhore Singhal - Sr. UX Designer Portfolio showcasing design work at Zeta, personal projects, and films.">
+    <title>ReelsFolio - Vibhore Singhal</title>
+
+    <!-- Preconnect to external domains -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev">
+    <link rel="preconnect" href="https://pub-876fdc3996be4fb3810906343b32d993.r2.dev">
+
+    <!-- Preload critical resources -->
+    <link rel="preload" href="videos.json" as="fetch" crossorigin>
+
+    <!-- Font with display swap for better performance -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
     <style>
@@ -32,6 +43,8 @@
             height: 100%;
             transition: background-color 0.6s ease-in-out;
             z-index: -1;
+            will-change: background-color;
+            contain: strict;
         }
 
         /* The scroll container */
@@ -764,7 +777,7 @@
             left: 0;
             width: 100vw;
             height: 100vh;
-            display: none;
+            display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: flex-start;
@@ -774,13 +787,14 @@
             backdrop-filter: blur(30px);
             -webkit-backdrop-filter: blur(30px);
             opacity: 0;
-            transition: opacity 0.4s ease;
+            visibility: hidden;
+            transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.4s;
             pointer-events: none;
         }
 
         .grid-overlay.visible {
-            display: flex;
             opacity: 1;
+            visibility: visible;
             pointer-events: auto;
         }
 
@@ -881,9 +895,73 @@
             padding: clamp(8px, 2vw, 16px);
             max-width: 95vw;
             width: 100%;
-            opacity: 1;
-            transform: scale(1);
-            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+        }
+
+        /* Grid item entry animation */
+        @keyframes gridItemEnter {
+            0% {
+                opacity: 0;
+                transform: scale(0.8) translateY(20px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .grid-overlay .grid-item {
+            opacity: 0;
+            transform: scale(0.8) translateY(20px);
+        }
+
+        .grid-overlay.visible .grid-item {
+            animation: gridItemEnter 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        /* Staggered animation delays for grid items */
+        .grid-overlay.visible .grid-item:nth-child(1) {
+            animation-delay: 0.05s;
+        }
+
+        .grid-overlay.visible .grid-item:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+
+        .grid-overlay.visible .grid-item:nth-child(3) {
+            animation-delay: 0.15s;
+        }
+
+        .grid-overlay.visible .grid-item:nth-child(4) {
+            animation-delay: 0.2s;
+        }
+
+        .grid-overlay.visible .grid-item:nth-child(5) {
+            animation-delay: 0.25s;
+        }
+
+        .grid-overlay.visible .grid-item:nth-child(6) {
+            animation-delay: 0.3s;
+        }
+
+        .grid-overlay.visible .grid-item:nth-child(7) {
+            animation-delay: 0.35s;
+        }
+
+        .grid-overlay.visible .grid-item:nth-child(8) {
+            animation-delay: 0.4s;
+        }
+
+        .grid-overlay.visible .grid-item:nth-child(9) {
+            animation-delay: 0.45s;
+        }
+
+        .grid-overlay.visible .grid-item:nth-child(10) {
+            animation-delay: 0.5s;
+        }
+
+        .grid-overlay.visible .grid-item:nth-child(n+11) {
+            animation-delay: 0.55s;
         }
 
         .grid-item {
@@ -1729,7 +1807,7 @@
                              style="${posStyle.join('; ')}; ${transform}"
                              onclick="openFloatingModal('${item.id}')"
                              data-item-id="${item.id}">
-                            <img src="${item.thumbnail}" alt="${item.title}" draggable="false">
+                            <img src="${item.thumbnail}" alt="${item.title}" draggable="false" loading="lazy">
                         </div>
                     `;
                 }).join('');
@@ -1781,15 +1859,19 @@
                         ` : ''}
 
                         <!-- VIDEO SECTIONS (Directly following landing or at start) -->
-                        ${tab.videos.map(video => `
-                            <div class="video-section video-section-r2 ${video.isLandscape ? 'landscape-mode' : ''}" data-video-id="${video.id}" data-bg-color="${video.bgColor}">
+                        ${tab.videos.map((video, videoIndex) => {
+                // Only preload first video of first tab, lazy load rest
+                const isFirstVideo = tabIndex === 0 && videoIndex === 0;
+                const preloadStrategy = isFirstVideo ? 'metadata' : 'none';
+                return `
+                            <div class="video-section video-section-r2 ${video.isLandscape ? 'landscape-mode' : ''}" data-video-id="${video.id}" data-bg-color="${video.bgColor}" data-video-src="${video.src}">
                                 <div class="content-info-left">
                                     ${video.description ? `<p class="content-desc">${video.description}</p>` : ''}
                                     ${video.title ? `<h2 class="content-title">${video.title}</h2>` : ''}
                                     ${video.link ? `<a class="content-link" href="${video.link.url}" target="_blank" rel="noopener noreferrer"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M19.902 4.098a3.75 3.75 0 00-5.304 0l-4.5 4.5a3.75 3.75 0 001.035 6.037.75.75 0 01-.646 1.353 5.25 5.25 0 01-1.449-8.45l4.5-4.5a5.25 5.25 0 117.424 7.424l-1.757 1.757a.75.75 0 11-1.06-1.06l1.757-1.757a3.75 3.75 0 000-5.304zm-7.389 4.267a.75.75 0 011-.353 5.25 5.25 0 011.449 8.45l-4.5 4.5a5.25 5.25 0 11-7.424-7.424l1.757-1.757a.75.75 0 111.06 1.06l-1.757 1.757a3.75 3.75 0 105.304 5.304l4.5-4.5a3.75 3.75 0 00-1.035-6.037.75.75 0 01-.354-1z" clip-rule="evenodd" /></svg>${video.link.text}</a>` : ''}
                                 </div>
                                 <div class="video-frame" onclick="toggleVideo('${video.id}')">
-                                    <video id="${video.id}" src="${video.src}" muted playsinline preload="metadata" onended="scrollToNextVideo(this)"></video>
+                                    <video id="${video.id}" ${isFirstVideo ? `src="${video.src}"` : ''} data-src="${video.src}" muted playsinline preload="${preloadStrategy}" onended="scrollToNextVideo(this)"></video>
                                     <div class="play-overlay-btn" id="btn-${video.id}"><svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" /></svg></div>
                                 </div>
                                 <div class="content-info-right">
@@ -1803,7 +1885,7 @@
                                     `).join('') : ''}
                                 </div>
                             </div>
-                        `).join('')}
+                        `}).join('')}
                     </div>
                 </div>
             `).join('');
@@ -1819,7 +1901,7 @@
             initObserver();
 
             document.querySelectorAll('.video-container').forEach(container => {
-                container.addEventListener('scroll', handleScroll);
+                container.addEventListener('scroll', throttle(handleScroll, 100));
             });
 
             // Initial sync for first tab
@@ -1829,10 +1911,23 @@
             }
         }
 
-        // Minimal scroll handler - most logic is handled by Intersection Observer
+        // Throttling function to limit execution of scroll/resize handlers
+        function throttle(func, limit) {
+            let inThrottle;
+            return function () {
+                const args = arguments;
+                const context = this;
+                if (!inThrottle) {
+                    func.apply(context, args);
+                    inThrottle = true;
+                    setTimeout(() => inThrottle = false, limit);
+                }
+            }
+        }
+
+        // Optimized scroll handler
         function handleScroll(e) {
-            // The Intersection Observer handles video activation and UI updates
-            // This function exists for future enhancements if needed
+            // Future scroll-linked animations can go here
         }
 
         // Intersection Observer logic (for landing, grid and video sections within tabs)
@@ -1895,6 +1990,46 @@
             document.querySelectorAll('.landing-section, .video-section').forEach(section => {
                 observer.observe(section);
             });
+
+            // Lazy loading observer - preloads videos that are about to come into view
+            const lazyLoadObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const section = entry.target;
+                        const videoId = section.getAttribute('data-video-id');
+                        if (videoId) {
+                            lazyLoadVideo(videoId);
+                        }
+                        // Also preload the next video
+                        const nextSection = section.nextElementSibling;
+                        if (nextSection && nextSection.classList.contains('video-section')) {
+                            const nextVideoId = nextSection.getAttribute('data-video-id');
+                            if (nextVideoId) {
+                                lazyLoadVideo(nextVideoId);
+                            }
+                        }
+                    }
+                });
+            }, { rootMargin: '100% 0px 100% 0px', threshold: 0 }); // Preload 1 viewport ahead
+
+            document.querySelectorAll('.video-section').forEach(section => {
+                lazyLoadObserver.observe(section);
+            });
+        }
+
+        // Lazy load video source
+        function lazyLoadVideo(videoId) {
+            const video = document.getElementById(videoId);
+            if (!video) return;
+
+            // If video already has src, skip
+            if (video.src && video.src !== window.location.href) return;
+
+            const dataSrc = video.getAttribute('data-src');
+            if (dataSrc && !video.src) {
+                video.src = dataSrc;
+                video.load();
+            }
         }
 
         // --- Video Control Functions ---
@@ -1902,6 +2037,15 @@
         function playVideo(videoId) {
             const video = document.getElementById(videoId);
             if (!video) return;
+
+            // Lazy load video source if not loaded yet
+            if (!video.src || video.src === window.location.href) {
+                const dataSrc = video.getAttribute('data-src');
+                if (dataSrc) {
+                    video.src = dataSrc;
+                    video.load();
+                }
+            }
 
             currentVideoId = videoId;
             isPlaying = true;
@@ -2099,7 +2243,17 @@
                 return;
             }
 
+            // Pause current video for performance
             if (currentVideoId) pauseVideo(currentVideoId);
+
+            // Optimization: Pause all videos in the previous tab's container
+            const previousTabId = videosData.tabs[currentTab].id;
+            const previousTabEl = document.getElementById(`tab-${previousTabId}`);
+            if (previousTabEl) {
+                previousTabEl.querySelectorAll('video').forEach(v => {
+                    if (!v.paused) v.pause();
+                });
+            }
 
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 const btnIndex = parseInt(btn.getAttribute('data-index'));
@@ -2133,10 +2287,24 @@
             openGridOverlay(currentTab);
         }
 
+        // Track if video was playing before grid opened
+        let videoWasPlayingBeforeGrid = false;
+
         function openGridOverlay(activeTabIndex = 0) {
             const gridOverlay = document.getElementById('gridOverlay');
             const gridTabNav = document.getElementById('gridTabNav');
             const gridPanelsContainer = document.getElementById('gridPanelsContainer');
+
+            // Pause current video for performance
+            if (currentVideoId) {
+                const video = document.getElementById(currentVideoId);
+                if (video && !video.paused) {
+                    videoWasPlayingBeforeGrid = true;
+                    video.pause();
+                } else {
+                    videoWasPlayingBeforeGrid = false;
+                }
+            }
 
             // Generate tab navigation
             gridTabNav.innerHTML = videosData.tabs.map((tab, index) =>
@@ -2151,7 +2319,7 @@
                     <div class="grid-container">
                         ${tab.videos.map((video, vIndex) => `
                             <div class="grid-item" onclick="goToVideoFromGrid(${tabIndex === 0 ? vIndex + 1 : vIndex}, ${tabIndex})">
-                                <img src="${video.thumbnail || 'https://placehold.co/360x640/png?text=Thumbnail'}" style="width: 100%; height: 100%; object-fit: cover;" draggable="false" />
+                                <img src="${video.thumbnail || 'https://placehold.co/360x640/png?text=Thumbnail'}" style="width: 100%; height: 100%; object-fit: cover;" draggable="false" loading="lazy" />
                                 <span class="video-number">${vIndex + 1}</span>
                             </div>
                         `).join('')}
@@ -2176,6 +2344,14 @@
         function closeGridOverlay() {
             const gridOverlay = document.getElementById('gridOverlay');
             gridOverlay.classList.remove('visible');
+
+            // Resume video if it was playing before grid opened
+            if (videoWasPlayingBeforeGrid && currentVideoId) {
+                const video = document.getElementById(currentVideoId);
+                if (video) {
+                    video.play().catch(e => console.log('Autoplay blocked:', e));
+                }
+            }
         }
 
         function handleGridOverlayClick(event) {

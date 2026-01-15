@@ -2355,8 +2355,12 @@
         }
 
         function handleGridOverlayClick(event) {
-            // Close if clicking on the overlay background (not on content)
-            if (event.target.id === 'gridOverlay') {
+            // Close if the click is not on interactive content (grid items, tab buttons, or close button)
+            const isClickOnContent = event.target.closest('.grid-item') ||
+                event.target.closest('.grid-tab-nav') ||
+                event.target.closest('.grid-close-btn');
+
+            if (!isClickOnContent) {
                 closeGridOverlay();
             }
         }

@@ -1763,6 +1763,7 @@
         // State
         let videosData = null;
         let isMuted = true;
+        let isWarping = false; // Flag to prevent BG updates during warp
         let isPlaying = true;
         let observer = null;
         let currentVideoId = null;
@@ -1961,8 +1962,10 @@
                     if (entry.isIntersecting) {
                         entry.target.classList.add('active');
 
+                        // Update background color based on the current section
+                        // But skip updates if we are in the middle of a "warp" transition
                         const bgColor = entry.target.getAttribute('data-bg-color');
-                        if (bgColor) bgLayer.style.backgroundColor = bgColor;
+                        if (bgColor && !isWarping) bgLayer.style.backgroundColor = bgColor;
 
                         const isLanding = entry.target.classList.contains('landing-section');
                         const isVideo = entry.target.classList.contains('video-section');
@@ -2253,7 +2256,9 @@
             closeGridOverlay();
             const container = document.getElementById('mainScrollContainer');
             if (container) {
-                smartScrollTo(0, container);
+                const landingSection = container.querySelector('.landing-section');
+                const targetColor = landingSection ? landingSection.getAttribute('data-bg-color') : null;
+                smartScrollTo(0, container, targetColor);
             }
         }
 
@@ -2272,11 +2277,10 @@
             const allSections = Array.from(container.querySelectorAll('.landing-section, .video-section'));
             const sectionIndex = allSections.indexOf(section);
 
-            console.log(`scrollToCategory: ${categoryId}, section:`, section, `index: ${sectionIndex}`);
-
             if (sectionIndex >= 0) {
                 const targetTop = sectionIndex * window.innerHeight;
-                smartScrollTo(targetTop, container);
+                const targetColor = section.getAttribute('data-bg-color');
+                smartScrollTo(targetTop, container, targetColor);
             }
         }
 
@@ -2288,7 +2292,8 @@
             const sections = container.querySelectorAll('.landing-section, .video-section');
             if (sections[index]) {
                 const targetTop = index * window.innerHeight;
-                smartScrollTo(targetTop, container);
+                const targetColor = sections[index].getAttribute('data-bg-color');
+                smartScrollTo(targetTop, container, targetColor);
             }
         }
 
@@ -2386,47 +2391,71 @@
             }
         }
 
-        // Smart scroll function - uses fade transition for distant jumps
-        function smartScrollTo(targetTop, container) {
+        // Smart scroll function - uses 'Stitched Glide' for distant jumps
+        // Smart scroll function - uses 'Warp Zoom' for distant jumps
+        function smartScrollTo(targetTop, container, targetColor = null) {
             const currentTop = container.scrollTop;
             const distance = Math.abs(targetTop - currentTop);
             const sectionHeight = window.innerHeight;
 
-            // If jumping more than 4 sections away, use fade transition
+            // If jumping more than 4 sections away, use Warp Zoom
             if (distance > sectionHeight * 4) {
-                console.log(`smartScrollTo: FADE mode - scrolling to ${targetTop}px (current: ${currentTop}px, distance: ${distance}px)`);
+                const direction = targetTop > currentTop ? 1 : -1;
 
-                // Disable scroll snap and CSS scroll behavior
-                container.style.scrollSnapType = 'none';
-                container.style.scrollBehavior = 'auto';
+                // Start Warp Sequence
+                isWarping = true;
 
-                // Fade out
-                container.style.transition = 'opacity 0.2s ease-out';
-                container.style.opacity = '0';
+                // Provide direct background transition
+                if (targetColor) {
+                    bgLayer.style.backgroundColor = targetColor;
+                }
+
+                // 1. Engage Warp: Blur, shrink, and fade to simulate speed/depth
+                container.style.transition = 'filter 0.2s ease-in, transform 0.2s ease-in, opacity 0.2s ease-in';
+                container.style.filter = 'blur(12px)';
+                container.style.transform = 'scale(0.98)';
+                container.style.opacity = '0.8';
 
                 setTimeout(() => {
-                    // Use requestAnimationFrame to ensure DOM has updated
-                    requestAnimationFrame(() => {
-                        container.scrollTop = targetTop; // Direct property set
-                        console.log(`smartScrollTo: scrolled, actual scrollTop: ${container.scrollTop}px`);
+                    // 2. Transport: Disable snapping and leapfrog
+                    container.style.scrollSnapType = 'none';
+                    container.style.scrollBehavior = 'auto';
 
-                        // Fade back in
-                        container.style.transition = 'opacity 0.3s ease-in';
+                    // Jump to 1 section vertically away from target
+                    container.scrollTop = targetTop - (direction * sectionHeight);
+
+                    // Force reflow
+                    void container.offsetHeight;
+
+                    // 3. Arrival: Smoothly slide into final position
+                    container.style.scrollBehavior = 'smooth';
+                    container.scrollTop = targetTop;
+
+                    // 4. Disengage: Clear warp effects
+                    setTimeout(() => {
+                        container.style.transition = 'filter 0.5s ease-out, transform 0.5s ease-out, opacity 0.5s ease-out';
+                        container.style.filter = 'blur(0px)';
+                        container.style.transform = 'scale(1)';
                         container.style.opacity = '1';
 
+                        // Cleanup styles after animation
                         setTimeout(() => {
                             container.style.transition = '';
+                            container.style.filter = '';
+                            container.style.transform = '';
+                            container.style.opacity = '';
                             container.style.scrollSnapType = '';
                             container.style.scrollBehavior = '';
-                        }, 300);
-                    });
-                }, 250);
+
+                            // Enable observer updates again
+                            isWarping = false;
+                        }, 500);
+                    }, 100);
+                }, 200);
             } else {
-                console.log(`smartScrollTo: SMOOTH mode - scrolling to ${targetTop}px (current: ${currentTop}px, distance: ${distance}px)`);
-                // Near jump - use smooth scroll
+                // Near jump - use normal smooth scroll
                 const originalSnapType = container.style.scrollSnapType;
                 container.style.scrollSnapType = 'none';
-
                 container.scrollTo({ top: targetTop, behavior: 'smooth' });
 
                 setTimeout(() => {
@@ -2460,7 +2489,8 @@
 
             if (absoluteIndex >= 0) {
                 const targetTop = absoluteIndex * window.innerHeight;
-                smartScrollTo(targetTop, container);
+                const targetColor = targetSection.getAttribute('data-bg-color');
+                smartScrollTo(targetTop, container, targetColor);
             }
         }
 

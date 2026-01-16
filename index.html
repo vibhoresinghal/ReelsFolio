@@ -866,7 +866,8 @@
             align-content: start;
             justify-items: center;
             align-items: center;
-            gap: 24px;
+            row-gap: 24px;
+            column-gap: 24px;
             padding: 24px;
             max-width: 1200px;
             width: 100%;
@@ -1158,21 +1159,16 @@
             color: white;
         }
 
-        /* Tab Content */
+        /* Single scroll container - no more tab transforms */
         .tabs-container {
-            display: flex;
-            flex-direction: column;
-            width: 100vw;
-            /* Height will be updated dynamically */
-            height: 400vh;
-            transition: transform 0.5s ease-in-out;
+            display: contents;
+            /* Acts as a simple wrapper, content flows naturally */
         }
 
-        .tab-content {
-            flex: 0 0 100vh;
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
+        /* Section markers for each category (invisible, used for scroll anchors) */
+        .section-marker {
+            height: 0;
+            width: 100%;
         }
 
         /* Hide grid button when tabs are visible */
@@ -1766,7 +1762,6 @@
     <script>
         // State
         let videosData = null;
-        let currentTab = 0;
         let isMuted = true;
         let isPlaying = true;
         let observer = null;
@@ -1794,16 +1789,16 @@
             }
         }
 
-        // Render the entire app structure
+        // Render the entire app structure - SINGLE PAGE SCROLL
         function renderApp() {
             if (!videosData || !videosData.tabs) return;
 
             const landing = videosData.landingSection || {};
             const floatingItems = landing.floatingItems || [];
 
-            // 1. Generate Tabs Navigation HTML (shared - no logo button inside)
+            // 1. Generate Tabs Navigation HTML - these are now scroll anchors or grid switchers
             const tabButtonsHTML = videosData.tabs.map((tab, index) =>
-                `<button class="tab-btn" data-index="${index}" onclick="switchTab(${index})">${tab.label}</button>`
+                `<button class="tab-btn" data-tab-id="${tab.id}" onclick="handleTabClick('${tab.id}')">${tab.label}</button>`
             ).join('');
 
             // Populate Global Fixed Tabs
@@ -1819,7 +1814,6 @@
                     if (item.position.right) posStyle.push(`right: ${item.position.right}`);
 
                     const rotation = item.rotation || '0deg';
-                    // Combine position styles, rotation variable, and initial transform
                     const inlineStyle = `${posStyle.join('; ')}; --init-rotation: ${rotation}; transform: rotate(${rotation});`;
 
                     return `
@@ -1844,99 +1838,97 @@
                 }).join('');
             }
 
-            // 2. Render Tabs Content with NEW landing section in first tab
-            tabsContainer.innerHTML = videosData.tabs.map((tab, tabIndex) => `
-                <div class="tab-content" id="tab-${tab.id}">
-                    <div class="video-container">
-                        ${tabIndex === 0 ? `
-                        <!-- LANDING SECTION (Only in Tab 0) -->
-                        <div class="landing-section active" data-bg-color="${landing.bgColor || '#2d1b4e'}">
-                            <div class="landing-profile-info">
-                                <p class="landing-bio">${landing.bio || ''}</p>
-                                <h1 class="landing-name">${landing.name || 'Vibhore Singhal'}</h1>
-                                <div class="landing-locations">
-                                    ${generateLocationTagsHTML(landing.locations)}
-                                </div>
-                            </div>
-                            <div class="landing-video-frame" onclick="toggleVideo('landing-video')">
-                                <video id="landing-video" src="${landing.profileVideo || ''}" muted loop playsinline></video>
-                                <div class="play-overlay-btn" id="btn-landing-video">
-                                    <svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" /></svg>
-                                </div>
-                            </div>
-                            ${generateFloatingItemsHTML(floatingItems)}
-                            <div class="landing-sticker star" style="top: 5%; left: -2%; width: clamp(120px, 18vw, 200px); transform: rotate(-10deg);">
-                                <img src="assets/star.svg" alt="star" style="width: 100%; height: 100%;">
-                            </div>
-                            <div class="landing-sticker heart" style="top: 10%; right: 26%; width: clamp(80px, 10vw, 130px); transform: rotate(15deg);">
-                                <img src="assets/heart.svg" alt="heart" style="width: 100%; height: 100%;">
-                            </div>
-                            <div class="landing-sticker plus" style="bottom: 5%; left: 28%; width: clamp(80px, 12vw, 150px); transform: rotate(-5deg); z-index: 12;">
-                                <img src="assets/plus.svg" alt="plus" style="width: 100%; height: 100%;">
-                            </div>
-                            <div class="landing-sticker star2" style="bottom: 25%; right: 2%; width: clamp(40px, 5vw, 70px); transform: rotate(10deg);">
-                                <img src="assets/star2.svg" alt="star2" style="width: 100%; height: 100%;">
-                            </div>
-                            <div class="landing-sticker wine" style="bottom: -5%; left: -2%; width: clamp(60px, 8vw, 100px); transform: rotate(30deg);">
-                                <img src="assets/wine.svg" alt="wine" style="width: 100%; height: 100%;">
-                            </div>
-                            <!-- Scroll Indicator -->
-                            <div class="landing-scroll-indicator" onclick="scrollToFirstVideo()">
-                                <svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12.53 16.28a.75.75 0 01-1.06 0l-7.5-7.5a.75.75 0 011.06-1.06L12 14.69l6.97-6.97a.75.75 0 111.06 1.06l-7.5 7.5z" clip-rule="evenodd" /></svg>
-                            </div>
+            // 2. Render SINGLE continuous scroll container with ALL content
+            // Structure: Landing -> Zeta videos -> Personal videos -> Life videos -> Films videos
+            let allSectionsHTML = `
+                <!-- LANDING SECTION -->
+                <div class="landing-section active" id="section-landing" data-bg-color="${landing.bgColor || '#2d1b4e'}">
+                    <div class="landing-profile-info">
+                        <p class="landing-bio">${landing.bio || ''}</p>
+                        <h1 class="landing-name">${landing.name || 'Vibhore Singhal'}</h1>
+                        <div class="landing-locations">
+                            ${generateLocationTagsHTML(landing.locations)}
                         </div>
-                        ` : ''}
-
-                        <!-- VIDEO SECTIONS (Directly following landing or at start) -->
-                        ${tab.videos.map((video, videoIndex) => {
-                // Only preload first video of first tab, lazy load rest
-                const isFirstVideo = tabIndex === 0 && videoIndex === 0;
-                const preloadStrategy = isFirstVideo ? 'metadata' : 'none';
-                return `
-                            <div class="video-section video-section-r2 ${video.isLandscape ? 'landscape-mode' : ''}" data-video-id="${video.id}" data-bg-color="${video.bgColor}" data-video-src="${video.src}">
-                                <div class="content-info-left">
-                                    ${video.description ? `<p class="content-desc">${video.description}</p>` : ''}
-                                    ${video.title ? `<h2 class="content-title">${video.title}</h2>` : ''}
-                                    ${video.link ? `<a class="content-link" href="${video.link.url}" target="_blank" rel="noopener noreferrer"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M19.902 4.098a3.75 3.75 0 00-5.304 0l-4.5 4.5a3.75 3.75 0 001.035 6.037.75.75 0 01-.646 1.353 5.25 5.25 0 01-1.449-8.45l4.5-4.5a5.25 5.25 0 117.424 7.424l-1.757 1.757a.75.75 0 11-1.06-1.06l1.757-1.757a3.75 3.75 0 000-5.304zm-7.389 4.267a.75.75 0 011-.353 5.25 5.25 0 011.449 8.45l-4.5 4.5a5.25 5.25 0 11-7.424-7.424l1.757-1.757a.75.75 0 111.06 1.06l-1.757 1.757a3.75 3.75 0 105.304 5.304l4.5-4.5a3.75 3.75 0 00-1.035-6.037.75.75 0 01-.354-1z" clip-rule="evenodd" /></svg>${video.link.text}</a>` : ''}
-                                </div>
-                                <div class="video-frame" onclick="toggleVideo('${video.id}')">
-                                    <video id="${video.id}" ${isFirstVideo ? `src="${video.src}"` : ''} data-src="${video.src}" muted playsinline preload="${preloadStrategy}" onended="scrollToNextVideo(this)"></video>
-                                    <div class="play-overlay-btn" id="btn-${video.id}"><svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" /></svg></div>
-                                </div>
-                                <div class="content-info-right">
-                                    ${video.comments ? video.comments.map(comment => `
-                                        <div class="comment-pill">
-                                            <div class="comment-icon" style="background: ${comment.type === 'avatar' ? (comment.avatarColor || '#3498db') : 'rgba(255,255,255,0.2)'};">
-                                                ${comment.type === 'heart' ? '<svg viewBox="0 0 24 24" fill="currentColor" style="width: 18px; height: 18px;"><path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z" /></svg>' : (comment.type === 'fire' ? '<svg viewBox="0 0 24 24" fill="currentColor" style="width: 18px; height: 18px;"><path fill-rule="evenodd" d="M12.963 2.286a.75.75 0 00-1.071-.136 9.742 9.742 0 00-3.539 6.177 7.547 7.547 0 01-1.705-1.715.75.75 0 00-1.152-.082A9 9 0 1015.68 4.534a7.46 7.46 0 01-2.717-2.248zM15.75 14.25a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" clip-rule="evenodd" /></svg>' : '')}
-                                            </div>
-                                            <span>${comment.text}</span>
-                                        </div>
-                                    `).join('') : ''}
-                                </div>
-                            </div>
-                        `}).join('')}
+                    </div>
+                    <div class="landing-video-frame" onclick="toggleVideo('landing-video')">
+                        <video id="landing-video" src="${landing.profileVideo || ''}" muted loop playsinline></video>
+                        <div class="play-overlay-btn" id="btn-landing-video">
+                            <svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" /></svg>
+                        </div>
+                    </div>
+                    ${generateFloatingItemsHTML(floatingItems)}
+                    <div class="landing-sticker star" style="top: 5%; left: -2%; width: clamp(120px, 18vw, 200px); transform: rotate(-10deg);">
+                        <img src="assets/star.svg" alt="star" style="width: 100%; height: 100%;">
+                    </div>
+                    <div class="landing-sticker heart" style="top: 10%; right: 26%; width: clamp(80px, 10vw, 130px); transform: rotate(15deg);">
+                        <img src="assets/heart.svg" alt="heart" style="width: 100%; height: 100%;">
+                    </div>
+                    <div class="landing-sticker plus" style="bottom: 5%; left: 28%; width: clamp(80px, 12vw, 150px); transform: rotate(-5deg); z-index: 12;">
+                        <img src="assets/plus.svg" alt="plus" style="width: 100%; height: 100%;">
+                    </div>
+                    <div class="landing-sticker star2" style="bottom: 25%; right: 2%; width: clamp(40px, 5vw, 70px); transform: rotate(10deg);">
+                        <img src="assets/star2.svg" alt="star2" style="width: 100%; height: 100%;">
+                    </div>
+                    <div class="landing-sticker wine" style="bottom: -5%; left: -2%; width: clamp(60px, 8vw, 100px); transform: rotate(30deg);">
+                        <img src="assets/wine.svg" alt="wine" style="width: 100%; height: 100%;">
+                    </div>
+                    <div class="landing-scroll-indicator" onclick="scrollToFirstVideo()">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12.53 16.28a.75.75 0 01-1.06 0l-7.5-7.5a.75.75 0 011.06-1.06L12 14.69l6.97-6.97a.75.75 0 111.06 1.06l-7.5 7.5z" clip-rule="evenodd" /></svg>
                     </div>
                 </div>
-            `).join('');
+            `;
 
-            // NOTE: We no longer inject a separate flow nav into Tab 0
-            // Instead, we use the global fixed nav for all tabs to avoid
-            // double nav bar issues during tab transitions
+            // Add all category videos in order
+            videosData.tabs.forEach((tab, tabIndex) => {
+                tab.videos.forEach((video, videoIndex) => {
+                    const isFirstVideo = tabIndex === 0 && videoIndex === 0;
+                    const isFirstOfCategory = videoIndex === 0;
+                    const preloadStrategy = isFirstVideo ? 'metadata' : 'none';
 
-            // Initialize background with hero's purple color
-            bgLayer.style.backgroundColor = '#2d1b4e';
-
-            // Initialize Observer
-            initObserver();
-
-            document.querySelectorAll('.video-container').forEach(container => {
-                container.addEventListener('scroll', throttle(handleScroll, 100));
+                    allSectionsHTML += `
+                        <div class="video-section video-section-r2 ${video.isLandscape ? 'landscape-mode' : ''}" 
+                             ${isFirstOfCategory ? `id="section-${tab.id}"` : ''}
+                             data-video-id="${video.id}" 
+                             data-bg-color="${video.bgColor}" 
+                             data-category="${tab.id}"
+                             data-video-src="${video.src}">
+                            <div class="content-info-left">
+                                ${video.description ? `<p class="content-desc">${video.description}</p>` : ''}
+                                ${video.title ? `<h2 class="content-title">${video.title}</h2>` : ''}
+                                ${video.link ? `<a class="content-link" href="${video.link.url}" target="_blank" rel="noopener noreferrer"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M19.902 4.098a3.75 3.75 0 00-5.304 0l-4.5 4.5a3.75 3.75 0 001.035 6.037.75.75 0 01-.646 1.353 5.25 5.25 0 01-1.449-8.45l4.5-4.5a5.25 5.25 0 117.424 7.424l-1.757 1.757a.75.75 0 11-1.06-1.06l1.757-1.757a3.75 3.75 0 000-5.304zm-7.389 4.267a.75.75 0 011-.353 5.25 5.25 0 011.449 8.45l-4.5 4.5a5.25 5.25 0 11-7.424-7.424l1.757-1.757a.75.75 0 111.06 1.06l-1.757 1.757a3.75 3.75 0 105.304 5.304l4.5-4.5a3.75 3.75 0 00-1.035-6.037.75.75 0 01-.354-1z" clip-rule="evenodd" /></svg>${video.link.text}</a>` : ''}
+                            </div>
+                            <div class="video-frame" onclick="toggleVideo('${video.id}')">
+                                <video id="${video.id}" ${isFirstVideo ? `src="${video.src}"` : ''} data-src="${video.src}" muted playsinline preload="${preloadStrategy}" onended="scrollToNextVideo(this)"></video>
+                                <div class="play-overlay-btn" id="btn-${video.id}"><svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" /></svg></div>
+                            </div>
+                            <div class="content-info-right">
+                                ${video.comments ? video.comments.map(comment => `
+                                    <div class="comment-pill">
+                                        <div class="comment-icon" style="background: ${comment.type === 'avatar' ? (comment.avatarColor || '#3498db') : 'rgba(255,255,255,0.2)'};">
+                                            ${comment.type === 'heart' ? '<svg viewBox="0 0 24 24" fill="currentColor" style="width: 18px; height: 18px;"><path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z" /></svg>' : (comment.type === 'fire' ? '<svg viewBox="0 0 24 24" fill="currentColor" style="width: 18px; height: 18px;"><path fill-rule="evenodd" d="M12.963 2.286a.75.75 0 00-1.071-.136 9.742 9.742 0 00-3.539 6.177 7.547 7.547 0 01-1.705-1.715.75.75 0 00-1.152-.082A9 9 0 1015.68 4.534a7.46 7.46 0 01-2.717-2.248zM15.75 14.25a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" clip-rule="evenodd" /></svg>' : '')}
+                                        </div>
+                                        <span>${comment.text}</span>
+                                    </div>
+                                `).join('') : ''}
+                            </div>
+                        </div>
+                    `;
+                });
             });
 
-            // Initial sync for first tab
-            const firstContainer = document.querySelector('#tab-zeta .video-container');
-            if (firstContainer) {
-                handleScroll({ target: firstContainer });
+            // Put all content in the single scroll container
+            tabsContainer.innerHTML = `<div class="video-container" id="mainScrollContainer">${allSectionsHTML}</div>`;
+
+            // Initialize background with landing color
+            bgLayer.style.backgroundColor = landing.bgColor || '#2d1b4e';
+
+            // Initialize Observer for single container
+            initObserver();
+
+            // Add scroll listener to the single container
+            const mainContainer = document.getElementById('mainScrollContainer');
+            if (mainContainer) {
+                mainContainer.addEventListener('scroll', throttle(handleScroll, 100));
             }
 
             // Initialize Draggable items
@@ -1962,30 +1954,21 @@
             // Future scroll-linked animations can go here
         }
 
-        // Intersection Observer logic (for landing, grid and video sections within tabs)
+        // Intersection Observer - for single continuous scroll page
         function initObserver() {
             observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
-                    const parentTab = entry.target.closest('.tab-content');
-                    if (!parentTab) return;
-
-                    const parentTabIndex = Array.from(tabsContainer.children).indexOf(parentTab);
-
                     if (entry.isIntersecting) {
-                        // Only activate if it's the current tab
-                        if (parentTabIndex !== currentTab) return;
-
                         entry.target.classList.add('active');
 
                         const bgColor = entry.target.getAttribute('data-bg-color');
                         if (bgColor) bgLayer.style.backgroundColor = bgColor;
 
                         const isLanding = entry.target.classList.contains('landing-section');
-                        const isGrid = entry.target.classList.contains('grid-section');
                         const isVideo = entry.target.classList.contains('video-section');
                         const logoBtn = document.getElementById('logoBtn');
-
                         const navbarWrapper = document.getElementById('navbarWrapper');
+
                         if (navbarWrapper) {
                             navbarWrapper.classList.remove('hidden');
                         }
@@ -1998,14 +1981,18 @@
                         } else if (isVideo) {
                             if (controlBar) controlBar.classList.remove('hidden');
                             if (logoBtn) logoBtn.classList.remove('active');
-                            document.querySelectorAll('.tab-btn').forEach((btn, idx) => {
-                                btn.classList.toggle('active', idx === parentTabIndex);
+
+                            // Highlight tab based on current video's category
+                            const category = entry.target.getAttribute('data-category');
+                            document.querySelectorAll('.tab-btn').forEach(btn => {
+                                const tabId = btn.getAttribute('data-tab-id');
+                                btn.classList.toggle('active', tabId === category);
                             });
+
                             const videoId = entry.target.getAttribute('data-video-id');
                             playVideo(videoId);
                         }
                     } else {
-                        // Always deactivate if leaving viewport
                         entry.target.classList.remove('active');
                         if (entry.target.classList.contains('video-section')) {
                             const videoId = entry.target.getAttribute('data-video-id');
@@ -2118,13 +2105,8 @@
             if (nextSection && nextSection.classList.contains('video-section')) {
                 nextSection.scrollIntoView({ behavior: 'smooth' });
             } else {
-                // If it's the last video, move to first video of next tab
-                if (currentTab < videosData.tabs.length - 1) {
-                    switchTab(currentTab + 1, 0); // Next tab's first content
-                } else {
-                    // Last video of last tab - show play button again
-                    toggleVideo(videoEl.id);
-                }
+                // Last video - show play button again
+                toggleVideo(videoEl.id);
             }
         }
 
@@ -2241,98 +2223,72 @@
 
         // Scroll to first video from landing section
         function scrollToFirstVideo() {
-            // First video in Tab 0 is index 1 (Index 0 is Landing)
-            scrollToVideo(1, 0, true);
+            scrollToCategory('zeta');
         }
 
-        // --- Navigation Functions ---
+        // --- Navigation Functions (Simplified for single-page scroll) ---
 
-        // Navigate to the landing/profile section (top of Tab 0)
-        function goToLanding() {
-            closeGridOverlay(); // Close grid if navigating home
-            if (currentTab === 0) {
-                const landingSection = document.querySelector('#tab-zeta .landing-section');
-                if (landingSection) {
-                    const container = landingSection.closest('.video-container');
-                    if (container) {
-                        container.scrollTo({ top: 0, behavior: 'smooth' });
-                    }
-                }
+        // Handle tab button clicks - switch grid panel if in grid mode, otherwise scroll
+        function handleTabClick(categoryId) {
+            const navbarWrapper = document.getElementById('navbarWrapper');
+            const isGridMode = navbarWrapper && navbarWrapper.classList.contains('grid-mode');
+
+            if (isGridMode) {
+                // In grid mode - switch the grid panel
+                switchGridTab(categoryId);
             } else {
-                // Ensure we go to index 0 (Landing) of tab 0 (Zeta)
-                switchTab(0, 0);
+                // Normal mode - scroll to category
+                scrollToCategory(categoryId);
+            }
+
+            // Update tab button highlighting
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                const tabId = btn.getAttribute('data-tab-id');
+                btn.classList.toggle('active', tabId === categoryId);
+            });
+        }
+
+        // Navigate to the landing/profile section
+        function goToLanding() {
+            closeGridOverlay();
+            const container = document.getElementById('mainScrollContainer');
+            if (container) {
+                smartScrollTo(0, container);
             }
         }
 
-        function switchTab(index, targetSectionIndex = null, isFinalSelection = false) {
-            const navbarWrapper = document.getElementById('navbarWrapper');
-            const isBrowsingGrid = navbarWrapper && navbarWrapper.classList.contains('grid-mode') && !isFinalSelection;
+        // Scroll to a category section
+        function scrollToCategory(categoryId) {
+            const container = document.getElementById('mainScrollContainer');
+            if (!container) return;
 
-            // For Tab 0, first video is at index 1 (after landing), for others it's index 0
-            const firstVideoIndex = index === 0 ? 1 : 0;
-
-            if (index === currentTab && targetSectionIndex === null && !isBrowsingGrid) {
-                // If already on tab, clicking it scrolls to first video
-                scrollToVideo(firstVideoIndex, index, true);
+            const section = document.getElementById(`section-${categoryId}`);
+            if (!section) {
+                console.warn(`Section not found: section-${categoryId}`);
                 return;
             }
 
-            // Update UI/Buttons regardless of scroller movement
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                const btnIndex = parseInt(btn.getAttribute('data-index'));
-                btn.classList.toggle('active', btnIndex === index);
-            });
+            // Find the index of this section among all sections
+            const allSections = Array.from(container.querySelectorAll('.landing-section, .video-section'));
+            const sectionIndex = allSections.indexOf(section);
 
-            const logoBtn = document.getElementById('logoBtn');
-            if (logoBtn) {
-                logoBtn.classList.toggle('active', index === 0 && !isBrowsingGrid);
+            console.log(`scrollToCategory: ${categoryId}, section:`, section, `index: ${sectionIndex}`);
+
+            if (sectionIndex >= 0) {
+                const targetTop = sectionIndex * window.innerHeight;
+                smartScrollTo(targetTop, container);
             }
+        }
 
-            // Sync Grid panels if open
-            const panels = document.querySelectorAll('.grid-panel');
-            if (panels.length > 0) {
-                panels.forEach((p, idx) => p.classList.toggle('active', idx === index));
-            }
+        // Scroll to a specific video by index within the main container
+        function scrollToVideoByIndex(index) {
+            const container = document.getElementById('mainScrollContainer');
+            if (!container) return;
 
-            // Update background color based on tab data
-            const newTabData = videosData.tabs[index];
-            if (newTabData && newTabData.videos && newTabData.videos[0]) {
-                bgLayer.style.backgroundColor = newTabData.videos[0].bgColor;
-            }
-
-            // Only perform actual scroller/transform logic if not just browsing the grid
-            if (!isBrowsingGrid) {
-                // Pause current video for performance
-                if (currentVideoId) pauseVideo(currentVideoId);
-
-                // Optimization: Pause all videos in the previous tab's container
-                const previousTabId = videosData.tabs[currentTab].id;
-                const previousTabEl = document.getElementById(`tab-${previousTabId}`);
-                if (previousTabEl) {
-                    previousTabEl.querySelectorAll('video').forEach(v => {
-                        if (!v.paused) v.pause();
-                    });
-                }
-
-                tabsContainer.style.transform = `translateY(-${index * 100}vh)`;
-                currentTab = index;
-
-                const newTabEl = document.getElementById(`tab-${newTabData.id}`);
-                const container = newTabEl?.querySelector('.video-container');
-
-                if (targetSectionIndex !== null) {
-                    if (container) {
-                        scrollToVideo(targetSectionIndex, index, false);
-                    }
-                } else if (!isFinalSelection) {
-                    // Manual tab click -> scroll to first video
-                    if (container) {
-                        scrollToVideo(firstVideoIndex, index, false);
-                    }
-                }
-            } else {
-                // Just browsing: track current tab but don't move scroller
-                // We'll sync scroller later if a selection is made
+            const sections = container.querySelectorAll('.landing-section, .video-section');
+            if (sections[index]) {
+                const targetTop = index * window.innerHeight;
+                smartScrollTo(targetTop, container);
             }
         }
 
@@ -2341,22 +2297,27 @@
             if (gridOverlay.classList.contains('visible')) {
                 closeGridOverlay();
             } else {
-                openGridOverlay(currentTab);
+                openGridOverlay();
             }
         }
 
         // Track if video was playing before grid opened
         let videoWasPlayingBeforeGrid = false;
 
-        function openGridOverlay(activeTabIndex = 0) {
+        function openGridOverlay(activeCategory = null) {
             const gridOverlay = document.getElementById('gridOverlay');
             const gridPanelsContainer = document.getElementById('gridPanelsContainer');
             const navbarWrapper = document.getElementById('navbarWrapper');
 
-            // Explicitly highlight the correct tab if coming from landing section
-            // (Zeta is tab 0, and landing is part of zeta)
-            document.querySelectorAll('.tab-btn').forEach((btn, idx) => {
-                btn.classList.toggle('active', idx === activeTabIndex);
+            // Determine which category to show based on current scroll position
+            const currentSection = document.querySelector('.video-section.active, .landing-section.active');
+            const currentCat = currentSection?.getAttribute('data-category') || 'zeta';
+            const effectiveCategory = activeCategory || currentCat;
+
+            // Highlight the correct tab button
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                const tabId = btn.getAttribute('data-tab-id');
+                btn.classList.toggle('active', tabId === effectiveCategory);
             });
 
             // Pause current video for performance
@@ -2370,12 +2331,12 @@
                 }
             }
 
-            // Generate grid panels for all tabs (reusing main tab bar now)
-            gridPanelsContainer.innerHTML = videosData.tabs.map((tab, tabIndex) => `
-                <div class="grid-panel ${tabIndex === activeTabIndex ? 'active' : ''}" data-panel-index="${tabIndex}">
+            // Generate grid panels for all tabs
+            gridPanelsContainer.innerHTML = videosData.tabs.map((tab) => `
+                <div class="grid-panel ${tab.id === effectiveCategory ? 'active' : ''}" data-panel-id="${tab.id}">
                     <div class="grid-container">
                         ${tab.videos.map((video, vIndex) => `
-                            <div class="grid-item" onclick="goToVideoFromGrid(${tabIndex === 0 ? vIndex + 1 : vIndex}, ${tabIndex})">
+                            <div class="grid-item" onclick="goToVideoFromGrid('${tab.id}', ${vIndex})">
                                 <img src="${video.thumbnail || 'https://placehold.co/360x640/png?text=Thumbnail'}" style="width: 100%; height: 100%; object-fit: cover;" draggable="false" loading="lazy" />
                                 <span class="video-number">${vIndex + 1}</span>
                             </div>
@@ -2388,14 +2349,16 @@
             if (navbarWrapper) navbarWrapper.classList.add('grid-mode');
         }
 
-        function switchGridTab(tabIndex) {
+        function switchGridTab(tabId) {
             // Update tab buttons
-            document.querySelectorAll('.grid-tab-btn').forEach((btn, idx) => {
-                btn.classList.toggle('active', idx === tabIndex);
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                const btnTabId = btn.getAttribute('data-tab-id');
+                btn.classList.toggle('active', btnTabId === tabId);
             });
             // Update panels
-            document.querySelectorAll('.grid-panel').forEach((panel, idx) => {
-                panel.classList.toggle('active', idx === tabIndex);
+            document.querySelectorAll('.grid-panel').forEach(panel => {
+                const panelId = panel.getAttribute('data-panel-id');
+                panel.classList.toggle('active', panelId === tabId);
             });
         }
 
@@ -2403,7 +2366,7 @@
             const gridOverlay = document.getElementById('gridOverlay');
             const navbarWrapper = document.getElementById('navbarWrapper');
 
-            gridOverlay.classList.remove('visible');
+            if (gridOverlay) gridOverlay.classList.remove('visible');
             if (navbarWrapper) navbarWrapper.classList.remove('grid-mode');
 
             // Resume video if it was playing before
@@ -2414,7 +2377,6 @@
         }
 
         function handleGridOverlayClick(event) {
-            // Close if the click is not on interactive content (grid items, tab buttons, or close button)
             const isClickOnContent = event.target.closest('.grid-item') ||
                 event.target.closest('.grid-tab-nav') ||
                 event.target.closest('.grid-close-btn');
@@ -2424,34 +2386,94 @@
             }
         }
 
-        function goToVideoFromGrid(index, tabIndex) {
-            closeGridOverlay();
-            // Pass true as third argument to force real scroller navigation
-            switchTab(tabIndex, index, true);
-        }
+        // Smart scroll function - uses fade transition for distant jumps
+        function smartScrollTo(targetTop, container) {
+            const currentTop = container.scrollTop;
+            const distance = Math.abs(targetTop - currentTop);
+            const sectionHeight = window.innerHeight;
 
-        function goToVideo(index, tabIndex) {
-            if (tabIndex !== undefined && tabIndex !== currentTab) {
-                switchTab(tabIndex, index);
+            // If jumping more than 4 sections away, use fade transition
+            if (distance > sectionHeight * 4) {
+                console.log(`smartScrollTo: FADE mode - scrolling to ${targetTop}px (current: ${currentTop}px, distance: ${distance}px)`);
+
+                // Disable scroll snap and CSS scroll behavior
+                container.style.scrollSnapType = 'none';
+                container.style.scrollBehavior = 'auto';
+
+                // Fade out
+                container.style.transition = 'opacity 0.2s ease-out';
+                container.style.opacity = '0';
+
+                setTimeout(() => {
+                    // Use requestAnimationFrame to ensure DOM has updated
+                    requestAnimationFrame(() => {
+                        container.scrollTop = targetTop; // Direct property set
+                        console.log(`smartScrollTo: scrolled, actual scrollTop: ${container.scrollTop}px`);
+
+                        // Fade back in
+                        container.style.transition = 'opacity 0.3s ease-in';
+                        container.style.opacity = '1';
+
+                        setTimeout(() => {
+                            container.style.transition = '';
+                            container.style.scrollSnapType = '';
+                            container.style.scrollBehavior = '';
+                        }, 300);
+                    });
+                }, 250);
             } else {
-                scrollToVideo(index, currentTab);
+                console.log(`smartScrollTo: SMOOTH mode - scrolling to ${targetTop}px (current: ${currentTop}px, distance: ${distance}px)`);
+                // Near jump - use smooth scroll
+                const originalSnapType = container.style.scrollSnapType;
+                container.style.scrollSnapType = 'none';
+
+                container.scrollTo({ top: targetTop, behavior: 'smooth' });
+
+                setTimeout(() => {
+                    container.style.scrollSnapType = originalSnapType || '';
+                }, 800);
             }
-            closeGridOverlay();
         }
 
-        function scrollToVideo(index, tabIdx, smooth = true) {
-            const tabData = videosData.tabs[tabIdx];
-            if (!tabData) return;
+        // Navigate to a video from the grid overlay
+        function goToVideoFromGrid(categoryId, videoIndex) {
+            closeGridOverlay();
 
-            const tabEl = document.getElementById(`tab-${tabData.id}`);
-            const container = tabEl.querySelector('.video-container');
-            const sections = Array.from(tabEl.querySelectorAll('.landing-section, .video-section'));
+            const container = document.getElementById('mainScrollContainer');
+            if (!container) return;
 
-            if (sections[index] && container) {
-                const rect = sections[index].getBoundingClientRect();
-                const containerRect = container.getBoundingClientRect();
-                const targetTop = rect.top + container.scrollTop - containerRect.top;
+            // Find the target section among all sections
+            const allSections = container.querySelectorAll('.landing-section, .video-section');
+            const categorySections = container.querySelectorAll(`[data-category="${categoryId}"]`);
 
+            if (!categorySections[videoIndex]) return;
+
+            const targetSection = categorySections[videoIndex];
+
+            // Find the absolute index of this section
+            let absoluteIndex = -1;
+            allSections.forEach((s, idx) => {
+                if (s === targetSection) {
+                    absoluteIndex = idx;
+                }
+            });
+
+            if (absoluteIndex >= 0) {
+                const targetTop = absoluteIndex * window.innerHeight;
+                smartScrollTo(targetTop, container);
+            }
+        }
+
+        // Scroll to a specific section in the main container
+        function scrollToVideo(index, smooth = true) {
+            const container = document.getElementById('mainScrollContainer');
+            if (!container) return;
+
+            const sections = container.querySelectorAll('.landing-section, .video-section');
+            if (sections[index]) {
+                const targetTop = index * window.innerHeight;
+
+                // Temporarily disable scroll-snap for smooth programmatic scrolling
                 const originalSnapType = container.style.scrollSnapType;
                 container.style.scrollSnapType = 'none';
 
@@ -2467,71 +2489,31 @@
             }
         }
 
+        // Navigate to next/previous section (for keyboard navigation)
         function navigate(direction) {
             if (isScrolling) return;
 
-            const tabData = videosData.tabs[currentTab];
-            const tabEl = document.getElementById(`tab-${tabData.id}`);
-            const container = tabEl.querySelector('.video-container');
-            const sectionHeight = window.innerHeight;
+            const container = document.getElementById('mainScrollContainer');
+            if (!container) return;
 
+            const sectionHeight = window.innerHeight;
             let currentScrollIndex = Math.round(container.scrollTop / sectionHeight);
-            const totalSections = tabData.videos.length + (currentTab === 0 ? 1 : 0);
+            const sections = container.querySelectorAll('.landing-section, .video-section');
+            const totalSections = sections.length;
 
             let newIndex = currentScrollIndex + direction;
 
-            if (newIndex >= totalSections) {
-                if (currentTab < videosData.tabs.length - 1) {
-                    switchTab(currentTab + 1, 0); // Next tab's first video (index 0 since no grid)
-                }
-            } else if (newIndex < 0) {
-                if (currentTab > 0) {
-                    const prevTabData = videosData.tabs[currentTab - 1];
-                    const lastVideoIdx = prevTabData.videos.length - 1;
-                    switchTab(currentTab - 1, lastVideoIdx);
-                }
-            } else {
+            if (newIndex >= 0 && newIndex < totalSections) {
                 isScrolling = true;
-                scrollToVideo(newIndex, currentTab);
+                scrollToVideo(newIndex);
                 setTimeout(() => { isScrolling = false; }, 800);
             }
         }
 
-        // Block horizontal scroll on trackpad to prevent visual glitches
-        // (Tab switching on desktop only via clicking tab buttons)
-        let lastTabSwitchTime = 0;
+        // Block horizontal scroll on trackpad (prevent visual glitches)
         document.addEventListener('wheel', (e) => {
-            // Block horizontal scroll
             if (Math.abs(e.deltaX) > Math.abs(e.deltaY) && Math.abs(e.deltaX) > 3) {
                 e.preventDefault();
-                return;
-            }
-
-            // Sequential tab scrolling
-            const now = Date.now();
-            if (now - lastTabSwitchTime < 1200) return; // Cooldown for tab switching
-
-            const tabData = videosData.tabs[currentTab];
-            const tabEl = document.getElementById(`tab-${tabData.id}`);
-            const container = tabEl.querySelector('.video-container');
-
-            if (!container) return;
-
-            const isAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 50;
-            const isAtTop = container.scrollTop <= 50;
-
-            if (e.deltaY > 50 && isAtBottom) {
-                if (currentTab < videosData.tabs.length - 1) {
-                    lastTabSwitchTime = now;
-                    switchTab(currentTab + 1, 0); // Start at first video of next tab
-                }
-            } else if (e.deltaY < -50 && isAtTop) {
-                if (currentTab > 0) {
-                    lastTabSwitchTime = now;
-                    const prevTabData = videosData.tabs[currentTab - 1];
-                    const lastVideoIdx = prevTabData.videos.length - 1 + (currentTab - 1 === 0 ? 1 : 0);
-                    switchTab(currentTab - 1, lastVideoIdx);
-                }
             }
         }, { passive: false });
 
@@ -2544,66 +2526,7 @@
             }
         });
 
-        // Touch Swipe for Tab Switching (mobile)
-        let touchStartX = 0;
-        let touchStartY = 0;
-        let touchEndX = 0;
-        let touchEndY = 0;
-        const minSwipeDistance = 80; // Minimum swipe distance in pixels
-
-        function isOnGridOrHero() {
-            const mainScroll = document.getElementById('mainScroll');
-            const isOnHero = mainScroll && mainScroll.scrollTop < window.innerHeight * 0.5;
-
-            if (isOnHero) return true;
-
-            const tabData = videosData.tabs[currentTab];
-            const tabEl = document.getElementById(`tab-${tabData.id}`);
-            const container = tabEl.querySelector('.video-container');
-            // If scrollTop is near 0, user is on the grid section
-            return container && container.scrollTop < window.innerHeight * 0.3;
-        }
-
-        function handleSwipeGesture() {
-            const deltaX = touchEndX - touchStartX;
-            const deltaY = touchEndY - touchStartY;
-
-            // Check for vertical swipes when at boundaries
-            if (Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > minSwipeDistance) {
-                const tabData = videosData.tabs[currentTab];
-                const tabEl = document.getElementById(`tab-${tabData.id}`);
-                const container = tabEl.querySelector('.video-container');
-                if (!container) return;
-
-                const isAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 50;
-                const isAtTop = container.scrollTop <= 50;
-
-                if (deltaY < 0 && isAtBottom) {
-                    // Swipe up at bottom -> next tab
-                    if (currentTab < videosData.tabs.length - 1) {
-                        switchTab(currentTab + 1, 0);
-                    }
-                } else if (deltaY > 0 && isAtTop) {
-                    // Swipe down at top -> previous tab
-                    if (currentTab > 0) {
-                        const prevTabData = videosData.tabs[currentTab - 1];
-                        const lastVideoIdx = prevTabData.videos.length - 1 + (currentTab - 1 === 0 ? 1 : 0);
-                        switchTab(currentTab - 1, lastVideoIdx);
-                    }
-                }
-            }
-        }
-
-        document.addEventListener('touchstart', (e) => {
-            touchStartX = e.changedTouches[0].screenX;
-            touchStartY = e.changedTouches[0].screenY;
-        }, { passive: true });
-
-        document.addEventListener('touchend', (e) => {
-            touchEndX = e.changedTouches[0].screenX;
-            touchEndY = e.changedTouches[0].screenY;
-            handleSwipeGesture();
-        }, { passive: true });
+        // Touch handling removed - native scroll handles single page navigation
 
         // --- Draggable Utility ---
 

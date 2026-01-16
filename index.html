@@ -785,9 +785,10 @@
             flex-direction: column;
             align-items: center;
             justify-content: flex-start;
-            padding-top: 80px;
+            padding-top: 160px;
+            /* Increased to avoid clash with lowered navbar */
             z-index: 3000;
-            background: rgba(0, 0, 0, 0.85);
+            background: rgba(15, 7, 26, 0.98);
             backdrop-filter: blur(30px);
             -webkit-backdrop-filter: blur(30px);
             opacity: 0;
@@ -803,14 +804,7 @@
         }
 
         .grid-overlay-header {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            margin-bottom: 24px;
-            padding: 0 20px;
-            width: 100%;
-            max-width: 800px;
+            display: none;
         }
 
         .grid-tab-nav {
@@ -849,29 +843,6 @@
             color: white;
         }
 
-        .grid-close-btn {
-            position: fixed;
-            top: clamp(12px, 3vh, 20px);
-            right: clamp(12px, 3vh, 20px);
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            z-index: 3001;
-            transition: all 0.3s ease;
-        }
-
-        .grid-close-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: scale(1.1);
-        }
-
         /* Grid panel for each tab's content */
         .grid-panel {
             display: none;
@@ -887,17 +858,17 @@
         .grid-container {
             display: grid;
             height: auto;
-            max-height: calc(100vh - 180px);
+            max-height: calc(100vh - 200px);
             overflow-y: auto;
-            padding-bottom: 40px;
+            padding-bottom: 60px;
             grid-template-columns: repeat(5, auto);
             justify-content: center;
             align-content: start;
             justify-items: center;
             align-items: center;
-            gap: clamp(8px, 1.5vw, 12px);
-            padding: clamp(8px, 2vw, 16px);
-            max-width: 95vw;
+            gap: 24px;
+            padding: 24px;
+            max-width: 1200px;
             width: 100%;
         }
 
@@ -1018,12 +989,12 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: clamp(4px, 1vw, 8px);
+            gap: 6px;
             z-index: 1001;
-            background: rgba(0, 0, 0, 0.3);
+            background: rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
-            padding: clamp(4px, 0.8vw, 6px);
+            padding: 6px;
             border-radius: 50px;
             border: 1px solid rgba(255, 255, 255, 0.1);
             transition: opacity 0.3s ease, visibility 0.3s ease;
@@ -1033,13 +1004,37 @@
             margin: 0 auto 16px auto;
         }
 
-        /* Logo Button - Separate circular VS initials button */
-        .logo-btn {
+        .navbar-wrapper {
             position: fixed;
             top: clamp(12px, 3vh, 20px);
             left: 50%;
-            /* Position to the left of the tab bar - will be calculated with transform */
-            transform: translateX(calc(-50% - clamp(175px, 21vw, 250px)));
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 3100;
+            pointer-events: none;
+            transition: top 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+        }
+
+        .navbar-wrapper.grid-mode {
+            top: 60px;
+        }
+
+        .navbar-wrapper.grid-mode .logo-btn {
+            opacity: 0 !important;
+            visibility: hidden !important;
+            transform: scale(0.8) !important;
+            pointer-events: none !important;
+            /* Keep width/margins to prevent horizontal shift of the tabs */
+        }
+
+        .navbar-wrapper>* {
+            pointer-events: auto;
+        }
+
+        /* Logo Button - Separate circular VS initials button */
+        .logo-btn {
             width: clamp(40px, 6vw, 50px);
             height: clamp(40px, 6vw, 50px);
             border-radius: 50%;
@@ -1056,15 +1051,12 @@
             font-weight: 600;
             color: rgba(255, 255, 255, 0.85);
             transition: all 0.3s ease, opacity 0.3s ease, visibility 0.3s ease;
-            z-index: 2001;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-            opacity: 1;
-            visibility: visible;
         }
 
         .logo-btn:hover {
             background: rgba(255, 255, 255, 0.15);
-            transform: translateX(calc(-50% - clamp(175px, 21vw, 250px))) scale(1.05);
+            transform: scale(1.05);
             color: white;
         }
 
@@ -1076,11 +1068,6 @@
 
         /* Grid Overlay Button - Symmetrical to Logo Button */
         .grid-overlay-btn {
-            position: fixed;
-            top: clamp(12px, 3vh, 20px);
-            left: 50%;
-            /* Symmetrical opposite of logo-btn */
-            transform: translateX(calc(-50% + clamp(175px, 21vw, 250px)));
             width: clamp(40px, 6vw, 50px);
             height: clamp(40px, 6vw, 50px);
             border-radius: 50%;
@@ -1095,26 +1082,42 @@
             font-family: inherit;
             color: rgba(255, 255, 255, 0.85);
             transition: all 0.3s ease;
-            z-index: 2001;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            position: relative;
         }
 
         .grid-overlay-btn:hover {
             background: rgba(255, 255, 255, 0.15);
-            transform: translateX(calc(-50% + clamp(175px, 21vw, 250px))) scale(1.05);
+            transform: scale(1.05);
             color: white;
         }
 
-        /* Global tabs - fixed at top by default, can animate to landing position */
+        .grid-overlay-btn svg {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .grid-overlay-btn .close-icon {
+            opacity: 0;
+            transform: rotate(-90deg) scale(0);
+        }
+
+        .navbar-wrapper.grid-mode .grid-overlay-btn .grid-icon {
+            opacity: 0;
+            transform: rotate(90deg) scale(0);
+        }
+
+        .navbar-wrapper.grid-mode .grid-overlay-btn .close-icon {
+            opacity: 1;
+            transform: rotate(0) scale(1);
+        }
+
+        /* Global tabs - fixed behavior handled by navbar-wrapper */
         .tab-nav.global-tabs {
-            position: fixed;
-            left: 50%;
-            /* Default: top position */
-            top: clamp(12px, 3vh, 20px);
-            transform: translateX(-50%);
             margin: 0;
-            z-index: 2000;
-            /* Snappier transition for opacity/visibility only - top handled by JS */
+            /* Snappier transition for opacity/visibility only */
             transition: opacity 0.3s ease, visibility 0.3s ease;
         }
 
@@ -1125,17 +1128,18 @@
             /* Placeholder to prevent empty ruleset */
         }
 
-        .tab-nav.hidden {
+        .navbar-wrapper.hidden {
             opacity: 0;
             visibility: hidden;
+            pointer-events: none;
         }
 
         .tab-btn {
-            padding: clamp(8px, 1.5vh, 12px) clamp(16px, 3vw, 24px);
+            padding: 10px 20px;
             background: transparent;
             border: none;
             color: rgba(255, 255, 255, 0.6);
-            font-size: clamp(12px, 2vw, 14px);
+            font-size: 14px;
             font-weight: 500;
             font-family: inherit;
             cursor: pointer;
@@ -1655,22 +1659,35 @@
     <div class="main-scroll-container" id="mainScroll">
         <!-- Tabs World (Contains horizontal tabs + their vertical video scrollers) -->
         <div class="tabs-world" id="tabsWorld">
-            <!-- Global Fixed Tabs (for video sections) -->
-            <!-- VS Logo Button (separate from tabs) -->
-            <button class="logo-btn active" id="logoBtn" onclick="goToLanding()" title="Go to Profile">VS</button>
+            <!-- Global Navigation Wrapper -->
+            <div class="navbar-wrapper" id="navbarWrapper">
+                <!-- Home Logo Button -->
+                <button class="logo-btn active" id="logoBtn" onclick="goToLanding()" title="Go to Home">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
+                        style="width: 20px; height: 20px;">
+                        <path
+                            d="M11.47 3.84a.75.75 0 011.06 0l8.69 8.69a.75.75 0 101.06-1.06l-8.689-8.69a2.25 2.25 0 00-3.182 0l-8.69 8.69a.75.75 0 001.061 1.06l8.69-8.69z" />
+                        <path
+                            d="M12 5.432l8.159 8.159c.03.03.06.058.091.086v6.198c0 1.035-.84 1.875-1.875 1.875H15a.75.75 0 01-.75-.75v-4.5a.75.75 0 00-.75-.75h-3a.75.75 0 00-.75.75V21a.75.75 0 01-.75.75H5.625a1.875 1.875 0 01-1.875-1.875v-6.198a2.29 2.29 0 00.091-.086L12 5.43z" />
+                    </svg>
+                </button>
 
-            <!-- Global Fixed Tabs (for video sections) -->
-            <nav class="tab-nav global-tabs" id="globalTabs"></nav>
+                <!-- Global Fixed Tabs -->
+                <nav class="tab-nav global-tabs" id="globalTabs"></nav>
 
-            <!-- Grid Overlay Button -->
-            <button class="grid-overlay-btn" id="gridOverlayBtn" onclick="toggleCurrentGrid()" title="View Grid">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
-                    style="width: 24px; height: 24px;">
-                    <path fill-rule="evenodd"
-                        d="M3 6a3 3 0 013-3h2.25a3 3 0 013 3v2.25a3 3 0 01-3 3H6a3 3 0 01-3-3V6zm9.75 0a3 3 0 013-3H21a3 3 0 013 3v2.25a3 3 0 01-3 3h-2.25a3 3 0 01-3-3V6zM3 15.75a3 3 0 013-3h2.25a3 3 0 013 3v2.25a3 3 0 01-3 3H6a3 3 0 01-3-3v-2.25zm9.75 0a3 3 0 013-3H21a3 3 0 013 3v2.25a3 3 0 01-3 3h-2.25a3 3 0 01-3-3v-2.25z"
-                        clip-rule="evenodd" />
-                </svg>
-            </button>
+                <!-- Grid Overlay Button -->
+                <button class="grid-overlay-btn" id="gridOverlayBtn" onclick="toggleCurrentGrid()" title="View Grid">
+                    <svg class="grid-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M5 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H7a2 2 0 01-2-2V5zM5 15a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H7a2 2 0 01-2-2v-2zM15 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM15 15a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                    </svg>
+                    <svg class="close-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
 
             <!-- Horizontal Tabs Container -->
             <div class="tabs-container" id="tabsContainer"></div>
@@ -1679,13 +1696,6 @@
 
     <!-- Unified Grid Overlay -->
     <div class="grid-overlay" id="gridOverlay" onclick="handleGridOverlayClick(event)">
-        <button class="grid-close-btn" onclick="closeGridOverlay()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
-                stroke-linejoin="round" style="width: 24px; height: 24px;">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-        </button>
         <div class="grid-overlay-header">
             <nav class="grid-tab-nav" id="gridTabNav"></nav>
         </div>
@@ -1975,9 +1985,9 @@
                         const isVideo = entry.target.classList.contains('video-section');
                         const logoBtn = document.getElementById('logoBtn');
 
-                        if (globalTabs) {
-                            globalTabs.classList.remove('hidden');
-                            globalTabs.classList.remove('landing-position');
+                        const navbarWrapper = document.getElementById('navbarWrapper');
+                        if (navbarWrapper) {
+                            navbarWrapper.classList.remove('hidden');
                         }
 
                         if (isLanding) {
@@ -2239,74 +2249,100 @@
 
         // Navigate to the landing/profile section (top of Tab 0)
         function goToLanding() {
-            if (currentVideoId) pauseVideo(currentVideoId);
-
-            // If not on tab 0, switch to it (LANDING position is index 0)
-            if (currentTab !== 0) {
-                switchTab(0, 0);
+            closeGridOverlay(); // Close grid if navigating home
+            if (currentTab === 0) {
+                const landingSection = document.querySelector('#tab-zeta .landing-section');
+                if (landingSection) {
+                    const container = landingSection.closest('.video-container');
+                    if (container) {
+                        container.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                }
             } else {
-                // Already on tab 0, just scroll to top
-                scrollToVideo(0, 0, true);
+                // Ensure we go to index 0 (Landing) of tab 0 (Zeta)
+                switchTab(0, 0);
             }
-
-            // Update UI - deactivate all tab buttons, activate VS button
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            const logoBtn = document.getElementById('logoBtn');
-            if (logoBtn) logoBtn.classList.add('active');
         }
 
-        function switchTab(index, targetSectionIndex = null) {
+        function switchTab(index, targetSectionIndex = null, isFinalSelection = false) {
+            const navbarWrapper = document.getElementById('navbarWrapper');
+            const isBrowsingGrid = navbarWrapper && navbarWrapper.classList.contains('grid-mode') && !isFinalSelection;
+
             // For Tab 0, first video is at index 1 (after landing), for others it's index 0
             const firstVideoIndex = index === 0 ? 1 : 0;
 
-            if (index === currentTab && targetSectionIndex === null) {
+            if (index === currentTab && targetSectionIndex === null && !isBrowsingGrid) {
                 // If already on tab, clicking it scrolls to first video
                 scrollToVideo(firstVideoIndex, index, true);
                 return;
             }
 
-            // Pause current video for performance
-            if (currentVideoId) pauseVideo(currentVideoId);
-
-            // Optimization: Pause all videos in the previous tab's container
-            const previousTabId = videosData.tabs[currentTab].id;
-            const previousTabEl = document.getElementById(`tab-${previousTabId}`);
-            if (previousTabEl) {
-                previousTabEl.querySelectorAll('video').forEach(v => {
-                    if (!v.paused) v.pause();
-                });
-            }
-
+            // Update UI/Buttons regardless of scroller movement
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 const btnIndex = parseInt(btn.getAttribute('data-index'));
                 btn.classList.toggle('active', btnIndex === index);
             });
 
-            tabsContainer.style.transform = `translateY(-${index * 100}vh)`;
-            currentTab = index;
-
-            const newTabData = videosData.tabs[index];
-            const newTabEl = document.getElementById(`tab-${newTabData.id}`);
-            const container = newTabEl?.querySelector('.video-container');
-
-            if (targetSectionIndex !== null) {
-                if (container) {
-                    scrollToVideo(targetSectionIndex, index, false);
-                }
-            } else {
-                // Manual tab click -> scroll to first video
-                if (container) {
-                    scrollToVideo(firstVideoIndex, index, false);
-                }
+            const logoBtn = document.getElementById('logoBtn');
+            if (logoBtn) {
+                logoBtn.classList.toggle('active', index === 0 && !isBrowsingGrid);
             }
 
-            if (newTabData.videos[0]) {
+            // Sync Grid panels if open
+            const panels = document.querySelectorAll('.grid-panel');
+            if (panels.length > 0) {
+                panels.forEach((p, idx) => p.classList.toggle('active', idx === index));
+            }
+
+            // Update background color based on tab data
+            const newTabData = videosData.tabs[index];
+            if (newTabData && newTabData.videos && newTabData.videos[0]) {
                 bgLayer.style.backgroundColor = newTabData.videos[0].bgColor;
+            }
+
+            // Only perform actual scroller/transform logic if not just browsing the grid
+            if (!isBrowsingGrid) {
+                // Pause current video for performance
+                if (currentVideoId) pauseVideo(currentVideoId);
+
+                // Optimization: Pause all videos in the previous tab's container
+                const previousTabId = videosData.tabs[currentTab].id;
+                const previousTabEl = document.getElementById(`tab-${previousTabId}`);
+                if (previousTabEl) {
+                    previousTabEl.querySelectorAll('video').forEach(v => {
+                        if (!v.paused) v.pause();
+                    });
+                }
+
+                tabsContainer.style.transform = `translateY(-${index * 100}vh)`;
+                currentTab = index;
+
+                const newTabEl = document.getElementById(`tab-${newTabData.id}`);
+                const container = newTabEl?.querySelector('.video-container');
+
+                if (targetSectionIndex !== null) {
+                    if (container) {
+                        scrollToVideo(targetSectionIndex, index, false);
+                    }
+                } else if (!isFinalSelection) {
+                    // Manual tab click -> scroll to first video
+                    if (container) {
+                        scrollToVideo(firstVideoIndex, index, false);
+                    }
+                }
+            } else {
+                // Just browsing: track current tab but don't move scroller
+                // We'll sync scroller later if a selection is made
             }
         }
 
         function toggleCurrentGrid() {
-            openGridOverlay(currentTab);
+            const gridOverlay = document.getElementById('gridOverlay');
+            if (gridOverlay.classList.contains('visible')) {
+                closeGridOverlay();
+            } else {
+                openGridOverlay(currentTab);
+            }
         }
 
         // Track if video was playing before grid opened
@@ -2314,8 +2350,14 @@
 
         function openGridOverlay(activeTabIndex = 0) {
             const gridOverlay = document.getElementById('gridOverlay');
-            const gridTabNav = document.getElementById('gridTabNav');
             const gridPanelsContainer = document.getElementById('gridPanelsContainer');
+            const navbarWrapper = document.getElementById('navbarWrapper');
+
+            // Explicitly highlight the correct tab if coming from landing section
+            // (Zeta is tab 0, and landing is part of zeta)
+            document.querySelectorAll('.tab-btn').forEach((btn, idx) => {
+                btn.classList.toggle('active', idx === activeTabIndex);
+            });
 
             // Pause current video for performance
             if (currentVideoId) {
@@ -2328,14 +2370,7 @@
                 }
             }
 
-            // Generate tab navigation
-            gridTabNav.innerHTML = videosData.tabs.map((tab, index) =>
-                `<button class="grid-tab-btn ${index === activeTabIndex ? 'active' : ''}" 
-                         data-tab-index="${index}" 
-                         onclick="switchGridTab(${index})">${tab.label}</button>`
-            ).join('');
-
-            // Generate grid panels for all tabs
+            // Generate grid panels for all tabs (reusing main tab bar now)
             gridPanelsContainer.innerHTML = videosData.tabs.map((tab, tabIndex) => `
                 <div class="grid-panel ${tabIndex === activeTabIndex ? 'active' : ''}" data-panel-index="${tabIndex}">
                     <div class="grid-container">
@@ -2350,6 +2385,7 @@
             `).join('');
 
             gridOverlay.classList.add('visible');
+            if (navbarWrapper) navbarWrapper.classList.add('grid-mode');
         }
 
         function switchGridTab(tabIndex) {
@@ -2365,14 +2401,15 @@
 
         function closeGridOverlay() {
             const gridOverlay = document.getElementById('gridOverlay');
-            gridOverlay.classList.remove('visible');
+            const navbarWrapper = document.getElementById('navbarWrapper');
 
-            // Resume video if it was playing before grid opened
+            gridOverlay.classList.remove('visible');
+            if (navbarWrapper) navbarWrapper.classList.remove('grid-mode');
+
+            // Resume video if it was playing before
             if (videoWasPlayingBeforeGrid && currentVideoId) {
                 const video = document.getElementById(currentVideoId);
-                if (video) {
-                    video.play().catch(e => console.log('Autoplay blocked:', e));
-                }
+                if (video) video.play();
             }
         }
 
@@ -2389,11 +2426,8 @@
 
         function goToVideoFromGrid(index, tabIndex) {
             closeGridOverlay();
-            if (tabIndex !== currentTab) {
-                switchTab(tabIndex, index);
-            } else {
-                scrollToVideo(index, currentTab);
-            }
+            // Pass true as third argument to force real scroller navigation
+            switchTab(tabIndex, index, true);
         }
 
         function goToVideo(index, tabIndex) {

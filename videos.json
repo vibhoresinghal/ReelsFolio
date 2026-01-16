@@ -25,9 +25,9 @@
                 "description": "My favorite sport to play on weekends with friends.",
                 "position": {
                     "top": "15%",
-                    "left": "8%"
+                    "left": "10%"
                 },
-                "rotation": "-5deg",
+                "rotation": "5deg",
                 "size": "medium"
             },
             {
@@ -38,10 +38,10 @@
                 "title": "Badminton Court",
                 "description": "Early morning badminton sessions keep me energized.",
                 "position": {
-                    "top": "38%",
-                    "left": "12%"
+                    "top": "40%",
+                    "left": "18%"
                 },
-                "rotation": "3deg",
+                "rotation": "-5deg",
                 "size": "small"
             },
             {
@@ -52,10 +52,10 @@
                 "title": "Stellar Trophy",
                 "description": "Recognition for outstanding work - a proud moment!",
                 "position": {
-                    "top": "12%",
-                    "right": "8%"
+                    "top": "8%",
+                    "right": "5%"
                 },
-                "rotation": "5deg",
+                "rotation": "10deg",
                 "size": "medium"
             },
             {
@@ -66,10 +66,10 @@
                 "title": "Camera Setup",
                 "description": "My FUJIFILM XS-20 ready for the next adventure.",
                 "position": {
-                    "top": "42%",
-                    "right": "6%"
+                    "top": "55%",
+                    "right": "18%"
                 },
-                "rotation": "-3deg",
+                "rotation": "5deg",
                 "size": "small"
             },
             {
@@ -80,11 +80,11 @@
                 "title": "My Room",
                 "description": "This is my studio where all the magic happens.",
                 "position": {
-                    "top": "62%",
-                    "right": "10%"
+                    "top": "40%",
+                    "right": "8%"
                 },
-                "rotation": "2deg",
-                "size": "medium"
+                "rotation": "-8deg",
+                "size": "small"
             }
         ]
     },

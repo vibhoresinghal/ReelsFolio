@@ -609,15 +609,19 @@
             font-size: 16px;
         }
 
-        @keyframes float {
+        @keyframes float-floater {
 
             0%,
             100% {
-                transform: translateY(0);
+                transform: translate(0, 0) rotate(var(--init-rotation, 0deg));
             }
 
-            50% {
-                transform: translateY(-10px);
+            33% {
+                transform: translate(5px, -10px) rotate(calc(var(--init-rotation, 0deg) + 2deg));
+            }
+
+            66% {
+                transform: translate(-5px, -5px) rotate(calc(var(--init-rotation, 0deg) - 2deg));
             }
         }
 
@@ -1347,12 +1351,14 @@
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             z-index: 8;
+            animation: float-floater 8s ease-in-out infinite;
         }
 
         .floating-item:hover {
             transform: scale(1.08) !important;
             box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4);
             z-index: 15;
+            animation-play-state: paused;
         }
 
         .floating-item.size-small {
@@ -1381,7 +1387,8 @@
             position: absolute;
             pointer-events: none;
             z-index: 6;
-            animation: float-sticker 4s ease-in-out infinite;
+            /* Stickers stay in place, but can have a subtle rotation if desired or none at all */
+            animation: none;
         }
 
         .landing-sticker.heart {
@@ -1404,11 +1411,11 @@
 
             0%,
             100% {
-                transform: translateY(0) rotate(0deg);
+                transform: rotate(0deg);
             }
 
             50% {
-                transform: translateY(-8px) rotate(3deg);
+                transform: rotate(3deg);
             }
         }
 
@@ -1800,11 +1807,14 @@
                     if (item.position.bottom) posStyle.push(`bottom: ${item.position.bottom}`);
                     if (item.position.left) posStyle.push(`left: ${item.position.left}`);
                     if (item.position.right) posStyle.push(`right: ${item.position.right}`);
-                    const transform = item.rotation ? `transform: rotate(${item.rotation})` : '';
+
+                    const rotation = item.rotation || '0deg';
+                    // Combine position styles, rotation variable, and initial transform
+                    const inlineStyle = `${posStyle.join('; ')}; --init-rotation: ${rotation}; transform: rotate(${rotation});`;
 
                     return `
                         <div class="floating-item size-${item.size}" 
-                             style="${posStyle.join('; ')}; ${transform}"
+                             style="${inlineStyle}"
                              onclick="openFloatingModal('${item.id}')"
                              data-item-id="${item.id}">
                             <img src="${item.thumbnail}" alt="${item.title}" draggable="false" loading="lazy">
@@ -1845,11 +1855,20 @@
                                 </div>
                             </div>
                             ${generateFloatingItemsHTML(floatingItems)}
-                            <div class="landing-sticker star" style="top: 8%; left: 5%; width: 80px; height: 80px;">
-                                <svg viewBox="0 0 100 100" fill="currentColor"><polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35"/></svg>
+                            <div class="landing-sticker star" style="top: 5%; left: -2%; width: clamp(120px, 18vw, 200px); transform: rotate(-10deg);">
+                                <img src="assets/star.svg" alt="star" style="width: 100%; height: 100%;">
                             </div>
-                            <div class="landing-sticker heart" style="top: 12%; right: 32%; width: 50px; height: 50px;">
-                                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z" /></svg>
+                            <div class="landing-sticker heart" style="top: 10%; right: 26%; width: clamp(80px, 10vw, 130px); transform: rotate(15deg);">
+                                <img src="assets/heart.svg" alt="heart" style="width: 100%; height: 100%;">
+                            </div>
+                            <div class="landing-sticker plus" style="bottom: 5%; left: 28%; width: clamp(80px, 12vw, 150px); transform: rotate(-5deg); z-index: 12;">
+                                <img src="assets/plus.svg" alt="plus" style="width: 100%; height: 100%;">
+                            </div>
+                            <div class="landing-sticker star2" style="bottom: 25%; right: 2%; width: clamp(40px, 5vw, 70px); transform: rotate(10deg);">
+                                <img src="assets/star2.svg" alt="star2" style="width: 100%; height: 100%;">
+                            </div>
+                            <div class="landing-sticker wine" style="bottom: -5%; left: -2%; width: clamp(60px, 8vw, 100px); transform: rotate(30deg);">
+                                <img src="assets/wine.svg" alt="wine" style="width: 100%; height: 100%;">
                             </div>
                             <!-- Scroll Indicator -->
                             <div class="landing-scroll-indicator" onclick="scrollToFirstVideo()">
@@ -1909,6 +1928,9 @@
             if (firstContainer) {
                 handleScroll({ target: firstContainer });
             }
+
+            // Initialize Draggable items
+            initDraggable();
         }
 
         // Throttling function to limit execution of scroll/resize handlers
@@ -2548,6 +2570,107 @@
             touchEndY = e.changedTouches[0].screenY;
             handleSwipeGesture();
         }, { passive: true });
+
+        // --- Draggable Utility ---
+
+        function makeDraggable(el) {
+            let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+            let dragOccurred = false;
+            let startX, startY;
+
+            // Use both mouse and touch events
+            el.addEventListener('mousedown', dragStart);
+            el.addEventListener('touchstart', dragStart, { passive: false });
+
+            // Intercept and cancel the 'click' event if we were dragging
+            el.addEventListener('click', (e) => {
+                if (dragOccurred) {
+                    e.stopImmediatePropagation();
+                    e.preventDefault();
+                    dragOccurred = false;
+                }
+            }, true); // Capture phase is key to blocking inline onclick
+
+            function dragStart(e) {
+                // Ignore right clicks
+                if (e.type === 'mousedown' && e.button !== 0) return;
+
+                const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
+                const clientY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
+
+                startX = clientX;
+                startY = clientY;
+                pos3 = clientX;
+                pos4 = clientY;
+
+                // Reset drag flag at start of interaction
+                dragOccurred = false;
+
+                // Sync the element's top/left to its current visual position before dragging
+                const rect = el.getBoundingClientRect();
+                const parentRect = el.parentElement.getBoundingClientRect();
+
+                // Set explicit top/left and clear bottom/right/margins
+                el.style.top = (rect.top - parentRect.top) + "px";
+                el.style.left = (rect.left - parentRect.left) + "px";
+                el.style.bottom = 'auto';
+                el.style.right = 'auto';
+                el.style.margin = '0';
+
+                // Remove transition and animation during drag for responsiveness
+                el.style.transition = 'none';
+                el.style.animation = 'none';
+                el.style.zIndex = '1000'; // Bring to front
+
+                if (e.type === 'mousedown') {
+                    document.addEventListener('mousemove', elementDrag);
+                    document.addEventListener('mouseup', dragEnd);
+                } else {
+                    document.addEventListener('touchmove', elementDrag, { passive: false });
+                    document.addEventListener('touchend', dragEnd);
+                }
+            }
+
+            function elementDrag(e) {
+                const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
+                const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+
+                if (e.type === 'touchmove') e.preventDefault(); // Prevent scrolling while dragging
+
+                pos1 = pos3 - clientX;
+                pos2 = pos4 - clientY;
+                pos3 = clientX;
+                pos4 = clientY;
+
+                // Move threshold to distinguish click from drag
+                if (!dragOccurred && (Math.abs(clientX - startX) > 5 || Math.abs(clientY - startY) > 5)) {
+                    dragOccurred = true;
+                }
+
+                el.style.top = (el.offsetTop - pos2) + "px";
+                el.style.left = (el.offsetLeft - pos1) + "px";
+            }
+
+            function dragEnd() {
+                document.removeEventListener('mousemove', elementDrag);
+                document.removeEventListener('mouseup', dragEnd);
+                document.removeEventListener('touchmove', elementDrag);
+                document.removeEventListener('touchend', dragEnd);
+
+                el.style.transition = '';
+                // Note: dragOccurred remains true if it was a drag, 
+                // until the 'click' event fires and our listener resets it.
+            }
+        }
+
+        function initDraggable() {
+            const draggables = document.querySelectorAll('.floating-item');
+            draggables.forEach(el => {
+                makeDraggable(el);
+                // Change cursor to indicate draggability
+                el.style.cursor = 'move';
+            });
+        }
 
         // Initialize
         initApp();

@@ -1,12 +1,23 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ReelsFolio</title>
+    <meta name="description"
+        content="Vibhore Singhal - Sr. UX Designer Portfolio showcasing design work at Zeta, personal projects, and films.">
+    <title>ReelsFolio - Vibhore Singhal</title>
+
+    <!-- Preconnect to external domains -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev">
+    <link rel="preconnect" href="https://pub-876fdc3996be4fb3810906343b32d993.r2.dev">
+
+    <!-- Preload critical resources -->
+    <link rel="preload" href="videos.json" as="fetch" crossorigin>
+
+    <!-- Font with display swap for better performance -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
     <style>
@@ -32,6 +43,8 @@
             height: 100%;
             transition: background-color 0.6s ease-in-out;
             z-index: -1;
+            will-change: background-color;
+            contain: strict;
         }
 
         /* The scroll container */
@@ -233,6 +246,136 @@
             box-shadow: 0 clamp(15px, 3vh, 25px) clamp(40px, 8vh, 80px) rgba(0, 0, 0, 0.4);
             opacity: 0.2;
             transform: scale(0.9);
+            /* Smooth transition for scroll animations */
+            transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+        }
+
+        /* Vertical Navigation Arrows - FIXED position right of video frame */
+        .video-nav-arrows {
+            position: fixed;
+            /* Position just to the right of video frame */
+            left: calc(50% + min(clamp(280px, 50vw, 380px), calc(80vh * 9 / 16)) / 2 + 24px);
+            top: 50%;
+            transform: translateY(-164%);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 1000;
+        }
+
+        .nav-arrow-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: 1.5px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            opacity: 0.7;
+        }
+
+        .nav-arrow-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.5);
+            opacity: 1;
+            transform: scale(1.05);
+        }
+
+        .nav-arrow-btn svg {
+            width: 22px;
+            height: 22px;
+            fill: none;
+            stroke: white;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .nav-arrow-btn.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Like Button Styles */
+        .nav-arrow-btn.like-btn {
+            position: relative;
+            flex-direction: column;
+            gap: 2px;
+            height: auto;
+            padding: 10px 0;
+        }
+
+        .nav-arrow-btn.like-btn svg {
+            width: 24px;
+            height: 24px;
+            fill: none;
+            stroke: white;
+            stroke-width: 1.5;
+            transition: all 0.15s ease;
+        }
+
+        .nav-arrow-btn.like-btn.liked svg {
+            fill: #ff4757;
+            stroke: #ff4757;
+        }
+
+        .nav-arrow-btn.like-btn.pulse svg {
+            animation: heartPulse 0.3s ease-out;
+        }
+
+        @keyframes heartPulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.25);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .like-count {
+            font-size: 11px;
+            color: white;
+            font-weight: 500;
+            opacity: 0.9;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        /* Flying Heart Animation */
+        .flying-heart {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            animation: flyAwayHeart 1.2s ease-out forwards;
+        }
+
+        @keyframes flyAwayHeart {
+            0% {
+                opacity: 1;
+                transform: translate(0, 0) scale(1);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translate(var(--end-x), var(--end-y)) scale(0.5);
+            }
+        }
+
+        /* Hide nav arrows on mobile */
+        @media (max-width: 768px) {
+            .video-nav-arrows {
+                display: none;
+            }
         }
 
         /* Landscape modification */
@@ -596,15 +739,19 @@
             font-size: 16px;
         }
 
-        @keyframes float {
+        @keyframes float-floater {
 
             0%,
             100% {
-                transform: translateY(0);
+                transform: translate(0, 0) rotate(var(--init-rotation, 0deg));
             }
 
-            50% {
-                transform: translateY(-10px);
+            33% {
+                transform: translate(5px, -10px) rotate(calc(var(--init-rotation, 0deg) + 2deg));
+            }
+
+            66% {
+                transform: translate(-5px, -5px) rotate(calc(var(--init-rotation, 0deg) - 2deg));
             }
         }
 
@@ -757,58 +904,170 @@
             height: clamp(18px, 4vw, 24px);
         }
 
-        /* Grid Section - scrollable section before videos */
-        .grid-section {
-            min-height: 100vh;
+        /* Grid Section - UNIFIED FIXED OVERLAY */
+        .grid-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100vw;
-            scroll-snap-align: start;
-            scroll-snap-stop: always;
+            height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: flex-start;
-            padding-top: 30px;
-            position: relative;
-            background: linear-gradient(180deg, #2d1b4e 0%, #1a0f2e 100%);
+            padding-top: 160px;
+            /* Increased to avoid clash with lowered navbar */
+            z-index: 3000;
+            background: rgba(15, 7, 26, 0.98);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.4s;
+            pointer-events: none;
         }
 
-        /* Profile landing header (only in first tab's grid) */
-        .profile-landing {
+        .grid-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+        }
+
+        .grid-overlay-header {
+            display: none;
+        }
+
+        .grid-tab-nav {
             display: flex;
-            flex-direction: column;
             align-items: center;
-            padding: clamp(10px, 2vh, 20px) 20px;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 6px;
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .grid-tab-btn {
+            padding: 10px 20px;
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+            font-weight: 500;
+            font-family: inherit;
+            cursor: pointer;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .grid-tab-btn:hover {
+            color: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .grid-tab-btn.active {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        /* Grid panel for each tab's content */
+        .grid-panel {
+            display: none;
             width: 100%;
+            max-width: 95vw;
+            justify-content: center;
+        }
+
+        .grid-panel.active {
+            display: flex;
         }
 
         .grid-container {
             display: grid;
-            scroll-snap-align: start;
-            scroll-margin-top: 90px;
-            /* Fixed height to prevent any internal scrolling */
-            height: calc(100vh - 80px);
-            max-height: calc(100vh - 80px);
-            overflow: hidden;
-            /* Fixed 5 columns - Tab 1 gets 5x2, Tabs 2-4 get 4 items in 1 row */
+            height: auto;
+            max-height: calc(100vh - 200px);
+            overflow-y: auto;
+            padding-bottom: 60px;
             grid-template-columns: repeat(5, auto);
             justify-content: center;
-            align-content: center;
+            align-content: start;
             justify-items: center;
             align-items: center;
-            /* Consistent spacing across all tabs */
-            gap: clamp(8px, 1.5vw, 12px);
-            padding: clamp(8px, 2vw, 16px);
-            max-width: 95vw;
+            row-gap: 24px;
+            column-gap: 24px;
+            padding: 24px;
+            max-width: 1200px;
             width: 100%;
-            /* No internal scroll - fit everything in viewport */
-            opacity: 0.2;
-            transform: scale(0.9);
-            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
         }
 
-        .grid-section.active .grid-container {
-            opacity: 1;
-            transform: scale(1);
+        /* Grid item entry animation */
+        @keyframes gridItemEnter {
+            0% {
+                opacity: 0;
+                transform: scale(0.8) translateY(20px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .grid-overlay .grid-item {
+            opacity: 0;
+            transform: scale(0.8) translateY(20px);
+        }
+
+        .grid-overlay.visible .grid-item {
+            animation: gridItemEnter 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        /* Staggered animation delays for grid items */
+        .grid-overlay.visible .grid-item:nth-child(1) {
+            animation-delay: 0.05s;
+        }
+
+        .grid-overlay.visible .grid-item:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+
+        .grid-overlay.visible .grid-item:nth-child(3) {
+            animation-delay: 0.15s;
+        }
+
+        .grid-overlay.visible .grid-item:nth-child(4) {
+            animation-delay: 0.2s;
+        }
+
+        .grid-overlay.visible .grid-item:nth-child(5) {
+            animation-delay: 0.25s;
+        }
+
+        .grid-overlay.visible .grid-item:nth-child(6) {
+            animation-delay: 0.3s;
+        }
+
+        .grid-overlay.visible .grid-item:nth-child(7) {
+            animation-delay: 0.35s;
+        }
+
+        .grid-overlay.visible .grid-item:nth-child(8) {
+            animation-delay: 0.4s;
+        }
+
+        .grid-overlay.visible .grid-item:nth-child(9) {
+            animation-delay: 0.45s;
+        }
+
+        .grid-overlay.visible .grid-item:nth-child(10) {
+            animation-delay: 0.5s;
+        }
+
+        .grid-overlay.visible .grid-item:nth-child(n+11) {
+            animation-delay: 0.55s;
         }
 
         .grid-item {
@@ -861,12 +1120,12 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: clamp(4px, 1vw, 8px);
+            gap: 6px;
             z-index: 1001;
-            background: rgba(0, 0, 0, 0.3);
+            background: rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
-            padding: clamp(4px, 0.8vw, 6px);
+            padding: 6px;
             border-radius: 50px;
             border: 1px solid rgba(255, 255, 255, 0.1);
             transition: opacity 0.3s ease, visibility 0.3s ease;
@@ -876,13 +1135,37 @@
             margin: 0 auto 16px auto;
         }
 
-        /* Logo Button - Separate circular VS initials button */
-        .logo-btn {
+        .navbar-wrapper {
             position: fixed;
             top: clamp(12px, 3vh, 20px);
             left: 50%;
-            /* Position to the left of the tab bar - will be calculated with transform */
-            transform: translateX(calc(-50% - clamp(175px, 21vw, 250px)));
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 3100;
+            pointer-events: none;
+            transition: top 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+        }
+
+        .navbar-wrapper.grid-mode {
+            top: 60px;
+        }
+
+        .navbar-wrapper.grid-mode .logo-btn {
+            opacity: 0 !important;
+            visibility: hidden !important;
+            transform: scale(0.8) !important;
+            pointer-events: none !important;
+            /* Keep width/margins to prevent horizontal shift of the tabs */
+        }
+
+        .navbar-wrapper>* {
+            pointer-events: auto;
+        }
+
+        /* Logo Button - Separate circular VS initials button */
+        .logo-btn {
             width: clamp(40px, 6vw, 50px);
             height: clamp(40px, 6vw, 50px);
             border-radius: 50%;
@@ -899,53 +1182,95 @@
             font-weight: 600;
             color: rgba(255, 255, 255, 0.85);
             transition: all 0.3s ease, opacity 0.3s ease, visibility 0.3s ease;
-            z-index: 2001;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-            opacity: 1;
-            visibility: visible;
         }
 
         .logo-btn:hover {
             background: rgba(255, 255, 255, 0.15);
-            transform: translateX(calc(-50% - clamp(175px, 21vw, 250px))) scale(1.05);
+            transform: scale(1.05);
             color: white;
         }
 
-        .logo-btn.hidden {
-            opacity: 0;
-            visibility: hidden;
+        .logo-btn.active {
+            background: rgba(124, 58, 237, 0.6);
+            border-color: rgba(124, 58, 237, 0.8);
+            color: white;
         }
 
-        /* Global tabs - fixed at top by default, can animate to landing position */
+        /* Grid Overlay Button - Symmetrical to Logo Button */
+        .grid-overlay-btn {
+            width: clamp(40px, 6vw, 50px);
+            height: clamp(40px, 6vw, 50px);
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: inherit;
+            color: rgba(255, 255, 255, 0.85);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .grid-overlay-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: scale(1.05);
+            color: white;
+        }
+
+        .grid-overlay-btn svg {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .grid-overlay-btn .close-icon {
+            opacity: 0;
+            transform: rotate(-90deg) scale(0);
+        }
+
+        .navbar-wrapper.grid-mode .grid-overlay-btn .grid-icon {
+            opacity: 0;
+            transform: rotate(90deg) scale(0);
+        }
+
+        .navbar-wrapper.grid-mode .grid-overlay-btn .close-icon {
+            opacity: 1;
+            transform: rotate(0) scale(1);
+        }
+
+        /* Global tabs - fixed behavior handled by navbar-wrapper */
         .tab-nav.global-tabs {
-            position: fixed;
-            left: 50%;
-            /* Default: top position */
-            top: clamp(12px, 3vh, 20px);
-            transform: translateX(-50%);
             margin: 0;
-            z-index: 2000;
-            /* Snappier transition for opacity/visibility only - top handled by JS */
+            /* Snappier transition for opacity/visibility only */
             transition: opacity 0.3s ease, visibility 0.3s ease;
         }
 
         /* Landing position state - navbar moves down to between skills and grid */
         .tab-nav.global-tabs.landing-position {
             /* Position handled by JS for perfect sync with scroll */
-            z-index: 2000;
+            pointer-events: auto;
+            /* Placeholder to prevent empty ruleset */
         }
 
-        .tab-nav.hidden {
+        .navbar-wrapper.hidden {
             opacity: 0;
             visibility: hidden;
+            pointer-events: none;
         }
 
         .tab-btn {
-            padding: clamp(8px, 1.5vh, 12px) clamp(16px, 3vw, 24px);
+            padding: 10px 20px;
             background: transparent;
             border: none;
             color: rgba(255, 255, 255, 0.6);
-            font-size: clamp(12px, 2vw, 14px);
+            font-size: 14px;
             font-weight: 500;
             font-family: inherit;
             cursor: pointer;
@@ -964,20 +1289,16 @@
             color: white;
         }
 
-        /* Tab Content */
+        /* Single scroll container - no more tab transforms */
         .tabs-container {
-            display: flex;
-            width: 400vw;
-            /* Will be updated dynamically */
-            height: 100vh;
-            transition: transform 0.5s ease-in-out;
+            display: contents;
+            /* Acts as a simple wrapper, content flows naturally */
         }
 
-        .tab-content {
-            flex: 0 0 100vw;
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
+        /* Section markers for each category (invisible, used for scroll anchors) */
+        .section-marker {
+            height: 0;
+            width: 100%;
         }
 
         /* Hide grid button when tabs are visible */
@@ -1018,6 +1339,441 @@
             position: relative;
             overflow: hidden;
         }
+
+        /* ========== NEW LANDING SECTION STYLES ========== */
+
+        /* Landing Section - Full screen video-like view */
+        .landing-section {
+            height: 100vh;
+            width: 100vw;
+            scroll-snap-align: center;
+            scroll-snap-stop: always;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Landing Profile Info - Left Side */
+        .landing-profile-info {
+            position: absolute;
+            left: clamp(40px, 8vw, 120px);
+            bottom: clamp(80px, 15vh, 150px);
+            max-width: clamp(280px, 25vw, 400px);
+            z-index: 10;
+            text-align: left;
+        }
+
+        .landing-bio {
+            color: rgba(255, 255, 255, 0.75);
+            font-size: clamp(13px, 1.3vw, 16px);
+            line-height: 1.5;
+            margin-bottom: clamp(12px, 2vh, 20px);
+            font-weight: 400;
+        }
+
+        .landing-name {
+            color: white;
+            font-size: clamp(32px, 4vw, 52px);
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+            margin: 0 0 clamp(12px, 2vh, 20px) 0;
+        }
+
+        .landing-locations {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .location-tag {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 8px 14px;
+            border-radius: 20px;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: clamp(12px, 1.2vw, 14px);
+            font-weight: 500;
+        }
+
+        .location-tag svg {
+            width: 14px;
+            height: 14px;
+            opacity: 0.8;
+        }
+
+        /* Landing Video Frame - Center */
+        .landing-video-frame {
+            position: relative;
+            width: min(clamp(280px, 50vw, 380px), calc(80vh * 9 / 16));
+            aspect-ratio: 9/16;
+            border-radius: clamp(16px, 3vw, 24px);
+            overflow: hidden;
+            box-shadow: 0 clamp(15px, 3vh, 25px) clamp(40px, 8vh, 80px) rgba(0, 0, 0, 0.5);
+            z-index: 5;
+        }
+
+        .landing-video-frame video,
+        .landing-video-frame img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+
+
+        /* Landing video frame play overlay - same as video-frame */
+        .landing-video-frame {
+            cursor: pointer;
+        }
+
+        .landing-video-frame .play-overlay-btn {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 100;
+            opacity: 1;
+            pointer-events: auto;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            color: white;
+        }
+
+        /* Hide button when playing */
+        .landing-video-frame .play-overlay-btn.playing {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .landing-video-frame .play-overlay-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%) scale(1.05);
+        }
+
+        /* Floating Items */
+        .floating-item {
+            position: absolute;
+            cursor: pointer;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            z-index: 8;
+            animation: float-floater 8s ease-in-out infinite;
+        }
+
+        .floating-item:hover {
+            transform: scale(1.08) !important;
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4);
+            z-index: 15;
+            animation-play-state: paused;
+        }
+
+        .floating-item.size-small {
+            width: clamp(80px, 10vw, 120px);
+            height: clamp(80px, 10vw, 120px);
+        }
+
+        .floating-item.size-medium {
+            width: clamp(100px, 12vw, 150px);
+            height: clamp(100px, 12vw, 150px);
+        }
+
+        .floating-item.size-large {
+            width: clamp(120px, 14vw, 180px);
+            height: clamp(120px, 14vw, 180px);
+        }
+
+        .floating-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Landing Decorative Stickers */
+        .landing-sticker {
+            position: absolute;
+            pointer-events: none;
+            z-index: 6;
+            /* Stickers stay in place, but can have a subtle rotation if desired or none at all */
+            animation: none;
+        }
+
+        .landing-sticker.heart {
+            color: #ff6b9d;
+        }
+
+        .landing-sticker.star {
+            color: #5b8dd9;
+        }
+
+        .landing-sticker.plus {
+            color: #d989b5;
+        }
+
+        .landing-sticker.sparkle {
+            color: #ff8fb1;
+        }
+
+        @keyframes float-sticker {
+
+            0%,
+            100% {
+                transform: rotate(0deg);
+            }
+
+            50% {
+                transform: rotate(3deg);
+            }
+        }
+
+        /* Landing Bottom Toggle/Switch Element */
+        .landing-toggle {
+            position: absolute;
+            bottom: clamp(80px, 12vh, 120px);
+            right: clamp(40px, 8vw, 120px);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 10px 16px;
+            border-radius: 30px;
+            z-index: 10;
+        }
+
+        .landing-toggle .toggle-line {
+            width: 60px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+        }
+
+        .landing-toggle .toggle-circle {
+            width: 24px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+        }
+
+        /* Scroll Indicator */
+        .landing-scroll-indicator {
+            position: absolute;
+            bottom: clamp(20px, 4vh, 40px);
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 12px;
+            animation: bounce 2s ease-in-out infinite;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .landing-scroll-indicator svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            100% {
+                transform: translateX(-50%) translateY(0);
+            }
+
+            50% {
+                transform: translateX(-50%) translateY(8px);
+            }
+        }
+
+        /* ========== FLOATING ITEM MODAL STYLES ========== */
+
+        .floating-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .floating-modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .floating-modal {
+            background: white;
+            border-radius: 24px;
+            display: flex;
+            max-width: 90vw;
+            max-height: 85vh;
+            overflow: hidden;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.4);
+            transform: scale(0.9) translateY(20px);
+            transition: transform 0.3s ease;
+        }
+
+        .floating-modal-overlay.active .floating-modal {
+            transform: scale(1) translateY(0);
+        }
+
+        .floating-modal-image {
+            flex: 0 0 auto;
+            max-width: 55%;
+            max-height: 85vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f5f5f5;
+        }
+
+        .floating-modal-image img {
+            max-width: 100%;
+            max-height: 85vh;
+            object-fit: contain;
+            border-radius: 16px 0 0 16px;
+        }
+
+        .floating-modal-content {
+            flex: 1;
+            padding: clamp(30px, 5vw, 50px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-width: 280px;
+            max-width: 400px;
+        }
+
+        .floating-modal-title {
+            color: #1a1a1a;
+            font-size: clamp(24px, 3vw, 36px);
+            font-weight: 700;
+            margin: 0 0 16px 0;
+            line-height: 1.2;
+        }
+
+        .floating-modal-description {
+            color: #666;
+            font-size: clamp(14px, 1.5vw, 16px);
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .floating-modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .floating-modal-close:hover {
+            background: white;
+            transform: scale(1.1);
+        }
+
+        .floating-modal-close svg {
+            width: 20px;
+            height: 20px;
+            color: #333;
+        }
+
+        /* Mobile responsive for modal */
+        @media (max-width: 768px) {
+            .floating-modal {
+                flex-direction: column;
+                max-width: 95vw;
+            }
+
+            .floating-modal-image {
+                max-width: 100%;
+                max-height: 50vh;
+            }
+
+            .floating-modal-image img {
+                border-radius: 24px 24px 0 0;
+            }
+
+            .floating-modal-content {
+                min-width: unset;
+                max-width: unset;
+            }
+
+            .landing-profile-info {
+                left: 20px;
+                right: 20px;
+                bottom: 100px;
+                max-width: none;
+            }
+
+            .landing-toggle {
+                display: none;
+            }
+
+            .floating-item {
+                display: none;
+            }
+        }
+
+        /* Hide floating items on smaller screens */
+        @media (max-width: 1200px) {
+            .floating-item.size-small {
+                width: clamp(60px, 8vw, 90px);
+                height: clamp(60px, 8vw, 90px);
+            }
+
+            .floating-item.size-medium {
+                width: clamp(80px, 10vw, 120px);
+                height: clamp(80px, 10vw, 120px);
+            }
+        }
     </style>
 </head>
 
@@ -1029,15 +1785,66 @@
     <div class="main-scroll-container" id="mainScroll">
         <!-- Tabs World (Contains horizontal tabs + their vertical video scrollers) -->
         <div class="tabs-world" id="tabsWorld">
-            <!-- Global Fixed Tabs (for video sections) -->
-            <!-- VS Logo Button (separate from tabs) -->
-            <button class="logo-btn hidden" id="logoBtn" onclick="goToLanding()" title="Go to Profile">VS</button>
+            <!-- Global Navigation Wrapper -->
+            <div class="navbar-wrapper" id="navbarWrapper">
+                <!-- Home Logo Button -->
+                <button class="logo-btn active" id="logoBtn" onclick="goToLanding()" title="Go to Home">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
+                        style="width: 20px; height: 20px;">
+                        <path
+                            d="M11.47 3.84a.75.75 0 011.06 0l8.69 8.69a.75.75 0 101.06-1.06l-8.689-8.69a2.25 2.25 0 00-3.182 0l-8.69 8.69a.75.75 0 001.061 1.06l8.69-8.69z" />
+                        <path
+                            d="M12 5.432l8.159 8.159c.03.03.06.058.091.086v6.198c0 1.035-.84 1.875-1.875 1.875H15a.75.75 0 01-.75-.75v-4.5a.75.75 0 00-.75-.75h-3a.75.75 0 00-.75.75V21a.75.75 0 01-.75.75H5.625a1.875 1.875 0 01-1.875-1.875v-6.198a2.29 2.29 0 00.091-.086L12 5.43z" />
+                    </svg>
+                </button>
 
-            <!-- Global Fixed Tabs (for video sections) -->
-            <nav class="tab-nav global-tabs hidden" id="globalTabs"></nav>
+                <!-- Global Fixed Tabs -->
+                <nav class="tab-nav global-tabs" id="globalTabs"></nav>
+
+                <!-- Grid Overlay Button -->
+                <button class="grid-overlay-btn" id="gridOverlayBtn" onclick="toggleCurrentGrid()" title="View Grid">
+                    <svg class="grid-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M5 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H7a2 2 0 01-2-2V5zM5 15a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H7a2 2 0 01-2-2v-2zM15 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM15 15a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                    </svg>
+                    <svg class="close-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
 
             <!-- Horizontal Tabs Container -->
             <div class="tabs-container" id="tabsContainer"></div>
+        </div>
+    </div>
+
+    <!-- Unified Grid Overlay -->
+    <div class="grid-overlay" id="gridOverlay" onclick="handleGridOverlayClick(event)">
+        <div class="grid-overlay-header">
+            <nav class="grid-tab-nav" id="gridTabNav"></nav>
+        </div>
+        <div id="gridPanelsContainer"></div>
+    </div>
+
+    <!-- Floating Item Modal -->
+    <div class="floating-modal-overlay" id="floatingModal">
+        <button class="floating-modal-close" onclick="closeFloatingModal()">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path fill-rule="evenodd"
+                    d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 01-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z"
+                    clip-rule="evenodd" />
+            </svg>
+        </button>
+        <div class="floating-modal">
+            <div class="floating-modal-image">
+                <img src="" alt="" id="floatingModalImage">
+            </div>
+            <div class="floating-modal-content">
+                <h2 class="floating-modal-title" id="floatingModalTitle"></h2>
+                <p class="floating-modal-description" id="floatingModalDescription"></p>
+            </div>
         </div>
     </div>
 
@@ -1080,19 +1887,41 @@
             </svg>
             <span id="soundBtnText">Unmute</span>
         </button>
+
+        <!-- Fixed Navigation Arrows with Like Button -->
+        <div class="video-nav-arrows" id="fixedNavArrows">
+            <button class="nav-arrow-btn like-btn" id="likeBtn" onclick="toggleLike()" aria-label="Like this portfolio">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" id="likeIcon">
+                    <path
+                        d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                </svg>
+                <span class="like-count" id="likeCount">0</span>
+            </button>
+            <button class="nav-arrow-btn hidden" id="navArrowUp" onclick="navigate(-1)" aria-label="Previous section">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 19V5M5 12l7-7 7 7" />
+                </svg>
+            </button>
+            <button class="nav-arrow-btn" id="navArrowDown" onclick="navigate(1)" aria-label="Next section">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 5v14M19 12l-7 7-7-7" />
+                </svg>
+            </button>
+        </div>
     </div>
 
     <script>
         // State
         let videosData = null;
-        let currentTab = 0;
         let isMuted = true;
+        let isWarping = false; // Flag to prevent BG updates during warp
         let isPlaying = true;
         let observer = null;
         let currentVideoId = null;
         let videosReady = {};
         let isScrolling = false;
         let userPaused = {}; // Track which videos were paused by the user
+        let totalSectionsCount = 0; // Total sections for nav arrow visibility
 
 
         // DOM Elements
@@ -1102,278 +1931,312 @@
         const gridBtn = document.getElementById('gridBtn');
         const controlBar = document.querySelector('.control-bar');
 
-        // Helper: Scroll to Tab 0 grid view with consistent positioning
-        // Uses direct scrollTo for precise control without any browser adjustments
-        function scrollToTab0Grid(container, smooth = true) {
-            const gridContainer = document.querySelector('#tab-zeta .grid-container');
-            const scrollContainer = container || document.querySelector('#tab-zeta .video-container');
-
-            if (gridContainer && scrollContainer) {
-                // Disable scroll-snap to prevent any interference
-                const originalSnap = scrollContainer.style.scrollSnapType;
-                scrollContainer.style.scrollSnapType = 'none';
-
-                // Also disable smooth scroll behavior from CSS if doing instant scroll
-                const originalBehavior = scrollContainer.style.scrollBehavior;
-                if (!smooth) {
-                    scrollContainer.style.scrollBehavior = 'auto';
-                }
-
-                // Calculate exact position: grid offsetTop minus scroll-margin-top (90px)
-                const targetScrollTop = Math.max(0, gridContainer.offsetTop - 90);
-
-                scrollContainer.scrollTo({
-                    top: targetScrollTop,
-                    behavior: smooth ? 'smooth' : 'auto'
-                });
-
-                // Re-enable scroll-snap and behavior after animation
-                const delay = smooth ? 800 : 100;
-                setTimeout(() => {
-                    scrollContainer.style.scrollSnapType = originalSnap || '';
-                    scrollContainer.style.scrollBehavior = originalBehavior || '';
-                    if (!scrollContainer.style.scrollSnapType) {
-                        scrollContainer.style.removeProperty('scroll-snap-type');
-                    }
-                    if (!scrollContainer.style.scrollBehavior) {
-                        scrollContainer.style.removeProperty('scroll-behavior');
-                    }
-                }, delay);
-            }
-        }
-
-        // Helper: Check if already at Tab 0 grid position
-        function isAtTab0GridPosition(container) {
-            const gridContainer = document.querySelector('#tab-zeta .grid-container');
-            if (!gridContainer || !container) return false;
-            // Check if scrollTop is close to where the grid would be positioned
-            const gridRect = gridContainer.getBoundingClientRect();
-            // Grid should be roughly 90px from top (due to scroll-margin-top)
-            return Math.abs(gridRect.top - 90) < 100;
-        }
-
-        // Fetch JSON and initialize
+        // Initialize
         async function initApp() {
             try {
                 const response = await fetch('videos.json');
                 videosData = await response.json();
                 renderApp();
+                initLikeButton(); // Initialize like button state
             } catch (error) {
                 console.error('Failed to load videos:', error);
             }
         }
 
-        // Render the entire app structure
+        // Render the entire app structure - SINGLE PAGE SCROLL
         function renderApp() {
             if (!videosData || !videosData.tabs) return;
 
-            // 1. Generate Tabs Navigation HTML (shared - no logo button inside)
+            const landing = videosData.landingSection || {};
+            const floatingItems = landing.floatingItems || [];
+
+            // 1. Generate Tabs Navigation HTML - these are now scroll anchors or grid switchers
             const tabButtonsHTML = videosData.tabs.map((tab, index) =>
-                `<button class="tab-btn ${index === 0 ? 'active' : ''}" data-index="${index}" onclick="switchTab(${index})">${tab.label}</button>`
+                `<button class="tab-btn" data-tab-id="${tab.id}" onclick="handleTabClick('${tab.id}')">${tab.label}</button>`
             ).join('');
 
             // Populate Global Fixed Tabs
             if (globalTabs) globalTabs.innerHTML = tabButtonsHTML;
 
-            // Create Single Moving Sticky Tab Bar
-            const flowTabNav = document.createElement('nav');
-            flowTabNav.className = 'tab-nav';
-            flowTabNav.id = 'flowTabNav';
-            flowTabNav.innerHTML = tabButtonsHTML;
-            // High Z-index to float on top of content (handled by CSS now)
-            // Relies on .tab-nav CSS for position: sticky and top value
+            // Helper function to generate floating items HTML
+            function generateFloatingItemsHTML(items) {
+                return items.map(item => {
+                    const posStyle = [];
+                    if (item.position.top) posStyle.push(`top: ${item.position.top}`);
+                    if (item.position.bottom) posStyle.push(`bottom: ${item.position.bottom}`);
+                    if (item.position.left) posStyle.push(`left: ${item.position.left}`);
+                    if (item.position.right) posStyle.push(`right: ${item.position.right}`);
 
-            // 2. Render Tabs Content with profile header in first tab
-            tabsContainer.style.width = `${videosData.tabs.length * 100}vw`;
-            tabsContainer.innerHTML = videosData.tabs.map((tab, tabIndex) => `
-                <div class="tab-content" id="tab-${tab.id}">
-                    <div class="video-container">
-                        <!-- Grid Sections -->
-                        <!-- Add padding to 'grid-section' for tabs > 0 to account for Fixed Global Header -->
-                        <div class="grid-section ${tabIndex === 0 ? 'active' : ''}" data-bg-color="${tab.videos[0].bgColor}" style="min-height: 100vh; position: relative; z-index: 1; ${tabIndex > 0 ? 'padding-top: 90px;' : ''}">
-                            ${tabIndex === 0 ? `
-                            <!-- Profile Header (only in first tab) -->
-                            <div class="profile-landing">
-                                <div class="profile-header">
-                                    <img src="https://pub-145d32622a7e4d2586d93017e4e1221c.r2.dev/profile.jpg" alt="Vibhore Singhal" class="profile-photo" onerror="this.src='https://ui-avatars.com/api/?name=Vibhore+Singhal&size=200&background=d4a855&color=fff'">
-                                    <div class="profile-info">
-                                        <h1 class="profile-name">Vibhore Singhal</h1>
-                                        <p class="profile-title">Senior UX Designer at Zeta</p>
-                                        <div class="profile-actions">
-                                            <a href="mailto:vibhore@example.com" class="profile-btn primary">Message</a>
-                                            <a href="#" class="profile-btn secondary">Resume</a>
-                                        </div>
-                                        <div class="profile-stats">
-                                            <div class="stat-item">
-                                                <span class="stat-value">5</span>
-                                                <span class="stat-label">Years of Experience</span>
-                                            </div>
-                                            <div class="stat-item">
-                                                <span class="stat-value">26</span>
-                                                <span class="stat-label">Age</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="profile-skills">
-                                    <a href="#" class="skill-circle" title="Figma"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 5.5A3.5 3.5 0 018.5 2H12v7H8.5A3.5 3.5 0 015 5.5zM12 2h3.5a3.5 3.5 0 110 7H12V2zm0 9h3.5a3.5 3.5 0 110 7H12v-7zm-7 3.5A3.5 3.5 0 018.5 11H12v7H8.5A3.5 3.5 0 015 14.5zm0 7A3.5 3.5 0 018.5 18H12v3.5a3.5 3.5 0 11-7 0z"/></svg></a>
-                                    <a href="#" class="skill-circle" title="Video"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 5a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2v-3.586l3.293 3.293A1 1 0 0023 14V10a1 1 0 00-1.707-.707L18 12.586V9a2 2 0 00-2-2H4z"/></svg></a>
-                                    <a href="#" class="skill-circle" title="Design"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg></a>
-                                    <a href="#" class="skill-circle" title="Code"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg></a>
-                                </div>
-                            </div>
-                            ` : ''}
-                            <div class="grid-container">
-                                ${tab.videos.map((video, vIndex) => `
-                                    <div class="grid-item" onclick="goToVideo(${vIndex + 1}, ${tabIndex})">
-                                        <img src="${video.thumbnail || 'https://placehold.co/360x640/png?text=Thumbnail'}" style="width: 100%; height: 100%; object-fit: cover;" draggable="false" />
-                                        <span class="video-number">${vIndex + 1}</span>
-                                    </div>
-                                `).join('')}
-                            </div>
+                    const rotation = item.rotation || '0deg';
+                    const inlineStyle = `${posStyle.join('; ')}; --init-rotation: ${rotation}; transform: rotate(${rotation});`;
+
+                    return `
+                        <div class="floating-item size-${item.size}" 
+                             style="${inlineStyle}"
+                             onclick="openFloatingModal('${item.id}')"
+                             data-item-id="${item.id}">
+                            <img src="${item.thumbnail}" alt="${item.title}" draggable="false" loading="lazy">
                         </div>
-
-                        <!-- Video Sections -->
-            ${tab.videos.map(video => `
-                            <div class="video-section video-section-r2 ${video.isLandscape ? 'landscape-mode' : ''}" data-video-id="${video.id}" data-bg-color="${video.bgColor}">
-                                
-                                <!-- New Left Content: Title & Desc -->
-                                <div class="content-info-left">
-                                    ${video.description ? `<p class="content-desc">${video.description}</p>` : ''}
-                                    ${video.title ? `<h2 class="content-title">${video.title}</h2>` : ''}
-                                    ${video.link ? `<a class="content-link" href="${video.link.url}" target="_blank" rel="noopener noreferrer">
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                                            <path fill-rule="evenodd" d="M19.902 4.098a3.75 3.75 0 00-5.304 0l-4.5 4.5a3.75 3.75 0 001.035 6.037.75.75 0 01-.646 1.353 5.25 5.25 0 01-1.449-8.45l4.5-4.5a5.25 5.25 0 117.424 7.424l-1.757 1.757a.75.75 0 11-1.06-1.06l1.757-1.757a3.75 3.75 0 000-5.304zm-7.389 4.267a.75.75 0 011-.353 5.25 5.25 0 011.449 8.45l-4.5 4.5a5.25 5.25 0 11-7.424-7.424l1.757-1.757a.75.75 0 111.06 1.06l-1.757 1.757a3.75 3.75 0 105.304 5.304l4.5-4.5a3.75 3.75 0 00-1.035-6.037.75.75 0 01-.354-1z" clip-rule="evenodd" />
-                                        </svg>
-                                        ${video.link.text}
-                                    </a>` : ''}
-                                </div>
-
-                                <div class="sticker sticker-star" style="color: #FFD700; width: 60px; height: 60px;">
-                                    <svg viewBox="0 0 24 24" fill="currentColor">
-                                        <path fill-rule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z" clip-rule="evenodd" />
-                                    </svg>
-                                </div>
-                                <div class="sticker sticker-heart" style="color: #FF8800; width: 50px; height: 50px;">
-                                    <svg viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z" />
-                                    </svg>
-                                </div>
-                                <div class="sticker sticker-sparkle" style="color: #FFD700; width: 40px; height: 40px;">
-                                    <svg viewBox="0 0 24 24" fill="currentColor">
-                                        <path fill-rule="evenodd" d="M9 4.5a.75.75 0 01.721.544l.813 2.846a3.75 3.75 0 002.576 2.576l2.846.813a.75.75 0 010 1.442l-2.846.813a3.75 3.75 0 00-2.576 2.576l-.813 2.846a.75.75 0 01-1.442 0l-.813-2.846a3.75 3.75 0 00-2.576-2.576l-2.846-.813a.75.75 0 010-1.442l2.846-.813a3.75 3.75 0 002.576-2.576l.813-2.846A.75.75 0 019 4.5zM1.5 6a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5h-1.5A.75.75 0 011.5 6zm2.25 10.5a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5h-1.5a.75.75 0 01-.75-.75zm13.5-9a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5h-1.5a.75.75 0 01-.75-.75zm2.25 10.5a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5h-1.5a.75.75 0 01-.75-.75z" clip-rule="evenodd" />
-                                    </svg>
-                                </div>
-
-                                <div class="video-frame" onclick="toggleVideo('${video.id}')">
-                                    <video id="${video.id}" src="${video.src}" muted playsinline preload="metadata" onended="scrollToNextVideo(this)"></video>
-                                    <div class="play-overlay-btn" id="btn-${video.id}">
-                                         <svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" /></svg>
-                                    </div>
-                                </div>
-
-                                <!-- New Right Content: Comments bubbles -->
-                                <div class="content-info-right">
-                                    ${video.comments ? video.comments.map(comment => `
-                                        <div class="comment-pill">
-                                            <div class="comment-icon" style="background: ${comment.type === 'avatar' ? (comment.avatarColor || '#3498db') : 'rgba(255,255,255,0.2)'}; color: white;">
-                                                ${comment.type === 'heart' ? '<svg viewBox="0 0 24 24" fill="currentColor" style="width: 18px; height: 18px;"><path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z" /></svg>' : (comment.type === 'fire' ? '<svg viewBox="0 0 24 24" fill="currentColor" style="width: 18px; height: 18px;"><path fill-rule="evenodd" d="M12.963 2.286a.75.75 0 00-1.071-.136 9.742 9.742 0 00-3.539 6.177 7.547 7.547 0 01-1.705-1.715.75.75 0 00-1.152-.082A9 9 0 1015.68 4.534a7.46 7.46 0 01-2.717-2.248zM15.75 14.25a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" clip-rule="evenodd" /></svg>' : '')}
-                                            </div>
-                                            <span>${comment.text}</span>
-                                        </div>
-                                    `).join('') : ''}
-                                </div>
-
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            `).join('');
-
-            // NOTE: We no longer inject a separate flow nav into Tab 0
-            // Instead, we use the global fixed nav for all tabs to avoid
-            // double nav bar issues during tab transitions
-
-            // Initialize background with hero's purple color
-            bgLayer.style.backgroundColor = '#2d1b4e';
-
-            // Initialize navbar in landing position (page starts on landing view)
-            if (globalTabs) {
-                globalTabs.classList.add('landing-position');
+                    `;
+                }).join('');
             }
 
-            // Initialize Observer
-            initObserver();
+            // Generate location tags HTML
+            function generateLocationTagsHTML(locations) {
+                if (!locations || !locations.length) return '';
+                return locations.map(loc => {
+                    const icon = loc.icon === 'location'
+                        ? '<svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M11.54 22.351l.07.04.028.016a.76.76 0 00.723 0l.028-.015.071-.041a16.975 16.975 0 001.144-.742 19.58 19.58 0 002.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 00-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 002.682 2.282 16.975 16.975 0 001.145.742zM12 13.5a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" /></svg>'
+                        : '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.47 3.84a.75.75 0 011.06 0l8.69 8.69a.75.75 0 101.06-1.06l-8.689-8.69a2.25 2.25 0 00-3.182 0l-8.69 8.69a.75.75 0 001.061 1.06l8.69-8.69z" /><path d="M12 5.432l8.159 8.159c.03.03.06.058.091.086v6.198c0 1.035-.84 1.875-1.875 1.875H15a.75.75 0 01-.75-.75v-4.5a.75.75 0 00-.75-.75h-3a.75.75 0 00-.75.75V21a.75.75 0 01-.75.75H5.625a1.875 1.875 0 01-1.875-1.875v-6.198a2.29 2.29 0 00.091-.086L12 5.43z" /></svg>';
+                    return `<span class="location-tag">${icon} ${loc.text}</span>`;
+                }).join('');
+            }
 
-            document.querySelectorAll('.video-container').forEach(container => {
-                container.addEventListener('scroll', handleScroll);
+            // 2. Render SINGLE continuous scroll container with ALL content
+            // Structure: Landing -> Zeta videos -> Personal videos -> Life videos -> Films videos
+            let allSectionsHTML = `
+                <!-- LANDING SECTION -->
+                <div class="landing-section active" id="section-landing" data-bg-color="${landing.bgColor || '#2d1b4e'}">
+                    <div class="landing-profile-info">
+                        <p class="landing-bio">${landing.bio || ''}</p>
+                        <h1 class="landing-name">${landing.name || 'Vibhore Singhal'}</h1>
+                        <div class="landing-locations">
+                            ${generateLocationTagsHTML(landing.locations)}
+                        </div>
+                    </div>
+                    <div class="landing-video-frame" onclick="toggleVideo('landing-video')">
+                        <video id="landing-video" src="${landing.profileVideo || ''}" muted loop playsinline></video>
+                        <div class="play-overlay-btn" id="btn-landing-video">
+                            <svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" /></svg>
+                        </div>
+                    </div>
+                    ${generateFloatingItemsHTML(floatingItems)}
+                    <div class="landing-sticker star" style="top: 5%; left: -2%; width: clamp(120px, 18vw, 200px); transform: rotate(-10deg);">
+                        <img src="assets/star.svg" alt="star" style="width: 100%; height: 100%;">
+                    </div>
+                    <div class="landing-sticker heart" style="top: 10%; right: 26%; width: clamp(80px, 10vw, 130px); transform: rotate(15deg);">
+                        <img src="assets/heart.svg" alt="heart" style="width: 100%; height: 100%;">
+                    </div>
+                    <div class="landing-sticker plus" style="bottom: 5%; left: 28%; width: clamp(80px, 12vw, 150px); transform: rotate(-5deg); z-index: 12;">
+                        <img src="assets/plus.svg" alt="plus" style="width: 100%; height: 100%;">
+                    </div>
+                    <div class="landing-sticker star2" style="bottom: 25%; right: 2%; width: clamp(40px, 5vw, 70px); transform: rotate(10deg);">
+                        <img src="assets/star2.svg" alt="star2" style="width: 100%; height: 100%;">
+                    </div>
+                    <div class="landing-sticker wine" style="bottom: -5%; left: -2%; width: clamp(60px, 8vw, 100px); transform: rotate(30deg);">
+                        <img src="assets/wine.svg" alt="wine" style="width: 100%; height: 100%;">
+                    </div>
+                </div>
+            `;
+
+            // Calculate total sections for arrow visibility
+            let totalSections = 1; // Start with 1 for landing
+            videosData.tabs.forEach(tab => totalSections += tab.videos.length);
+            totalSectionsCount = totalSections; // Store globally for arrow updates
+            let sectionCounter = 1; // Start after landing (landing is index 0)
+
+            // Add all category videos in order
+            videosData.tabs.forEach((tab, tabIndex) => {
+                tab.videos.forEach((video, videoIndex) => {
+                    const isFirstVideo = tabIndex === 0 && videoIndex === 0;
+                    const isFirstOfCategory = videoIndex === 0;
+                    const preloadStrategy = isFirstVideo ? 'metadata' : 'none';
+                    const currentSectionIndex = sectionCounter;
+
+                    allSectionsHTML += `
+                        <div class="video-section video-section-r2 ${video.isLandscape ? 'landscape-mode' : ''}" 
+                             ${isFirstOfCategory ? `id="section-${tab.id}"` : ''}
+                             data-video-id="${video.id}" 
+                             data-bg-color="${video.bgColor}" 
+                             data-category="${tab.id}"
+                             data-section-index="${currentSectionIndex}"
+                             data-video-src="${video.src}">
+                            <div class="content-info-left">
+                                ${video.description ? `<p class="content-desc">${video.description}</p>` : ''}
+                                ${video.title ? `<h2 class="content-title">${video.title}</h2>` : ''}
+                                ${video.link ? `<a class="content-link" href="${video.link.url}" target="_blank" rel="noopener noreferrer"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M19.902 4.098a3.75 3.75 0 00-5.304 0l-4.5 4.5a3.75 3.75 0 001.035 6.037.75.75 0 01-.646 1.353 5.25 5.25 0 01-1.449-8.45l4.5-4.5a5.25 5.25 0 117.424 7.424l-1.757 1.757a.75.75 0 11-1.06-1.06l1.757-1.757a3.75 3.75 0 000-5.304zm-7.389 4.267a.75.75 0 011-.353 5.25 5.25 0 011.449 8.45l-4.5 4.5a5.25 5.25 0 11-7.424-7.424l1.757-1.757a.75.75 0 111.06 1.06l-1.757 1.757a3.75 3.75 0 105.304 5.304l4.5-4.5a3.75 3.75 0 00-1.035-6.037.75.75 0 01-.354-1z" clip-rule="evenodd" /></svg>${video.link.text}</a>` : ''}
+                            </div>
+                            <div class="video-frame" onclick="toggleVideo('${video.id}')">
+                                <video id="${video.id}" ${isFirstVideo ? `src="${video.src}"` : ''} data-src="${video.src}" muted playsinline preload="${preloadStrategy}" onended="scrollToNextVideo(this)"></video>
+                                <div class="play-overlay-btn" id="btn-${video.id}"><svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" /></svg></div>
+                            </div>
+                            <div class="content-info-right">
+                                ${video.comments ? video.comments.map(comment => `
+                                    <div class="comment-pill">
+                                        <div class="comment-icon" style="background: ${comment.type === 'avatar' ? (comment.avatarColor || '#3498db') : 'rgba(255,255,255,0.2)'};">
+                                            ${comment.type === 'heart' ? '<svg viewBox="0 0 24 24" fill="currentColor" style="width: 18px; height: 18px;"><path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z" /></svg>' : (comment.type === 'fire' ? '<svg viewBox="0 0 24 24" fill="currentColor" style="width: 18px; height: 18px;"><path fill-rule="evenodd" d="M12.963 2.286a.75.75 0 00-1.071-.136 9.742 9.742 0 00-3.539 6.177 7.547 7.547 0 01-1.705-1.715.75.75 0 00-1.152-.082A9 9 0 1015.68 4.534a7.46 7.46 0 01-2.717-2.248zM15.75 14.25a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" clip-rule="evenodd" /></svg>' : '')}
+                                        </div>
+                                        <span>${comment.text}</span>
+                                    </div>
+                                `).join('') : ''}
+                            </div>
+                        </div>
+                    `;
+                    sectionCounter++;
+                });
             });
 
-            // Initial sync for first tab
-            const firstContainer = document.querySelector('#tab-zeta .video-container');
-            if (firstContainer) {
-                handleScroll({ target: firstContainer });
+            // Put all content in the single scroll container
+            tabsContainer.innerHTML = `<div class="video-container" id="mainScrollContainer">${allSectionsHTML}</div>`;
+
+            // Initialize background with landing color
+            bgLayer.style.backgroundColor = landing.bgColor || '#2d1b4e';
+
+            // Initialize Observer for single container
+            initObserver();
+
+            // Add scroll listener to the single container
+            const mainContainer = document.getElementById('mainScrollContainer');
+            if (mainContainer) {
+                mainContainer.addEventListener('scroll', throttle(handleScroll, 100));
+            }
+
+            // Initialize Draggable items
+            initDraggable();
+        }
+
+        // Throttling function to limit execution of scroll/resize handlers
+        function throttle(func, limit) {
+            let inThrottle;
+            return function () {
+                const args = arguments;
+                const context = this;
+                if (!inThrottle) {
+                    func.apply(context, args);
+                    inThrottle = true;
+                    setTimeout(() => inThrottle = false, limit);
+                }
             }
         }
 
-        // Intersection Observer logic (for grid and video sections within tabs)
+        // Optimized scroll handler
+        function handleScroll(e) {
+            updateNavArrows();
+        }
+
+        // Update fixed navigation arrows based on current scroll position
+        function updateNavArrows() {
+            const container = document.getElementById('mainScrollContainer');
+            const upArrow = document.getElementById('navArrowUp');
+            const downArrow = document.getElementById('navArrowDown');
+
+            if (!container || !upArrow || !downArrow) return;
+
+            const sectionHeight = window.innerHeight;
+            const currentIndex = Math.round(container.scrollTop / sectionHeight);
+
+            // Hide up arrow on first section (index 0)
+            if (currentIndex === 0) {
+                upArrow.classList.add('hidden');
+            } else {
+                upArrow.classList.remove('hidden');
+            }
+
+            // Hide down arrow on last section
+            if (currentIndex >= totalSectionsCount - 1) {
+                downArrow.classList.add('hidden');
+            } else {
+                downArrow.classList.remove('hidden');
+            }
+        }
+
+        // Intersection Observer - for single continuous scroll page
         function initObserver() {
             observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
-                    const parentTab = entry.target.closest('.tab-content');
-                    if (!parentTab) return; // Skip if not in a tab (e.g., shared hero)
-
-                    // Find index of parent tab
-                    const parentTabIndex = Array.from(tabsContainer.children).indexOf(parentTab);
-
-                    if (parentTabIndex !== currentTab) return;
-
                     if (entry.isIntersecting) {
-                        // Set Active Class
                         entry.target.classList.add('active');
 
-                        // Set Background Color
+                        // Update background color based on the current section
+                        // But skip updates if we are in the middle of a "warp" transition
                         const bgColor = entry.target.getAttribute('data-bg-color');
-                        if (bgColor) bgLayer.style.backgroundColor = bgColor;
+                        if (bgColor && !isWarping) bgLayer.style.backgroundColor = bgColor;
 
-                        // Identify section type
-                        const isGrid = entry.target.classList.contains('grid-section');
+                        const isLanding = entry.target.classList.contains('landing-section');
+                        const isVideo = entry.target.classList.contains('video-section');
+                        const logoBtn = document.getElementById('logoBtn');
+                        const navbarWrapper = document.getElementById('navbarWrapper');
 
-                        // Update UI Buttons
-                        if (isGrid) {
-                            // Hide grid button and control bar
-                            gridBtn.classList.add('hidden');
-                            controlBar.classList.add('hidden');
-
-                            // Handle navbar visibility (positioning is now handled by handleScroll)
-                            if (globalTabs) {
-                                globalTabs.classList.remove('hidden');
-                            }
-                        } else {
-                            gridBtn.classList.remove('hidden');
-                            controlBar.classList.remove('hidden');
-                            // handleScroll handles the rest for video views
+                        if (navbarWrapper) {
+                            navbarWrapper.classList.remove('hidden');
                         }
 
-                        // Play Video if video section
-                        if (!isGrid) {
+                        if (isLanding) {
+                            if (controlBar) controlBar.classList.remove('hidden');
+                            if (logoBtn) logoBtn.classList.add('active');
+                            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+                            playVideo('landing-video');
+                        } else if (isVideo) {
+                            if (controlBar) controlBar.classList.remove('hidden');
+                            if (logoBtn) logoBtn.classList.remove('active');
+
+                            // Highlight tab based on current video's category
+                            const category = entry.target.getAttribute('data-category');
+                            document.querySelectorAll('.tab-btn').forEach(btn => {
+                                const tabId = btn.getAttribute('data-tab-id');
+                                btn.classList.toggle('active', tabId === category);
+                            });
+
                             const videoId = entry.target.getAttribute('data-video-id');
                             playVideo(videoId);
                         }
                     } else {
                         entry.target.classList.remove('active');
-                        // Pause Video
-                        if (!entry.target.classList.contains('grid-section')) {
+                        if (entry.target.classList.contains('video-section')) {
                             const videoId = entry.target.getAttribute('data-video-id');
                             pauseVideo(videoId);
+                        }
+                        if (entry.target.classList.contains('landing-section')) {
+                            pauseVideo('landing-video');
                         }
                     }
                 });
             }, { threshold: 0.5 });
 
-            document.querySelectorAll('.grid-section, .video-section').forEach(section => {
+            // Observe all section types (Grid is now an overlay, not observed)
+            document.querySelectorAll('.landing-section, .video-section').forEach(section => {
                 observer.observe(section);
             });
+
+            // Lazy loading observer - preloads videos that are about to come into view
+            const lazyLoadObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const section = entry.target;
+                        const videoId = section.getAttribute('data-video-id');
+                        if (videoId) {
+                            lazyLoadVideo(videoId);
+                        }
+                        // Also preload the next video
+                        const nextSection = section.nextElementSibling;
+                        if (nextSection && nextSection.classList.contains('video-section')) {
+                            const nextVideoId = nextSection.getAttribute('data-video-id');
+                            if (nextVideoId) {
+                                lazyLoadVideo(nextVideoId);
+                            }
+                        }
+                    }
+                });
+            }, { rootMargin: '100% 0px 100% 0px', threshold: 0 }); // Preload 1 viewport ahead
+
+            document.querySelectorAll('.video-section').forEach(section => {
+                lazyLoadObserver.observe(section);
+            });
+        }
+
+        // Lazy load video source
+        function lazyLoadVideo(videoId) {
+            const video = document.getElementById(videoId);
+            if (!video) return;
+
+            // If video already has src, skip
+            if (video.src && video.src !== window.location.href) return;
+
+            const dataSrc = video.getAttribute('data-src');
+            if (dataSrc && !video.src) {
+                video.src = dataSrc;
+                video.load();
+            }
         }
 
         // --- Video Control Functions ---
@@ -1381,6 +2244,15 @@
         function playVideo(videoId) {
             const video = document.getElementById(videoId);
             if (!video) return;
+
+            // Lazy load video source if not loaded yet
+            if (!video.src || video.src === window.location.href) {
+                const dataSrc = video.getAttribute('data-src');
+                if (dataSrc) {
+                    video.src = dataSrc;
+                    video.load();
+                }
+            }
 
             currentVideoId = videoId;
             isPlaying = true;
@@ -1396,7 +2268,13 @@
 
             // Update overlay button
             const btn = document.getElementById('btn-' + videoId);
-            if (btn) btn.classList.remove('paused');
+            if (btn) {
+                if (videoId === 'landing-video') {
+                    btn.classList.add('playing'); // Hide button when playing
+                } else {
+                    btn.classList.remove('paused');
+                }
+            }
         }
 
         function pauseVideo(videoId) {
@@ -1415,9 +2293,8 @@
             if (nextSection && nextSection.classList.contains('video-section')) {
                 nextSection.scrollIntoView({ behavior: 'smooth' });
             } else {
-                // If it's the last video, maybe loop back to grid? Or just stop.
-                // For now, let's stop.
-                toggleVideo(videoEl.id); // Show play button again
+                // Last video - show play button again
+                toggleVideo(videoEl.id);
             }
         }
 
@@ -1426,18 +2303,30 @@
             const btn = document.getElementById('btn-' + videoId);
             if (!video) return;
 
-
+            const isLandingVideo = videoId === 'landing-video';
 
             if (video.paused) {
                 video.play();
-                if (btn) btn.classList.remove('paused');
+                if (btn) {
+                    if (isLandingVideo) {
+                        btn.classList.add('playing'); // Hide button when playing
+                    } else {
+                        btn.classList.remove('paused');
+                    }
+                }
                 userPaused[videoId] = false; // User resumed
                 isPlaying = true;
                 document.getElementById('pauseIcon').style.display = 'block';
                 document.getElementById('playIcon').style.display = 'none';
             } else {
                 video.pause();
-                if (btn) btn.classList.add('paused');
+                if (btn) {
+                    if (isLandingVideo) {
+                        btn.classList.remove('playing'); // Show button when paused
+                    } else {
+                        btn.classList.add('paused');
+                    }
+                }
                 userPaused[videoId] = true; // User explicitly paused
                 isPlaying = false;
                 document.getElementById('pauseIcon').style.display = 'none';
@@ -1476,313 +2365,584 @@
             }
         }
 
-        // --- Navigation Functions ---
+        // --- Like Button Functions ---
+        // --- Like Button Functions (Per-Video with Cloudflare Worker) ---
 
-        // Navigate to the landing/profile section (top of Tab 0)
-        function goToLanding() {
-            // If not on tab 0, switch to it first
-            if (currentTab !== 0) {
-                // Pause current video
-                if (currentVideoId) {
-                    pauseVideo(currentVideoId);
-                }
+        // IMPORTANT: Replace this with your Cloudflare Worker URL after deployment
+        const LIKES_WORKER_URL = 'https://reelsfolio-likes.vibhoresinghal.workers.dev'; // e.g., 'https://reelsfolio-likes.YOUR-SUBDOMAIN.workers.dev'
 
-                // Update UI - tab buttons
-                document.querySelectorAll('.tab-btn').forEach(btn => {
-                    const btnIndex = parseInt(btn.getAttribute('data-index'));
-                    btn.classList.toggle('active', btnIndex === 0);
-                });
+        let likesCache = {}; // Cache of video likes { videoId: count }
+        let pendingLikes = {}; // Pending likes to sync { videoId: count }
+        let likeDebounceTimer = null;
 
-                // Slide to tab 0
-                tabsContainer.style.transform = 'translateX(0)';
-                currentTab = 0;
+        function getCurrentVideoId() {
+            // Get the currently visible video's ID
+            const container = document.getElementById('mainScrollContainer');
+            if (!container) return 'landing';
 
-                // Update BG
-                if (videosData && videosData.tabs[0]) {
-                    bgLayer.style.backgroundColor = videosData.tabs[0].videos[0].bgColor;
-                }
+            const sectionHeight = window.innerHeight;
+            const currentIndex = Math.round(container.scrollTop / sectionHeight);
+            const sections = container.querySelectorAll('.landing-section, .video-section');
 
-                // Ensure global tabs are visible (Zeta uses them now)
-                if (globalTabs) {
-                    globalTabs.classList.remove('hidden');
-                    globalTabs.style.zIndex = "2000";
-                }
+            if (sections[currentIndex]) {
+                return sections[currentIndex].getAttribute('data-video-id') ||
+                    sections[currentIndex].id ||
+                    'landing';
+            }
+            return 'landing';
+        }
+
+        function toggleLike() {
+            const likeBtn = document.getElementById('likeBtn');
+            const likeCount = document.getElementById('likeCount');
+            const videoId = getCurrentVideoId();
+
+            // Always add liked state on first click
+            if (!likeBtn.classList.contains('liked')) {
+                likeBtn.classList.add('liked');
             }
 
-            // Scroll to top of tab 0 (landing/profile section)
-            const zetaTab = document.getElementById('tab-zeta');
-            if (zetaTab) {
-                const container = zetaTab.querySelector('.video-container');
-                if (container) {
-                    // Temporarily disable scroll-snap for smooth animation
-                    const originalSnap = container.style.scrollSnapType;
-                    container.style.scrollSnapType = 'none';
+            // Increment count (Medium-style clap - each click adds 1)
+            const currentCount = parseInt(likeCount.textContent) || 0;
+            const newCount = currentCount + 1;
+            likeCount.textContent = newCount;
 
-                    container.scrollTo({ top: 0, behavior: 'smooth' });
+            // Update cache
+            likesCache[videoId] = newCount;
 
-                    // Update navbar position IMMEDIATELY for the landing view
-                    handleScroll({ target: container });
+            // Track pending likes to sync
+            pendingLikes[videoId] = (pendingLikes[videoId] || 0) + 1;
 
-                    // Restore scroll-snap after animation
-                    setTimeout(() => {
-                        container.style.scrollSnapType = originalSnap || '';
-                        if (!container.style.scrollSnapType) container.style.removeProperty('scroll-snap-type');
-                    }, 800);
+            // Trigger pulse animation
+            likeBtn.classList.remove('pulse');
+            void likeBtn.offsetWidth; // Force reflow
+            likeBtn.classList.add('pulse');
+
+            // Create flying heart effect
+            createFlyingHeart(likeBtn);
+
+            // Haptic feedback for mobile
+            if ('vibrate' in navigator) {
+                try { navigator.vibrate(30); } catch (e) { }
+            }
+
+            // Debounced save to server (batches rapid clicks)
+            clearTimeout(likeDebounceTimer);
+            likeDebounceTimer = setTimeout(() => {
+                savePendingLikes();
+            }, 500);
+
+            // Also save to localStorage as backup
+            const localLikes = JSON.parse(localStorage.getItem('videoLikes') || '{}');
+            localLikes[videoId] = newCount;
+            localStorage.setItem('videoLikes', JSON.stringify(localLikes));
+        }
+
+        async function savePendingLikes() {
+            if (!LIKES_WORKER_URL) return; // Worker not configured
+
+            const likesToSave = { ...pendingLikes };
+            pendingLikes = {};
+
+            for (const [videoId, increment] of Object.entries(likesToSave)) {
+                try {
+                    await fetch(`${LIKES_WORKER_URL}/likes`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ videoId, increment })
+                    });
+                } catch (error) {
+                    console.warn('Failed to save like:', error);
+                    // Re-add to pending on failure
+                    pendingLikes[videoId] = (pendingLikes[videoId] || 0) + increment;
                 }
             }
         }
 
-        function switchTab(index) {
-            if (index === currentTab) {
-                const currentTabId = videosData.tabs[index].id;
-                const currentTabEl = document.getElementById(`tab-${currentTabId}`);
-                const container = currentTabEl?.querySelector('.video-container');
+        async function loadLikesFromServer() {
+            if (!LIKES_WORKER_URL) return null;
 
-                if (container) {
-                    if (index === 0) {
-                        // If already on grid view, do nothing
-                        if (isAtTab0GridPosition(container)) {
-                            return;
+            try {
+                const response = await fetch(`${LIKES_WORKER_URL}/likes/all`);
+                if (response.ok) {
+                    return await response.json();
+                }
+            } catch (error) {
+                console.warn('Failed to load likes from server:', error);
+            }
+            return null;
+        }
+
+        function createFlyingHeart(button) {
+            const rect = button.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+
+            const flyingHeart = document.createElement('div');
+            flyingHeart.className = 'flying-heart';
+            flyingHeart.innerHTML = '❤️';
+            flyingHeart.style.left = `${centerX}px`;
+            flyingHeart.style.top = `${centerY}px`;
+            flyingHeart.style.fontSize = `${18 + Math.random() * 8}px`;
+
+            // Random upward trajectory
+            const angle = (270 + (Math.random() - 0.5) * 60) * (Math.PI / 180);
+            const distance = 60 + Math.random() * 40;
+            const endX = Math.cos(angle) * distance;
+            const endY = Math.sin(angle) * distance;
+
+            flyingHeart.style.setProperty('--end-x', `${endX}px`);
+            flyingHeart.style.setProperty('--end-y', `${endY}px`);
+
+            document.body.appendChild(flyingHeart);
+
+            setTimeout(() => {
+                if (flyingHeart.parentNode) {
+                    flyingHeart.remove();
+                }
+            }, 1200);
+        }
+
+        async function updateLikeButtonForCurrentVideo() {
+            const likeBtn = document.getElementById('likeBtn');
+            const likeCount = document.getElementById('likeCount');
+            const videoId = getCurrentVideoId();
+
+            if (!likeBtn || !likeCount) return;
+
+            // Get count from cache first
+            let count = likesCache[videoId];
+
+            // If not in cache, try localStorage then fetch from server
+            if (count === undefined) {
+                // Check localStorage first for instant display
+                const localLikes = JSON.parse(localStorage.getItem('videoLikes') || '{}');
+                count = localLikes[videoId] || 0;
+                likeCount.textContent = count;
+
+                // Then fetch from server to get latest count
+                if (LIKES_WORKER_URL) {
+                    try {
+                        const response = await fetch(`${LIKES_WORKER_URL}/likes?videoId=${encodeURIComponent(videoId)}`);
+                        if (response.ok) {
+                            const data = await response.json();
+                            count = data.count || 0;
+                            likesCache[videoId] = count;
+                            likeCount.textContent = count;
                         }
-
-                        // Pause current video before scrolling
-                        if (currentVideoId) {
-                            pauseVideo(currentVideoId);
-                        }
-
-                        // Scroll to Grid Container in Zeta tab
-                        scrollToTab0Grid(container, true);
-
-                        // Force active state on grid section
-                        const gridSection = currentTabEl.querySelector('.grid-section');
-                        if (gridSection) gridSection.classList.add('active');
-                    } else {
-                        // For other tabs, scroll to top (where grid is)
-                        const gridSection = currentTabEl.querySelector('.grid-section');
-
-                        // Temporarily disable scroll-snap
-                        const originalSnap = container.style.scrollSnapType;
-                        container.style.scrollSnapType = 'none';
-
-                        container.scrollTo({ top: 0, behavior: 'smooth' });
-
-                        // Restore scroll-snap
-                        setTimeout(() => {
-                            container.style.scrollSnapType = originalSnap || '';
-                            if (!container.style.scrollSnapType) container.style.removeProperty('scroll-snap-type');
-                        }, 800);
-
-                        if (gridSection) gridSection.classList.add('active');
+                    } catch (error) {
+                        console.warn('Failed to fetch likes:', error);
                     }
                 }
+
+                likesCache[videoId] = count;
+            } else {
+                likeCount.textContent = count;
+            }
+
+            // Show liked state if count > 0
+            if (count > 0) {
+                likeBtn.classList.add('liked');
+            } else {
+                likeBtn.classList.remove('liked');
+            }
+        }
+
+        async function initLikeButton() {
+            const likeBtn = document.getElementById('likeBtn');
+            const likeCount = document.getElementById('likeCount');
+
+            if (!likeBtn || !likeCount) return;
+
+            // Try to load from server first
+            const serverLikes = await loadLikesFromServer();
+            if (serverLikes) {
+                likesCache = serverLikes;
+                // Merge with localStorage (keep higher counts)
+                const localLikes = JSON.parse(localStorage.getItem('videoLikes') || '{}');
+                for (const [videoId, count] of Object.entries(localLikes)) {
+                    if (!likesCache[videoId] || localLikes[videoId] > likesCache[videoId]) {
+                        likesCache[videoId] = count;
+                    }
+                }
+            } else {
+                // Fallback to localStorage
+                likesCache = JSON.parse(localStorage.getItem('videoLikes') || '{}');
+            }
+
+            // Update display for current video
+            updateLikeButtonForCurrentVideo();
+
+            // Update like count when scrolling to new video
+            const container = document.getElementById('mainScrollContainer');
+            if (container) {
+                container.addEventListener('scroll', throttle(() => {
+                    updateLikeButtonForCurrentVideo();
+                }, 200));
+            }
+        }
+
+        // --- Floating Item Modal Functions ---
+
+        function openFloatingModal(itemId) {
+            const landing = videosData.landingSection;
+            if (!landing || !landing.floatingItems) return;
+
+            const item = landing.floatingItems.find(i => i.id === itemId);
+            if (!item) return;
+
+            const modal = document.getElementById('floatingModal');
+            const image = document.getElementById('floatingModalImage');
+            const title = document.getElementById('floatingModalTitle');
+            const description = document.getElementById('floatingModalDescription');
+
+            image.src = item.src;
+            image.alt = item.title;
+            title.textContent = item.title;
+            description.textContent = item.description;
+
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeFloatingModal() {
+            const modal = document.getElementById('floatingModal');
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // Close modal on overlay click
+        document.getElementById('floatingModal')?.addEventListener('click', (e) => {
+            if (e.target.classList.contains('floating-modal-overlay')) {
+                closeFloatingModal();
+            }
+        });
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeFloatingModal();
+                closeGridOverlay();
+            }
+        });
+
+        // Scroll to first video from landing section
+        function scrollToFirstVideo() {
+            scrollToCategory('zeta');
+        }
+
+        // --- Navigation Functions (Simplified for single-page scroll) ---
+
+        // Handle tab button clicks - switch grid panel if in grid mode, otherwise scroll
+        function handleTabClick(categoryId) {
+            const navbarWrapper = document.getElementById('navbarWrapper');
+            const isGridMode = navbarWrapper && navbarWrapper.classList.contains('grid-mode');
+
+            if (isGridMode) {
+                // In grid mode - switch the grid panel
+                switchGridTab(categoryId);
+            } else {
+                // Normal mode - scroll to category
+                scrollToCategory(categoryId);
+            }
+
+            // Update tab button highlighting
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                const tabId = btn.getAttribute('data-tab-id');
+                btn.classList.toggle('active', tabId === categoryId);
+            });
+        }
+
+        // Navigate to the landing/profile section
+        function goToLanding() {
+            closeGridOverlay();
+            const container = document.getElementById('mainScrollContainer');
+            if (container) {
+                const landingSection = container.querySelector('.landing-section');
+                const targetColor = landingSection ? landingSection.getAttribute('data-bg-color') : null;
+                smartScrollTo(0, container, targetColor);
+            }
+        }
+
+        // Scroll to a category section
+        function scrollToCategory(categoryId) {
+            const container = document.getElementById('mainScrollContainer');
+            if (!container) return;
+
+            const section = document.getElementById(`section-${categoryId}`);
+            if (!section) {
+                console.warn(`Section not found: section-${categoryId}`);
                 return;
             }
 
-            // Pause current video
-            if (currentVideoId) {
-                pauseVideo(currentVideoId);
-            }
+            // Find the index of this section among all sections
+            const allSections = Array.from(container.querySelectorAll('.landing-section, .video-section'));
+            const sectionIndex = allSections.indexOf(section);
 
-            // Reset scroll of the tab being left (after transition completes)
-            const oldTabData = videosData.tabs[currentTab];
-            if (oldTabData) {
-                const oldTabId = oldTabData.id;
-                setTimeout(() => {
-                    const oldTabEl = document.getElementById(`tab-${oldTabId}`);
-                    if (oldTabEl) {
-                        const oldContainer = oldTabEl.querySelector('.video-container');
-                        if (oldContainer) oldContainer.scrollTop = 0;
-                    }
-                }, 550); // Wait for transition (500ms) + small buffer
+            if (sectionIndex >= 0) {
+                const targetTop = sectionIndex * window.innerHeight;
+                const targetColor = section.getAttribute('data-bg-color');
+                smartScrollTo(targetTop, container, targetColor);
             }
+        }
 
-            // Update UI - tab buttons
+        // Scroll to a specific video by index within the main container
+        function scrollToVideoByIndex(index) {
+            const container = document.getElementById('mainScrollContainer');
+            if (!container) return;
+
+            const sections = container.querySelectorAll('.landing-section, .video-section');
+            if (sections[index]) {
+                const targetTop = index * window.innerHeight;
+                const targetColor = sections[index].getAttribute('data-bg-color');
+                smartScrollTo(targetTop, container, targetColor);
+            }
+        }
+
+        function toggleCurrentGrid() {
+            const gridOverlay = document.getElementById('gridOverlay');
+            if (gridOverlay.classList.contains('visible')) {
+                closeGridOverlay();
+            } else {
+                openGridOverlay();
+            }
+        }
+
+        // Track if video was playing before grid opened
+        let videoWasPlayingBeforeGrid = false;
+
+        function openGridOverlay(activeCategory = null) {
+            const gridOverlay = document.getElementById('gridOverlay');
+            const gridPanelsContainer = document.getElementById('gridPanelsContainer');
+            const navbarWrapper = document.getElementById('navbarWrapper');
+
+            // Determine which category to show based on current scroll position
+            const currentSection = document.querySelector('.video-section.active, .landing-section.active');
+            const currentCat = currentSection?.getAttribute('data-category') || 'zeta';
+            const effectiveCategory = activeCategory || currentCat;
+
+            // Highlight the correct tab button
             document.querySelectorAll('.tab-btn').forEach(btn => {
-                const btnIndex = parseInt(btn.getAttribute('data-index'));
-                btn.classList.toggle('active', btnIndex === index);
+                const tabId = btn.getAttribute('data-tab-id');
+                btn.classList.toggle('active', tabId === effectiveCategory);
             });
 
-            // Slide content
-            tabsContainer.style.transform = `translateX(-${index * 100}vw)`;
-
-            // Update state
-            currentTab = index;
-
-            // Update BG to the grid of new tab
-            if (videosData && videosData.tabs[index]) {
-                bgLayer.style.backgroundColor = videosData.tabs[index].videos[0].bgColor;
-            }
-
-            // Update Navbar Position immediately for the new tab
-            const newTab = document.getElementById(`tab-${videosData.tabs[index].id}`);
-            if (newTab) {
-                const container = newTab.querySelector('.video-container');
-                if (container) {
-                    handleScroll({ target: container });
+            // Pause current video for performance
+            if (currentVideoId) {
+                const video = document.getElementById(currentVideoId);
+                if (video && !video.paused) {
+                    videoWasPlayingBeforeGrid = true;
+                    video.pause();
+                } else {
+                    videoWasPlayingBeforeGrid = false;
                 }
             }
 
-            // Scroll new tab to grid (index 0, grid is now first)
-            if (newTab) {
-                const container = newTab.querySelector('.video-container');
-                if (container) {
-                    if (index === 0) {
-                        // Switching TO Zeta Tab: Auto-scroll to Grid View (skip profile)
-                        // Use scrollIntoView for consistent positioning with scroll-snap
-                        scrollToTab0Grid(container, false); // instant, no smooth
+            // Generate grid panels for all tabs
+            gridPanelsContainer.innerHTML = videosData.tabs.map((tab) => `
+                <div class="grid-panel ${tab.id === effectiveCategory ? 'active' : ''}" data-panel-id="${tab.id}">
+                    <div class="grid-container">
+                        ${tab.videos.map((video, vIndex) => `
+                            <div class="grid-item" onclick="goToVideoFromGrid('${tab.id}', ${vIndex})">
+                                <img src="${video.thumbnail || 'https://placehold.co/360x640/png?text=Thumbnail'}" style="width: 100%; height: 100%; object-fit: cover;" draggable="false" loading="lazy" />
+                                <span class="video-number">${vIndex + 1}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
 
-                        // Force active state immediately
-                        const gridSection = newTab.querySelector('.grid-section');
-                        if (gridSection) gridSection.classList.add('active');
-                    } else {
-                        // Other tabs: Scroll to absolute top
-                        container.scrollTop = 0;
+            gridOverlay.classList.add('visible');
+            if (navbarWrapper) navbarWrapper.classList.add('grid-mode');
+        }
 
-                        // Force active state immediately
-                        const gridSection = newTab.querySelector('.grid-section');
-                        if (gridSection) gridSection.classList.add('active');
-                    }
-                }
+        function switchGridTab(tabId) {
+            // Update tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                const btnTabId = btn.getAttribute('data-tab-id');
+                btn.classList.toggle('active', btnTabId === tabId);
+            });
+            // Update panels
+            document.querySelectorAll('.grid-panel').forEach(panel => {
+                const panelId = panel.getAttribute('data-panel-id');
+                panel.classList.toggle('active', panelId === tabId);
+            });
+        }
+
+        function closeGridOverlay() {
+            const gridOverlay = document.getElementById('gridOverlay');
+            const navbarWrapper = document.getElementById('navbarWrapper');
+
+            if (gridOverlay) gridOverlay.classList.remove('visible');
+            if (navbarWrapper) navbarWrapper.classList.remove('grid-mode');
+
+            // Resume video if it was playing before
+            if (videoWasPlayingBeforeGrid && currentVideoId) {
+                const video = document.getElementById(currentVideoId);
+                if (video) video.play();
             }
         }
 
-        function goToVideo(index, tabIndex) {
-            if (tabIndex !== undefined && tabIndex !== currentTab) {
-                switchTab(tabIndex);
-                setTimeout(() => scrollToVideo(index, tabIndex), 500); // wait for slide
+        function handleGridOverlayClick(event) {
+            const isClickOnContent = event.target.closest('.grid-item') ||
+                event.target.closest('.grid-tab-nav') ||
+                event.target.closest('.grid-close-btn');
+
+            if (!isClickOnContent) {
+                closeGridOverlay();
+            }
+        }
+
+        // Smart scroll function - uses 'Stitched Glide' for distant jumps
+        // Smart scroll function - uses 'Warp Zoom' for distant jumps
+        function smartScrollTo(targetTop, container, targetColor = null) {
+            const currentTop = container.scrollTop;
+            const distance = Math.abs(targetTop - currentTop);
+            const sectionHeight = window.innerHeight;
+
+            // If jumping more than 4 sections away, use Warp Zoom
+            if (distance > sectionHeight * 4) {
+                const direction = targetTop > currentTop ? 1 : -1;
+
+                // Start Warp Sequence
+                isWarping = true;
+
+                // Provide direct background transition
+                if (targetColor) {
+                    bgLayer.style.backgroundColor = targetColor;
+                }
+
+                // 1. Engage Warp: Blur, shrink, and fade to simulate speed/depth
+                container.style.transition = 'filter 0.2s ease-in, transform 0.2s ease-in, opacity 0.2s ease-in';
+                container.style.filter = 'blur(12px)';
+                container.style.transform = 'scale(0.98)';
+                container.style.opacity = '0.8';
+
+                setTimeout(() => {
+                    // 2. Transport: Disable snapping and leapfrog
+                    container.style.scrollSnapType = 'none';
+                    container.style.scrollBehavior = 'auto';
+
+                    // Jump to 2 sections vertically away from target for more scroll motion
+                    container.scrollTop = targetTop - (direction * sectionHeight * 2);
+
+                    // Force reflow
+                    void container.offsetHeight;
+
+                    // 3. Arrival: Smoothly slide into final position
+                    container.style.scrollBehavior = 'smooth';
+                    container.scrollTop = targetTop;
+
+                    // 4. Disengage: Clear warp effects
+                    setTimeout(() => {
+                        container.style.transition = 'filter 0.5s ease-out, transform 0.5s ease-out, opacity 0.5s ease-out';
+                        container.style.filter = 'blur(0px)';
+                        container.style.transform = 'scale(1)';
+                        container.style.opacity = '1';
+
+                        // Cleanup styles after animation
+                        setTimeout(() => {
+                            container.style.transition = '';
+                            container.style.filter = '';
+                            container.style.transform = '';
+                            container.style.opacity = '';
+                            container.style.scrollSnapType = '';
+                            container.style.scrollBehavior = '';
+
+                            // Enable observer updates again
+                            isWarping = false;
+                        }, 500);
+                    }, 100);
+                }, 200);
             } else {
-                scrollToVideo(index, currentTab);
+                // Near jump - use normal smooth scroll
+                const originalSnapType = container.style.scrollSnapType;
+                container.style.scrollSnapType = 'none';
+                container.scrollTo({ top: targetTop, behavior: 'smooth' });
+
+                setTimeout(() => {
+                    container.style.scrollSnapType = originalSnapType || '';
+                }, 800);
             }
         }
 
-        function scrollToVideo(index, tabIdx) {
-            const tabData = videosData.tabs[tabIdx];
-            if (!tabData) return;
+        // Navigate to a video from the grid overlay
+        function goToVideoFromGrid(categoryId, videoIndex) {
+            closeGridOverlay();
 
-            const tabEl = document.getElementById(`tab-${tabData.id}`);
-            const container = tabEl.querySelector('.video-container');
-            // Ensure we select grid section first, then videos
-            const sections = Array.from(tabEl.querySelectorAll('.grid-section, .video-section'));
-            // Default querySelectorAll returns in document order (Grid is first)
+            const container = document.getElementById('mainScrollContainer');
+            if (!container) return;
 
-            if (sections[index] && container) {
-                // Calculate exact scroll position
-                const rect = sections[index].getBoundingClientRect();
-                const containerRect = container.getBoundingClientRect();
-                const targetTop = rect.top + container.scrollTop - containerRect.top;
+            // Find the target section among all sections
+            const allSections = container.querySelectorAll('.landing-section, .video-section');
+            const categorySections = container.querySelectorAll(`[data-category="${categoryId}"]`);
 
-                // Temporarily disable scroll-snap to allow smooth animation
+            if (!categorySections[videoIndex]) return;
+
+            const targetSection = categorySections[videoIndex];
+
+            // Find the absolute index of this section
+            let absoluteIndex = -1;
+            allSections.forEach((s, idx) => {
+                if (s === targetSection) {
+                    absoluteIndex = idx;
+                }
+            });
+
+            if (absoluteIndex >= 0) {
+                const targetTop = absoluteIndex * window.innerHeight;
+                const targetColor = targetSection.getAttribute('data-bg-color');
+                smartScrollTo(targetTop, container, targetColor);
+            }
+        }
+
+        // Scroll to a specific section in the main container
+        function scrollToVideo(index, smooth = true) {
+            const container = document.getElementById('mainScrollContainer');
+            if (!container) return;
+
+            const sections = container.querySelectorAll('.landing-section, .video-section');
+            if (sections[index]) {
+                const targetTop = index * window.innerHeight;
+
+                // Temporarily disable scroll-snap for smooth programmatic scrolling
                 const originalSnapType = container.style.scrollSnapType;
                 container.style.scrollSnapType = 'none';
 
                 container.scrollTo({
                     top: targetTop,
-                    behavior: 'smooth'
+                    behavior: smooth ? 'smooth' : 'auto'
                 });
 
-                // Restore scroll-snap after animation (approx 800ms)
                 setTimeout(() => {
                     container.style.scrollSnapType = originalSnapType || '';
-                    // Re-apply explicit Snap Type if it was empty (from CSS class)
-                    if (!container.style.scrollSnapType) {
-                        container.style.removeProperty('scroll-snap-type');
-                    }
-                }, 800);
+                    if (!container.style.scrollSnapType) container.style.removeProperty('scroll-snap-type');
+                }, smooth ? 800 : 50);
             }
         }
 
-        let scrollTimeout;
-        function handleScroll(e) {
-            const container = e.target;
-            const tabEl = container.closest('.tab-content');
-            if (!tabEl) return;
-
-            const tabIdx = Array.from(tabsContainer.children).indexOf(tabEl);
-
-            // CRITICAL: Only allow the currently active tab to update the global navbar
-            // This prevents background tabs (resetting their scroll) from moving the navbar
-            if (tabIdx !== currentTab) return;
-
-            const logoBtn = document.getElementById('logoBtn');
-
-            // Only Zeta tab (index 0) has the profile header and needs dynamic navbar positioning.
-            // For all other tabs, the navbar should stay fixed at the top with the logo visible.
-            if (tabIdx !== 0) {
-                if (globalTabs) {
-                    const stickyTop = Math.max(12, Math.min(20, window.innerHeight * 0.03));
-                    globalTabs.style.top = stickyTop + 'px';
-                    globalTabs.classList.remove('landing-position');
-                    if (logoBtn) logoBtn.classList.remove('hidden');
-                }
-                return;
-            }
-
-            const gridContainer = tabEl.querySelector('.grid-container');
-
-            if (globalTabs && gridContainer) {
-                const rect = gridContainer.getBoundingClientRect();
-                const navHeight = globalTabs.offsetHeight || 50;
-
-                // Sticky limits (matches CSS clamp(12, 3vh, 20))
-                const stickyTop = Math.max(12, Math.min(20, window.innerHeight * 0.03));
-
-                // We want the spacing between navbar bottom and grid top to be fixed
-                // When "stuck" at the top: gap = 90 - navHeight - stickyTop
-                const gap = 90 - navHeight - stickyTop;
-
-                // Target Top = Current Grid Top - navHeight - gap
-                let targetTop = rect.top - navHeight - gap;
-
-                // Clamp so it never goes above the sticky position
-                const finalTop = Math.max(stickyTop, targetTop);
-
-                // Apply position immediately for seamless "glued" effect
-                globalTabs.style.top = finalTop + 'px';
-
-                // Toggle logo button and classes based on proximity to sticky position
-                if (logoBtn) {
-                    if (finalTop <= stickyTop + 2) {
-                        logoBtn.classList.remove('hidden');
-                        globalTabs.classList.remove('landing-position');
-                    } else {
-                        logoBtn.classList.add('hidden');
-                        globalTabs.classList.add('landing-position');
-                    }
-                }
-            }
-        }
-
-        // Keyboard Navigation
-        // Unified Navigation Logic
+        // Navigate to next/previous section (for keyboard navigation)
         function navigate(direction) {
             if (isScrolling) return;
 
-            const tabData = videosData.tabs[currentTab];
-            const tabEl = document.getElementById(`tab-${tabData.id}`);
-            const container = tabEl.querySelector('.video-container');
-            const sectionHeight = window.innerHeight;
+            const container = document.getElementById('mainScrollContainer');
+            if (!container) return;
 
-            // Calculate current index based on scroll position
+            const sectionHeight = window.innerHeight;
             let currentScrollIndex = Math.round(container.scrollTop / sectionHeight);
-            const totalSections = tabData.videos.length + 1; // +1 for grid
+            const sections = container.querySelectorAll('.landing-section, .video-section');
+            const totalSections = sections.length;
 
             let newIndex = currentScrollIndex + direction;
 
-            // Boundary checks
             if (newIndex >= 0 && newIndex < totalSections) {
                 isScrolling = true;
-                scrollToVideo(newIndex, currentTab);
-
-                // Cooldown to prevent rapid scrolling/double jumps
-                // Match this roughly with the CSS scroll duration
-                setTimeout(() => {
-                    isScrolling = false;
-                }, 800);
+                scrollToVideo(newIndex);
+                setTimeout(() => { isScrolling = false; }, 800);
             }
         }
 
-        // Block horizontal scroll on trackpad to prevent visual glitches
-        // (Tab switching on desktop only via clicking tab buttons)
+        // Block horizontal scroll on trackpad (prevent visual glitches)
         document.addEventListener('wheel', (e) => {
             if (Math.abs(e.deltaX) > Math.abs(e.deltaY) && Math.abs(e.deltaX) > 3) {
                 e.preventDefault();
@@ -1798,58 +2958,108 @@
             }
         });
 
-        // Touch Swipe for Tab Switching (mobile)
-        let touchStartX = 0;
-        let touchStartY = 0;
-        let touchEndX = 0;
-        let touchEndY = 0;
-        const minSwipeDistance = 80; // Minimum swipe distance in pixels
+        // Touch handling removed - native scroll handles single page navigation
 
-        function isOnGridOrHero() {
-            const mainScroll = document.getElementById('mainScroll');
-            const isOnHero = mainScroll && mainScroll.scrollTop < window.innerHeight * 0.5;
+        // --- Draggable Utility ---
 
-            if (isOnHero) return true;
+        function makeDraggable(el) {
+            let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+            let dragOccurred = false;
+            let startX, startY;
 
-            const tabData = videosData.tabs[currentTab];
-            const tabEl = document.getElementById(`tab-${tabData.id}`);
-            const container = tabEl.querySelector('.video-container');
-            // If scrollTop is near 0, user is on the grid section
-            return container && container.scrollTop < window.innerHeight * 0.3;
-        }
+            // Use both mouse and touch events
+            el.addEventListener('mousedown', dragStart);
+            el.addEventListener('touchstart', dragStart, { passive: false });
 
-        function handleSwipeGesture() {
-            const deltaX = touchEndX - touchStartX;
-            const deltaY = touchEndY - touchStartY;
-
-            // Only process horizontal swipes (deltaX > deltaY) and when on grid or hero
-            if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > minSwipeDistance) {
-                if (!isOnGridOrHero()) return;
-
-                if (deltaX < 0) {
-                    // Swipe left -> next tab
-                    if (currentTab < videosData.tabs.length - 1) {
-                        switchTab(currentTab + 1);
-                    }
-                } else {
-                    // Swipe right -> previous tab
-                    if (currentTab > 0) {
-                        switchTab(currentTab - 1);
-                    }
+            // Intercept and cancel the 'click' event if we were dragging
+            el.addEventListener('click', (e) => {
+                if (dragOccurred) {
+                    e.stopImmediatePropagation();
+                    e.preventDefault();
+                    dragOccurred = false;
                 }
+            }, true); // Capture phase is key to blocking inline onclick
+
+            function dragStart(e) {
+                // Ignore right clicks
+                if (e.type === 'mousedown' && e.button !== 0) return;
+
+                const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
+                const clientY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
+
+                startX = clientX;
+                startY = clientY;
+                pos3 = clientX;
+                pos4 = clientY;
+
+                // Reset drag flag at start of interaction
+                dragOccurred = false;
+
+                // Sync the element's top/left to its current visual position before dragging
+                const rect = el.getBoundingClientRect();
+                const parentRect = el.parentElement.getBoundingClientRect();
+
+                // Set explicit top/left and clear bottom/right/margins
+                el.style.top = (rect.top - parentRect.top) + "px";
+                el.style.left = (rect.left - parentRect.left) + "px";
+                el.style.bottom = 'auto';
+                el.style.right = 'auto';
+                el.style.margin = '0';
+
+                // Remove transition and animation during drag for responsiveness
+                el.style.transition = 'none';
+                el.style.animation = 'none';
+                el.style.zIndex = '1000'; // Bring to front
+
+                if (e.type === 'mousedown') {
+                    document.addEventListener('mousemove', elementDrag);
+                    document.addEventListener('mouseup', dragEnd);
+                } else {
+                    document.addEventListener('touchmove', elementDrag, { passive: false });
+                    document.addEventListener('touchend', dragEnd);
+                }
+            }
+
+            function elementDrag(e) {
+                const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
+                const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+
+                if (e.type === 'touchmove') e.preventDefault(); // Prevent scrolling while dragging
+
+                pos1 = pos3 - clientX;
+                pos2 = pos4 - clientY;
+                pos3 = clientX;
+                pos4 = clientY;
+
+                // Move threshold to distinguish click from drag
+                if (!dragOccurred && (Math.abs(clientX - startX) > 5 || Math.abs(clientY - startY) > 5)) {
+                    dragOccurred = true;
+                }
+
+                el.style.top = (el.offsetTop - pos2) + "px";
+                el.style.left = (el.offsetLeft - pos1) + "px";
+            }
+
+            function dragEnd() {
+                document.removeEventListener('mousemove', elementDrag);
+                document.removeEventListener('mouseup', dragEnd);
+                document.removeEventListener('touchmove', elementDrag);
+                document.removeEventListener('touchend', dragEnd);
+
+                el.style.transition = '';
+                // Note: dragOccurred remains true if it was a drag, 
+                // until the 'click' event fires and our listener resets it.
             }
         }
 
-        document.addEventListener('touchstart', (e) => {
-            touchStartX = e.changedTouches[0].screenX;
-            touchStartY = e.changedTouches[0].screenY;
-        }, { passive: true });
-
-        document.addEventListener('touchend', (e) => {
-            touchEndX = e.changedTouches[0].screenX;
-            touchEndY = e.changedTouches[0].screenY;
-            handleSwipeGesture();
-        }, { passive: true });
+        function initDraggable() {
+            const draggables = document.querySelectorAll('.floating-item');
+            draggables.forEach(el => {
+                makeDraggable(el);
+                // Change cursor to indicate draggability
+                el.style.cursor = 'move';
+            });
+        }
 
         // Initialize
         initApp();

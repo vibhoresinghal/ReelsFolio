@@ -1,4 +1,93 @@
 {
+    "landingSection": {
+        "profileVideo": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
+        "profileVideoThumbnail": "https://pub-145d32622a7e4d2586d93017e4e1221c.r2.dev/profile.jpg",
+        "bgColor": "#421A32",
+        "name": "Vibhore Singhal",
+        "bio": "Currently a Sr. UX Designer @ Zeta, Interned at OLX, Interaction Design graduate from Pearl Academy",
+        "locations": [
+            {
+                "icon": "location",
+                "text": "Bangalore"
+            },
+            {
+                "icon": "home",
+                "text": "Delhi"
+            }
+        ],
+        "floatingItems": [
+            {
+                "id": "float1",
+                "type": "image",
+                "src": "https://pub-876fdc3996be4fb3810906343b32d993.r2.dev/basketball.png",
+                "thumbnail": "https://pub-876fdc3996be4fb3810906343b32d993.r2.dev/basketball.png",
+                "title": "Basketball",
+                "description": "My favorite sport to play on weekends with friends.",
+                "position": {
+                    "top": "15%",
+                    "left": "10%"
+                },
+                "rotation": "5deg",
+                "size": "medium"
+            },
+            {
+                "id": "float2",
+                "type": "image",
+                "src": "https://pub-876fdc3996be4fb3810906343b32d993.r2.dev/badminton.png",
+                "thumbnail": "https://pub-876fdc3996be4fb3810906343b32d993.r2.dev/badminton.png",
+                "title": "Badminton Court",
+                "description": "Early morning badminton sessions keep me energized.",
+                "position": {
+                    "top": "40%",
+                    "left": "18%"
+                },
+                "rotation": "-5deg",
+                "size": "small"
+            },
+            {
+                "id": "float3",
+                "type": "image",
+                "src": "https://pub-876fdc3996be4fb3810906343b32d993.r2.dev/Stellar.png",
+                "thumbnail": "https://pub-876fdc3996be4fb3810906343b32d993.r2.dev/Stellar.png",
+                "title": "Stellar Trophy",
+                "description": "Recognition for outstanding work - a proud moment!",
+                "position": {
+                    "top": "8%",
+                    "right": "5%"
+                },
+                "rotation": "10deg",
+                "size": "medium"
+            },
+            {
+                "id": "float4",
+                "type": "image",
+                "src": "https://pub-876fdc3996be4fb3810906343b32d993.r2.dev/Camera.png",
+                "thumbnail": "https://pub-876fdc3996be4fb3810906343b32d993.r2.dev/Camera.png",
+                "title": "Camera Setup",
+                "description": "My FUJIFILM XS-20 ready for the next adventure.",
+                "position": {
+                    "top": "55%",
+                    "right": "18%"
+                },
+                "rotation": "5deg",
+                "size": "small"
+            },
+            {
+                "id": "float5",
+                "type": "image",
+                "src": "https://pub-876fdc3996be4fb3810906343b32d993.r2.dev/Room.png",
+                "thumbnail": "https://pub-876fdc3996be4fb3810906343b32d993.r2.dev/Room.png",
+                "title": "My Room",
+                "description": "This is my studio where all the magic happens.",
+                "position": {
+                    "top": "40%",
+                    "right": "8%"
+                },
+                "rotation": "-8deg",
+                "size": "small"
+            }
+        ]
+    },
     "tabs": [
         {
             "id": "zeta",

@@ -20,6 +20,8 @@
     <!-- Font with display swap for better performance -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
+    <!-- GSAP for animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -301,13 +303,23 @@
             pointer-events: none;
         }
 
-        /* Like Button Styles */
+        /* Like Button Styles - starts as circle, expands to pill with count */
         .nav-arrow-btn.like-btn {
-            position: relative;
+            width: 48px;
+            height: 48px;
+            border-radius: 24px;
             flex-direction: column;
-            gap: 2px;
-            height: auto;
-            padding: 10px 0;
+            gap: 0;
+            padding: 0;
+            overflow: hidden;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            transition: height 0.3s ease, background-color 0.2s ease, border-color 0.2s ease;
+        }
+
+        .nav-arrow-btn.like-btn.has-likes {
+            height: 72px;
         }
 
         .nav-arrow-btn.like-btn svg {
@@ -316,7 +328,20 @@
             fill: none;
             stroke: white;
             stroke-width: 1.5;
-            transition: all 0.15s ease;
+            flex-shrink: 0;
+            /* Ensure icon stays centered */
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 0.3s ease;
+        }
+
+        /* When expanded (has class expand or via JS height change), move icon up */
+        .nav-arrow-btn.like-btn.has-likes svg {
+            top: 18px;
+            /* Fixed position from top */
+            transform: translate(-50%, 0);
         }
 
         .nav-arrow-btn.like-btn.liked svg {
@@ -343,12 +368,22 @@
         }
 
         .like-count {
-            font-size: 11px;
+            font-size: 12px;
             color: white;
             font-weight: 500;
-            opacity: 0.9;
-            min-width: 20px;
             text-align: center;
+            opacity: 0;
+            line-height: 1;
+            /* Absolute position to avoid affecting flex alignment of heart */
+            position: absolute;
+            bottom: 14px;
+            left: 0;
+            width: 100%;
+            transition: opacity 0.2s ease;
+        }
+
+        .nav-arrow-btn.like-btn.has-likes .like-count {
+            opacity: 1;
         }
 
         /* Flying Heart Animation */
@@ -1890,12 +1925,12 @@
 
         <!-- Fixed Navigation Arrows with Like Button -->
         <div class="video-nav-arrows" id="fixedNavArrows">
-            <button class="nav-arrow-btn like-btn" id="likeBtn" onclick="toggleLike()" aria-label="Like this portfolio">
+            <button class="nav-arrow-btn like-btn" id="likeBtn" onclick="toggleLike()" aria-label="Like this video">
                 <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" id="likeIcon">
                     <path
                         d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
                 </svg>
-                <span class="like-count" id="likeCount">0</span>
+                <span class="like-count" id="likeCount"></span>
             </button>
             <button class="nav-arrow-btn hidden" id="navArrowUp" onclick="navigate(-1)" aria-label="Previous section">
                 <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -1996,7 +2031,7 @@
             // Structure: Landing -> Zeta videos -> Personal videos -> Life videos -> Films videos
             let allSectionsHTML = `
                 <!-- LANDING SECTION -->
-                <div class="landing-section active" id="section-landing" data-bg-color="${landing.bgColor || '#2d1b4e'}">
+                <div class="landing-section active" id="section-landing" data-video-id="landing" data-bg-color="${landing.bgColor || '#2d1b4e'}">
                     <div class="landing-profile-info">
                         <p class="landing-bio">${landing.bio || ''}</p>
                         <h1 class="landing-name">${landing.name || 'Vibhore Singhal'}</h1>
@@ -2166,6 +2201,7 @@
                             if (logoBtn) logoBtn.classList.add('active');
                             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
                             playVideo('landing-video');
+                            if (!isWarping) updateLikeButtonForCurrentVideo('landing');
                         } else if (isVideo) {
                             if (controlBar) controlBar.classList.remove('hidden');
                             if (logoBtn) logoBtn.classList.remove('active');
@@ -2179,6 +2215,7 @@
 
                             const videoId = entry.target.getAttribute('data-video-id');
                             playVideo(videoId);
+                            if (!isWarping) updateLikeButtonForCurrentVideo(videoId);
                         }
                     } else {
                         entry.target.classList.remove('active');
@@ -2397,15 +2434,34 @@
             const likeCount = document.getElementById('likeCount');
             const videoId = getCurrentVideoId();
 
-            // Always add liked state on first click
-            if (!likeBtn.classList.contains('liked')) {
-                likeBtn.classList.add('liked');
-            }
+            // Mark as liked by this user
+            likeBtn.classList.add('liked');
+
+            // Track that this user has liked this video
+            const userLikes = JSON.parse(localStorage.getItem('userLikedVideos') || '{}');
+            userLikes[videoId] = true;
+            localStorage.setItem('userLikedVideos', JSON.stringify(userLikes));
 
             // Increment count (Medium-style clap - each click adds 1)
             const currentCount = parseInt(likeCount.textContent) || 0;
             const newCount = currentCount + 1;
             likeCount.textContent = newCount;
+
+            // Animate button expansion if this is the first like
+            if (currentCount === 0) {
+                likeBtn.classList.add('has-likes');
+                gsap.to(likeBtn, {
+                    height: 72,
+                    duration: 0.3,
+                    ease: 'power2.out'
+                });
+                gsap.to(likeCount, {
+                    opacity: 1,
+                    duration: 0.2,
+                    delay: 0.1,
+                    ease: 'power2.out'
+                });
+            }
 
             // Update cache
             likesCache[videoId] = newCount;
@@ -2503,48 +2559,90 @@
             }, 1200);
         }
 
-        async function updateLikeButtonForCurrentVideo() {
+        function updateLikeButtonVisuals(count, skipAnimation) {
             const likeBtn = document.getElementById('likeBtn');
             const likeCount = document.getElementById('likeCount');
-            const videoId = getCurrentVideoId();
-
             if (!likeBtn || !likeCount) return;
+
+            // Animate like button based on count
+            const hasLikes = count > 0;
+            const currentHeight = likeBtn.offsetHeight;
+            const targetHeight = hasLikes ? 72 : 48;
+            const isAlreadyExpanded = likeBtn.classList.contains('has-likes');
+
+            if (hasLikes) {
+                likeCount.textContent = count;
+                likeBtn.classList.add('has-likes');
+
+                if (skipAnimation || (isAlreadyExpanded && Math.abs(currentHeight - targetHeight) < 2)) {
+                    gsap.set(likeBtn, { height: targetHeight });
+                    gsap.set(likeCount, { opacity: 1 });
+                } else {
+                    gsap.to(likeBtn, { height: targetHeight, duration: 0.3, ease: 'power2.out' });
+                    gsap.to(likeCount, { opacity: 1, duration: 0.2, delay: 0.1, ease: 'power2.out' });
+                }
+            } else {
+                likeBtn.classList.remove('has-likes');
+                if (skipAnimation || (!isAlreadyExpanded && Math.abs(currentHeight - targetHeight) < 2)) {
+                    gsap.set(likeBtn, { height: targetHeight });
+                    gsap.set(likeCount, { opacity: 0 });
+                    likeCount.textContent = '';
+                } else {
+                    gsap.to(likeCount, { opacity: 0, duration: 0.15, ease: 'power2.in' });
+                    gsap.to(likeBtn, { height: targetHeight, duration: 0.3, delay: 0.05, ease: 'power2.out', onComplete: () => { likeCount.textContent = ''; } });
+                }
+            }
+        }
+
+        async function updateLikeButtonForCurrentVideo(videoIdOverride, skipAnimation = false, forceRender = false) {
+            const likeBtn = document.getElementById('likeBtn');
+            const videoId = videoIdOverride || getCurrentVideoId();
+
+            if (!likeBtn) return;
+
+            // Check if USER has liked this video (stored locally)
+            const userLikes = JSON.parse(localStorage.getItem('userLikedVideos') || '{}');
+            if (userLikes[videoId]) {
+                likeBtn.classList.add('liked');
+            } else {
+                likeBtn.classList.remove('liked');
+            }
 
             // Get count from cache first
             let count = likesCache[videoId];
 
-            // If not in cache, try localStorage then fetch from server
+            // If not in cache, try localStorage then fetch from server (NON-BLOCKING)
             if (count === undefined) {
                 // Check localStorage first for instant display
                 const localLikes = JSON.parse(localStorage.getItem('videoLikes') || '{}');
                 count = localLikes[videoId] || 0;
-                likeCount.textContent = count;
 
-                // Then fetch from server to get latest count
-                if (LIKES_WORKER_URL) {
-                    try {
-                        const response = await fetch(`${LIKES_WORKER_URL}/likes?videoId=${encodeURIComponent(videoId)}`);
-                        if (response.ok) {
-                            const data = await response.json();
-                            count = data.count || 0;
-                            likesCache[videoId] = count;
-                            likeCount.textContent = count;
-                        }
-                    } catch (error) {
-                        console.warn('Failed to fetch likes:', error);
-                    }
-                }
-
+                // Cache immediately so we render
                 likesCache[videoId] = count;
-            } else {
-                likeCount.textContent = count;
+
+                // Background Fetch
+                if (LIKES_WORKER_URL) {
+                    fetch(`${LIKES_WORKER_URL}/likes?videoId=${encodeURIComponent(videoId)}`)
+                        .then(r => r.json())
+                        .then(data => {
+                            const newCount = Math.max(data.count || 0, count);
+
+                            // If server has more, update cache and visuals
+                            if (newCount !== likesCache[videoId]) {
+                                likesCache[videoId] = newCount;
+                                // Only update visually if the user is still on this video OR if we grabbed lock
+                                if (forceRender || getCurrentVideoId() === videoId) {
+                                    updateLikeButtonVisuals(newCount, false);
+                                }
+                            }
+                        })
+                        .catch(e => console.warn('Failed to fetch likes:', e));
+                }
             }
 
-            // Show liked state if count > 0
-            if (count > 0) {
-                likeBtn.classList.add('liked');
-            } else {
-                likeBtn.classList.remove('liked');
+            // Render visuals immediately with whatever data we have
+            if (forceRender || getCurrentVideoId() === videoId) {
+                updateLikeButtonVisuals(count, skipAnimation);
             }
         }
 
@@ -2571,15 +2669,10 @@
             }
 
             // Update display for current video
-            updateLikeButtonForCurrentVideo();
+            updateLikeButtonForCurrentVideo(undefined, true);
 
-            // Update like count when scrolling to new video
-            const container = document.getElementById('mainScrollContainer');
-            if (container) {
-                container.addEventListener('scroll', throttle(() => {
-                    updateLikeButtonForCurrentVideo();
-                }, 200));
-            }
+            // Note: Like button updates are now handled by the IntersectionObserver in initObserver
+            // for more reliable section tracking during scroll snap.
         }
 
         // --- Floating Item Modal Functions ---
@@ -2661,6 +2754,9 @@
                 const landingSection = container.querySelector('.landing-section');
                 const targetColor = landingSection ? landingSection.getAttribute('data-bg-color') : null;
                 smartScrollTo(0, container, targetColor);
+
+                // Explicitly update like button for landing
+                updateLikeButtonForCurrentVideo('landing', false, true);
             }
         }
 
@@ -2683,6 +2779,10 @@
                 const targetTop = sectionIndex * window.innerHeight;
                 const targetColor = section.getAttribute('data-bg-color');
                 smartScrollTo(targetTop, container, targetColor);
+
+                // Update like button for target section immediately
+                const videoId = section.getAttribute('data-video-id');
+                if (videoId) updateLikeButtonForCurrentVideo(videoId, false, true);
             }
         }
 
@@ -2856,12 +2956,20 @@
                 }, 200);
             } else {
                 // Near jump - use normal smooth scroll
+                isWarping = true; // Block observer updates during scroll
                 const originalSnapType = container.style.scrollSnapType;
                 container.style.scrollSnapType = 'none';
                 container.scrollTo({ top: targetTop, behavior: 'smooth' });
 
                 setTimeout(() => {
                     container.style.scrollSnapType = originalSnapType || '';
+                    isWarping = false; // Re-enable observer updates
+
+                    // Force update for target (since observer might have been skipped)
+                    // Note: scrollToCategory already called explicit update!
+                    // But if it wasn't via scrollToCategory (e.g. arrow click), we might need it?
+                    // Arrow clicks just scroll by height? No, updateNavArrows handles visibility.
+                    // Arrow click calls smartScrollTo?
                 }, 800);
             }
         }
@@ -2893,6 +3001,10 @@
                 const targetTop = absoluteIndex * window.innerHeight;
                 const targetColor = targetSection.getAttribute('data-bg-color');
                 smartScrollTo(targetTop, container, targetColor);
+
+                // Explicitly update like button
+                const videoId = targetSection.getAttribute('data-video-id');
+                if (videoId) updateLikeButtonForCurrentVideo(videoId, false, true);
             }
         }
 

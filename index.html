@@ -1972,6 +1972,11 @@
         const gridBtn = document.getElementById('gridBtn');
         const controlBar = document.querySelector('.control-bar');
 
+        // Safety: Clear warping flag on user interaction to ensure UI updates resume
+        window.addEventListener('wheel', () => { if (isWarping) isWarping = false; }, { passive: true });
+        window.addEventListener('touchstart', () => { if (isWarping) isWarping = false; }, { passive: true });
+        window.addEventListener('keydown', () => { if (isWarping) isWarping = false; }, { passive: true });
+
         // Initialize
         async function initApp() {
             try {
@@ -2976,6 +2981,10 @@
             } else {
                 // Near jump - use normal smooth scroll
                 isWarping = true; // Block observer updates during scroll
+
+                // Manually update BG since observer is blocked
+                if (targetColor) bgLayer.style.backgroundColor = targetColor;
+
                 const originalSnapType = container.style.scrollSnapType;
                 container.style.scrollSnapType = 'none';
                 container.scrollTo({ top: targetTop, behavior: 'smooth' });

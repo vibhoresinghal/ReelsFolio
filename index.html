@@ -248,6 +248,64 @@
             transform: scale(0.9);
         }
 
+        /* Vertical Navigation Arrows - FIXED position right of video frame */
+        .video-nav-arrows {
+            position: fixed;
+            /* Position just to the right of video frame */
+            left: calc(50% + min(clamp(280px, 50vw, 380px), calc(80vh * 9 / 16)) / 2 + 24px);
+            top: 50%;
+            transform: translateY(-164%);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 1000;
+        }
+
+        .nav-arrow-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: 1.5px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            opacity: 0.7;
+        }
+
+        .nav-arrow-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.5);
+            opacity: 1;
+            transform: scale(1.05);
+        }
+
+        .nav-arrow-btn svg {
+            width: 22px;
+            height: 22px;
+            fill: none;
+            stroke: white;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .nav-arrow-btn.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Hide nav arrows on mobile */
+        @media (max-width: 768px) {
+            .video-nav-arrows {
+                display: none;
+            }
+        }
+
         /* Landscape modification */
         /* Landscape modification */
         /* Landscape modification */
@@ -1757,6 +1815,20 @@
             </svg>
             <span id="soundBtnText">Unmute</span>
         </button>
+
+        <!-- Fixed Navigation Arrows -->
+        <div class="video-nav-arrows" id="fixedNavArrows">
+            <button class="nav-arrow-btn hidden" id="navArrowUp" onclick="navigate(-1)" aria-label="Previous section">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 19V5M5 12l7-7 7 7" />
+                </svg>
+            </button>
+            <button class="nav-arrow-btn" id="navArrowDown" onclick="navigate(1)" aria-label="Next section">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 5v14M19 12l-7 7-7-7" />
+                </svg>
+            </button>
+        </div>
     </div>
 
     <script>
@@ -1770,6 +1842,7 @@
         let videosReady = {};
         let isScrolling = false;
         let userPaused = {}; // Track which videos were paused by the user
+        let totalSectionsCount = 0; // Total sections for nav arrow visibility
 
 
         // DOM Elements
@@ -1873,11 +1946,14 @@
                     <div class="landing-sticker wine" style="bottom: -5%; left: -2%; width: clamp(60px, 8vw, 100px); transform: rotate(30deg);">
                         <img src="assets/wine.svg" alt="wine" style="width: 100%; height: 100%;">
                     </div>
-                    <div class="landing-scroll-indicator" onclick="scrollToFirstVideo()">
-                        <svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12.53 16.28a.75.75 0 01-1.06 0l-7.5-7.5a.75.75 0 011.06-1.06L12 14.69l6.97-6.97a.75.75 0 111.06 1.06l-7.5 7.5z" clip-rule="evenodd" /></svg>
-                    </div>
                 </div>
             `;
+
+            // Calculate total sections for arrow visibility
+            let totalSections = 1; // Start with 1 for landing
+            videosData.tabs.forEach(tab => totalSections += tab.videos.length);
+            totalSectionsCount = totalSections; // Store globally for arrow updates
+            let sectionCounter = 1; // Start after landing (landing is index 0)
 
             // Add all category videos in order
             videosData.tabs.forEach((tab, tabIndex) => {
@@ -1885,6 +1961,7 @@
                     const isFirstVideo = tabIndex === 0 && videoIndex === 0;
                     const isFirstOfCategory = videoIndex === 0;
                     const preloadStrategy = isFirstVideo ? 'metadata' : 'none';
+                    const currentSectionIndex = sectionCounter;
 
                     allSectionsHTML += `
                         <div class="video-section video-section-r2 ${video.isLandscape ? 'landscape-mode' : ''}" 
@@ -1892,6 +1969,7 @@
                              data-video-id="${video.id}" 
                              data-bg-color="${video.bgColor}" 
                              data-category="${tab.id}"
+                             data-section-index="${currentSectionIndex}"
                              data-video-src="${video.src}">
                             <div class="content-info-left">
                                 ${video.description ? `<p class="content-desc">${video.description}</p>` : ''}
@@ -1914,6 +1992,7 @@
                             </div>
                         </div>
                     `;
+                    sectionCounter++;
                 });
             });
 
@@ -1952,7 +2031,33 @@
 
         // Optimized scroll handler
         function handleScroll(e) {
-            // Future scroll-linked animations can go here
+            updateNavArrows();
+        }
+
+        // Update fixed navigation arrows based on current scroll position
+        function updateNavArrows() {
+            const container = document.getElementById('mainScrollContainer');
+            const upArrow = document.getElementById('navArrowUp');
+            const downArrow = document.getElementById('navArrowDown');
+
+            if (!container || !upArrow || !downArrow) return;
+
+            const sectionHeight = window.innerHeight;
+            const currentIndex = Math.round(container.scrollTop / sectionHeight);
+
+            // Hide up arrow on first section (index 0)
+            if (currentIndex === 0) {
+                upArrow.classList.add('hidden');
+            } else {
+                upArrow.classList.remove('hidden');
+            }
+
+            // Hide down arrow on last section
+            if (currentIndex >= totalSectionsCount - 1) {
+                downArrow.classList.add('hidden');
+            } else {
+                downArrow.classList.remove('hidden');
+            }
         }
 
         // Intersection Observer - for single continuous scroll page
@@ -2421,8 +2526,8 @@
                     container.style.scrollSnapType = 'none';
                     container.style.scrollBehavior = 'auto';
 
-                    // Jump to 1 section vertically away from target
-                    container.scrollTop = targetTop - (direction * sectionHeight);
+                    // Jump to 2 sections vertically away from target for more scroll motion
+                    container.scrollTop = targetTop - (direction * sectionHeight * 2);
 
                     // Force reflow
                     void container.offsetHeight;

@@ -258,10 +258,10 @@
             /* Position just to the right of video frame */
             left: calc(50% + min(clamp(280px, 50vw, 380px), calc(80vh * 9 / 16)) / 2 + 24px);
             top: 50%;
-            transform: translateY(-164%);
+            transform: translateY(-50%);
             display: flex;
             flex-direction: column;
-            gap: 12px;
+
             z-index: 1000;
             transition: left 0.3s ease;
         }
@@ -285,6 +285,8 @@
             justify-content: center;
             transition: all 0.2s ease;
             opacity: 0.7;
+            margin-bottom: 12px;
+            overflow: hidden;
         }
 
         .nav-arrow-btn:hover {
@@ -304,9 +306,16 @@
             stroke-linejoin: round;
         }
 
+        .nav-arrow-btn:last-child {
+            margin-bottom: 0;
+        }
+
         .nav-arrow-btn.hidden {
             opacity: 0;
             pointer-events: none;
+            height: 0;
+            margin-bottom: 0;
+            border-width: 0;
         }
 
         /* Like Button Styles - starts as circle, expands to pill with count */
@@ -1929,26 +1938,26 @@
             <span id="soundBtnText">Unmute</span>
         </button>
 
-        <!-- Fixed Navigation Arrows with Like Button -->
-        <div class="video-nav-arrows" id="fixedNavArrows">
-            <button class="nav-arrow-btn like-btn" id="likeBtn" onclick="toggleLike()" aria-label="Like this video">
-                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" id="likeIcon">
-                    <path
-                        d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-                </svg>
-                <span class="like-count" id="likeCount"></span>
-            </button>
-            <button class="nav-arrow-btn hidden" id="navArrowUp" onclick="navigate(-1)" aria-label="Previous section">
-                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 19V5M5 12l7-7 7 7" />
-                </svg>
-            </button>
-            <button class="nav-arrow-btn" id="navArrowDown" onclick="navigate(1)" aria-label="Next section">
-                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 5v14M19 12l-7 7-7-7" />
-                </svg>
-            </button>
-        </div>
+    </div>
+    <!-- Fixed Navigation Arrows with Like Button -->
+    <div class="video-nav-arrows" id="fixedNavArrows">
+        <button class="nav-arrow-btn like-btn" id="likeBtn" onclick="toggleLike()" aria-label="Like this video">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" id="likeIcon">
+                <path
+                    d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+            </svg>
+            <span class="like-count" id="likeCount"></span>
+        </button>
+        <button class="nav-arrow-btn hidden" id="navArrowUp" onclick="navigate(-1)" aria-label="Previous section">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 19V5M5 12l7-7 7 7" />
+            </svg>
+        </button>
+        <button class="nav-arrow-btn" id="navArrowDown" onclick="navigate(1)" aria-label="Next section">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 5v14M19 12l-7 7-7-7" />
+            </svg>
+        </button>
     </div>
 
     <script>

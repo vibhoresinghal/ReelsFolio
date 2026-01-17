@@ -301,6 +301,76 @@
             pointer-events: none;
         }
 
+        /* Like Button Styles */
+        .nav-arrow-btn.like-btn {
+            position: relative;
+            flex-direction: column;
+            gap: 2px;
+            height: auto;
+            padding: 10px 0;
+        }
+
+        .nav-arrow-btn.like-btn svg {
+            width: 24px;
+            height: 24px;
+            fill: none;
+            stroke: white;
+            stroke-width: 1.5;
+            transition: all 0.15s ease;
+        }
+
+        .nav-arrow-btn.like-btn.liked svg {
+            fill: #ff4757;
+            stroke: #ff4757;
+        }
+
+        .nav-arrow-btn.like-btn.pulse svg {
+            animation: heartPulse 0.3s ease-out;
+        }
+
+        @keyframes heartPulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.25);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .like-count {
+            font-size: 11px;
+            color: white;
+            font-weight: 500;
+            opacity: 0.9;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        /* Flying Heart Animation */
+        .flying-heart {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            animation: flyAwayHeart 1.2s ease-out forwards;
+        }
+
+        @keyframes flyAwayHeart {
+            0% {
+                opacity: 1;
+                transform: translate(0, 0) scale(1);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translate(var(--end-x), var(--end-y)) scale(0.5);
+            }
+        }
+
         /* Hide nav arrows on mobile */
         @media (max-width: 768px) {
             .video-nav-arrows {
@@ -1818,8 +1888,15 @@
             <span id="soundBtnText">Unmute</span>
         </button>
 
-        <!-- Fixed Navigation Arrows -->
+        <!-- Fixed Navigation Arrows with Like Button -->
         <div class="video-nav-arrows" id="fixedNavArrows">
+            <button class="nav-arrow-btn like-btn" id="likeBtn" onclick="toggleLike()" aria-label="Like this portfolio">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" id="likeIcon">
+                    <path
+                        d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                </svg>
+                <span class="like-count" id="likeCount">0</span>
+            </button>
             <button class="nav-arrow-btn hidden" id="navArrowUp" onclick="navigate(-1)" aria-label="Previous section">
                 <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path d="M12 19V5M5 12l7-7 7 7" />
@@ -1860,6 +1937,7 @@
                 const response = await fetch('videos.json');
                 videosData = await response.json();
                 renderApp();
+                initLikeButton(); // Initialize like button state
             } catch (error) {
                 console.error('Failed to load videos:', error);
             }
@@ -2284,6 +2362,223 @@
                 mutedIcon.style.display = 'none';
                 unmutedIcon.style.display = 'block';
                 btnText.textContent = 'Mute';
+            }
+        }
+
+        // --- Like Button Functions ---
+        // --- Like Button Functions (Per-Video with Cloudflare Worker) ---
+
+        // IMPORTANT: Replace this with your Cloudflare Worker URL after deployment
+        const LIKES_WORKER_URL = 'https://reelsfolio-likes.vibhoresinghal.workers.dev'; // e.g., 'https://reelsfolio-likes.YOUR-SUBDOMAIN.workers.dev'
+
+        let likesCache = {}; // Cache of video likes { videoId: count }
+        let pendingLikes = {}; // Pending likes to sync { videoId: count }
+        let likeDebounceTimer = null;
+
+        function getCurrentVideoId() {
+            // Get the currently visible video's ID
+            const container = document.getElementById('mainScrollContainer');
+            if (!container) return 'landing';
+
+            const sectionHeight = window.innerHeight;
+            const currentIndex = Math.round(container.scrollTop / sectionHeight);
+            const sections = container.querySelectorAll('.landing-section, .video-section');
+
+            if (sections[currentIndex]) {
+                return sections[currentIndex].getAttribute('data-video-id') ||
+                    sections[currentIndex].id ||
+                    'landing';
+            }
+            return 'landing';
+        }
+
+        function toggleLike() {
+            const likeBtn = document.getElementById('likeBtn');
+            const likeCount = document.getElementById('likeCount');
+            const videoId = getCurrentVideoId();
+
+            // Always add liked state on first click
+            if (!likeBtn.classList.contains('liked')) {
+                likeBtn.classList.add('liked');
+            }
+
+            // Increment count (Medium-style clap - each click adds 1)
+            const currentCount = parseInt(likeCount.textContent) || 0;
+            const newCount = currentCount + 1;
+            likeCount.textContent = newCount;
+
+            // Update cache
+            likesCache[videoId] = newCount;
+
+            // Track pending likes to sync
+            pendingLikes[videoId] = (pendingLikes[videoId] || 0) + 1;
+
+            // Trigger pulse animation
+            likeBtn.classList.remove('pulse');
+            void likeBtn.offsetWidth; // Force reflow
+            likeBtn.classList.add('pulse');
+
+            // Create flying heart effect
+            createFlyingHeart(likeBtn);
+
+            // Haptic feedback for mobile
+            if ('vibrate' in navigator) {
+                try { navigator.vibrate(30); } catch (e) { }
+            }
+
+            // Debounced save to server (batches rapid clicks)
+            clearTimeout(likeDebounceTimer);
+            likeDebounceTimer = setTimeout(() => {
+                savePendingLikes();
+            }, 500);
+
+            // Also save to localStorage as backup
+            const localLikes = JSON.parse(localStorage.getItem('videoLikes') || '{}');
+            localLikes[videoId] = newCount;
+            localStorage.setItem('videoLikes', JSON.stringify(localLikes));
+        }
+
+        async function savePendingLikes() {
+            if (!LIKES_WORKER_URL) return; // Worker not configured
+
+            const likesToSave = { ...pendingLikes };
+            pendingLikes = {};
+
+            for (const [videoId, increment] of Object.entries(likesToSave)) {
+                try {
+                    await fetch(`${LIKES_WORKER_URL}/likes`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ videoId, increment })
+                    });
+                } catch (error) {
+                    console.warn('Failed to save like:', error);
+                    // Re-add to pending on failure
+                    pendingLikes[videoId] = (pendingLikes[videoId] || 0) + increment;
+                }
+            }
+        }
+
+        async function loadLikesFromServer() {
+            if (!LIKES_WORKER_URL) return null;
+
+            try {
+                const response = await fetch(`${LIKES_WORKER_URL}/likes/all`);
+                if (response.ok) {
+                    return await response.json();
+                }
+            } catch (error) {
+                console.warn('Failed to load likes from server:', error);
+            }
+            return null;
+        }
+
+        function createFlyingHeart(button) {
+            const rect = button.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+
+            const flyingHeart = document.createElement('div');
+            flyingHeart.className = 'flying-heart';
+            flyingHeart.innerHTML = '❤️';
+            flyingHeart.style.left = `${centerX}px`;
+            flyingHeart.style.top = `${centerY}px`;
+            flyingHeart.style.fontSize = `${18 + Math.random() * 8}px`;
+
+            // Random upward trajectory
+            const angle = (270 + (Math.random() - 0.5) * 60) * (Math.PI / 180);
+            const distance = 60 + Math.random() * 40;
+            const endX = Math.cos(angle) * distance;
+            const endY = Math.sin(angle) * distance;
+
+            flyingHeart.style.setProperty('--end-x', `${endX}px`);
+            flyingHeart.style.setProperty('--end-y', `${endY}px`);
+
+            document.body.appendChild(flyingHeart);
+
+            setTimeout(() => {
+                if (flyingHeart.parentNode) {
+                    flyingHeart.remove();
+                }
+            }, 1200);
+        }
+
+        async function updateLikeButtonForCurrentVideo() {
+            const likeBtn = document.getElementById('likeBtn');
+            const likeCount = document.getElementById('likeCount');
+            const videoId = getCurrentVideoId();
+
+            if (!likeBtn || !likeCount) return;
+
+            // Get count from cache first
+            let count = likesCache[videoId];
+
+            // If not in cache, try localStorage then fetch from server
+            if (count === undefined) {
+                // Check localStorage first for instant display
+                const localLikes = JSON.parse(localStorage.getItem('videoLikes') || '{}');
+                count = localLikes[videoId] || 0;
+                likeCount.textContent = count;
+
+                // Then fetch from server to get latest count
+                if (LIKES_WORKER_URL) {
+                    try {
+                        const response = await fetch(`${LIKES_WORKER_URL}/likes?videoId=${encodeURIComponent(videoId)}`);
+                        if (response.ok) {
+                            const data = await response.json();
+                            count = data.count || 0;
+                            likesCache[videoId] = count;
+                            likeCount.textContent = count;
+                        }
+                    } catch (error) {
+                        console.warn('Failed to fetch likes:', error);
+                    }
+                }
+
+                likesCache[videoId] = count;
+            } else {
+                likeCount.textContent = count;
+            }
+
+            // Show liked state if count > 0
+            if (count > 0) {
+                likeBtn.classList.add('liked');
+            } else {
+                likeBtn.classList.remove('liked');
+            }
+        }
+
+        async function initLikeButton() {
+            const likeBtn = document.getElementById('likeBtn');
+            const likeCount = document.getElementById('likeCount');
+
+            if (!likeBtn || !likeCount) return;
+
+            // Try to load from server first
+            const serverLikes = await loadLikesFromServer();
+            if (serverLikes) {
+                likesCache = serverLikes;
+                // Merge with localStorage (keep higher counts)
+                const localLikes = JSON.parse(localStorage.getItem('videoLikes') || '{}');
+                for (const [videoId, count] of Object.entries(localLikes)) {
+                    if (!likesCache[videoId] || localLikes[videoId] > likesCache[videoId]) {
+                        likesCache[videoId] = count;
+                    }
+                }
+            } else {
+                // Fallback to localStorage
+                likesCache = JSON.parse(localStorage.getItem('videoLikes') || '{}');
+            }
+
+            // Update display for current video
+            updateLikeButtonForCurrentVideo();
+
+            // Update like count when scrolling to new video
+            const container = document.getElementById('mainScrollContainer');
+            if (container) {
+                container.addEventListener('scroll', throttle(() => {
+                    updateLikeButtonForCurrentVideo();
+                }, 200));
             }
         }
 

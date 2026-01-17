@@ -1,0 +1,8 @@
+name = "reelsfolio-likes"
+main = "cloudflare-worker.js"
+compatibility_date = "2024-01-01"
+
+# KV Namespace binding
+[[kv_namespaces]]
+binding = "LIKES"
+id = "995a218341454b0da182becde8ddd415"

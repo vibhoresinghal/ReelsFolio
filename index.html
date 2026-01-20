@@ -3071,24 +3071,52 @@
         }
 
         // Navigate to next/previous section (for keyboard navigation)
-        function navigate(direction) {
-            if (isScrolling) return;
+        // Queued navigation - allows updating target mid-transition
+        let navigationTargetIndex = null;
+        let navigationScrollId = 0; // Track current scroll animation
 
+        function navigate(direction) {
             const container = document.getElementById('mainScrollContainer');
             if (!container) return;
 
             const sectionHeight = window.innerHeight;
-            let currentScrollIndex = Math.round(container.scrollTop / sectionHeight);
             const sections = container.querySelectorAll('.landing-section, .video-section');
             const totalSections = sections.length;
 
-            let newIndex = currentScrollIndex + direction;
-
-            if (newIndex >= 0 && newIndex < totalSections) {
-                isScrolling = true;
-                scrollToVideo(newIndex);
-                setTimeout(() => { isScrolling = false; }, 800);
+            // Determine base index: use current target if scrolling, otherwise use current scroll position
+            let baseIndex;
+            if (isScrolling && navigationTargetIndex !== null) {
+                // We're mid-transition - update from current target
+                baseIndex = navigationTargetIndex;
+            } else {
+                // Fresh navigation - calculate from scroll position
+                baseIndex = Math.round(container.scrollTop / sectionHeight);
             }
+
+            let newIndex = baseIndex + direction;
+
+            // Clamp to valid range
+            if (newIndex < 0) newIndex = 0;
+            if (newIndex >= totalSections) newIndex = totalSections - 1;
+
+            // If already at same index, do nothing
+            if (newIndex === navigationTargetIndex && isScrolling) return;
+
+            // Update target and start/restart scroll
+            navigationTargetIndex = newIndex;
+            navigationScrollId++; // Invalidate any previous scroll timeout
+            const thisScrollId = navigationScrollId;
+
+            isScrolling = true;
+            scrollToVideo(newIndex);
+
+            // Reset scrolling flag after animation completes (only for this scroll)
+            setTimeout(() => {
+                if (navigationScrollId === thisScrollId) {
+                    isScrolling = false;
+                    navigationTargetIndex = null;
+                }
+            }, 800);
         }
 
         // Block horizontal scroll on trackpad (prevent visual glitches)

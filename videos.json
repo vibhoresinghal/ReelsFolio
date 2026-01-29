@@ -389,16 +389,7 @@
                     "title": "A Weekend in Sakleshpur",
                     "description": "this is the first video i made using my new camera FUJIFILM XS-20",
                     "isLandscape": true,
-                    "comments": [
-                        {
-                            "text": "First film with the new camera",
-                            "type": "camera"
-                        },
-                        {
-                            "text": "Western Ghats magic",
-                            "type": "sparkle"
-                        }
-                    ]
+                    "comments": []
                 },
                 {
                     "id": "t4v2",
@@ -408,17 +399,7 @@
                     "title": "Delhi in a lapse",
                     "description": "My first video ever",
                     "isLandscape": true,
-                    "comments": [
-                        {
-                            "text": "Where it all started",
-                            "type": "star"
-                        },
-                        {
-                            "text": "Shot on iPhone 6",
-                            "type": "avatar",
-                            "avatarColor": "#3498db"
-                        }
-                    ]
+                    "comments": []
                 },
                 {
                     "id": "t4v3",
@@ -428,16 +409,7 @@
                     "title": "Ladakh 2018",
                     "description": "That one college trip",
                     "isLandscape": true,
-                    "comments": [
-                        {
-                            "text": "17,000 ft above sea level",
-                            "type": "lightning"
-                        },
-                        {
-                            "text": "College memories forever",
-                            "type": "heart"
-                        }
-                    ]
+                    "comments": []
                 }
             ]
         }

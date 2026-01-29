@@ -11,11 +11,14 @@
     <!-- Preconnect to external domains -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev">
-    <link rel="preconnect" href="https://pub-876fdc3996be4fb3810906343b32d993.r2.dev">
+    <link rel="preconnect" href="https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev" crossorigin>
+    <link rel="preconnect" href="https://pub-876fdc3996be4fb3810906343b32d993.r2.dev" crossorigin>
+    <link rel="preconnect" href="https://pub-145d32622a7e4d2586d93017e4e1221c.r2.dev" crossorigin>
 
     <!-- Preload critical resources -->
     <link rel="preload" href="videos.json" as="fetch" crossorigin>
+    <!-- DNS prefetch for thumbnail domains -->
+    <link rel="dns-prefetch" href="https://placehold.co">
 
     <!-- Favicon -->
     <link rel="icon"
@@ -1187,6 +1190,12 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .grid-item img.loaded {
+            opacity: 1;
         }
 
         .grid-item .video-number {
@@ -1506,6 +1515,18 @@
             overflow: hidden;
             box-shadow: 0 clamp(15px, 3vh, 25px) clamp(40px, 8vh, 80px) rgba(0, 0, 0, 0.5);
             z-index: 5;
+            /* Skeleton placeholder background */
+            background: linear-gradient(110deg,
+                    rgba(255, 255, 255, 0.1) 0%,
+                    rgba(255, 255, 255, 0.2) 50%,
+                    rgba(255, 255, 255, 0.1) 100%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+
+        .landing-video-frame.loaded {
+            animation: none;
+            background: none;
         }
 
         .landing-video-frame video,
@@ -1567,13 +1588,32 @@
             border-radius: 12px;
             overflow: hidden;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            transition: box-shadow 0.3s ease;
             z-index: 8;
-            animation: float-floater 8s ease-in-out infinite;
+            /* Initially hidden until image loads */
+            opacity: 0;
+            transform: scale(0);
+        }
+
+        /* Pop animation when image is loaded */
+        .floating-item.loaded {
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, float-floater 8s ease-in-out 0.5s infinite;
+        }
+
+        @keyframes popIn {
+            0% {
+                opacity: 0;
+                transform: scale(0);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1) rotate(var(--init-rotation, 0deg));
+            }
         }
 
         .floating-item:hover {
-            transform: scale(1.08) !important;
+            transform: scale(1.08) rotate(var(--init-rotation, 0deg)) !important;
             box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4);
             z-index: 15;
             animation-play-state: paused;
@@ -1598,6 +1638,35 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: 200% 0;
+            }
+
+            100% {
+                background-position: -200% 0;
+            }
+        }
+
+        /* Grid item skeleton placeholder */
+        .grid-item::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(110deg,
+                    rgba(255, 255, 255, 0.05) 0%,
+                    rgba(255, 255, 255, 0.1) 50%,
+                    rgba(255, 255, 255, 0.05) 100%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: inherit;
+            z-index: 0;
+        }
+
+        .grid-item.loaded::before {
+            display: none;
         }
 
         /* Landing Decorative Stickers */
@@ -2029,6 +2098,28 @@
             try {
                 const response = await fetch('videos.json');
                 videosData = await response.json();
+
+                // Dynamically preload critical landing resources
+                const landing = videosData.landingSection;
+                if (landing) {
+                    // Preload landing video thumbnail for instant display
+                    if (landing.profileVideoThumbnail) {
+                        const imgPreload = document.createElement('link');
+                        imgPreload.rel = 'preload';
+                        imgPreload.as = 'image';
+                        imgPreload.href = landing.profileVideoThumbnail;
+                        document.head.appendChild(imgPreload);
+                    }
+                    // Preload landing video for faster playback
+                    if (landing.profileVideo) {
+                        const videoPreload = document.createElement('link');
+                        videoPreload.rel = 'preload';
+                        videoPreload.as = 'video';
+                        videoPreload.href = landing.profileVideo;
+                        document.head.appendChild(videoPreload);
+                    }
+                }
+
                 renderApp();
                 initLikeButton(); // Initialize like button state
             } catch (error) {
@@ -2086,7 +2177,8 @@
                              style="${inlineStyle}"
                              onclick="openFloatingModal('${item.id}')"
                              data-item-id="${item.id}">
-                            <img src="${item.thumbnail}" alt="${item.title}" draggable="false" loading="lazy">
+                            <img src="${item.thumbnail}" alt="${item.title}" draggable="false" loading="lazy"
+                                 onload="this.classList.add('loaded'); this.parentElement.classList.add('loaded');">
                         </div>
                     `;
                 }).join('');
@@ -2116,7 +2208,7 @@
                         </div>
                     </div>
                     <div class="landing-video-frame" onclick="toggleVideo('landing-video')">
-                        <video id="landing-video" src="${landing.profileVideo || ''}" muted loop playsinline></video>
+                        <video id="landing-video" src="${landing.profileVideo || ''}" poster="${landing.profileVideoThumbnail || ''}" muted loop playsinline preload="auto"></video>
                         <div class="play-overlay-btn" id="btn-landing-video">
                             <svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" /></svg>
                         </div>
@@ -2204,6 +2296,19 @@
 
             // Initialize Draggable items
             initDraggable();
+
+            // Mark landing video frame as loaded when video is ready
+            const landingVideo = document.getElementById('landing-video');
+            const landingFrame = document.querySelector('.landing-video-frame');
+            if (landingVideo && landingFrame) {
+                landingVideo.addEventListener('loadeddata', () => {
+                    landingFrame.classList.add('loaded');
+                });
+                // Also check if already loaded (cached)
+                if (landingVideo.readyState >= 2) {
+                    landingFrame.classList.add('loaded');
+                }
+            }
         }
 
         // Throttling function to limit execution of scroll/resize handlers
@@ -2930,7 +3035,11 @@
                     <div class="grid-container">
                         ${tab.videos.map((video, vIndex) => `
                             <div class="grid-item" onclick="goToVideoFromGrid('${tab.id}', ${vIndex})">
-                                <img src="${video.thumbnail || 'https://placehold.co/360x640/png?text=Thumbnail'}" style="width: 100%; height: 100%; object-fit: cover;" draggable="false" loading="lazy" />
+                                <img src="${video.thumbnail || 'https://placehold.co/360x640/png?text=Thumbnail'}" 
+                                     style="width: 100%; height: 100%; object-fit: cover;" 
+                                     draggable="false" 
+                                     loading="${tab.id === effectiveCategory ? 'eager' : 'lazy'}"
+                                     onload="this.classList.add('loaded'); this.parentElement.classList.add('loaded');" />
                                 <span class="video-number">${vIndex + 1}</span>
                             </div>
                         `).join('')}

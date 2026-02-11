@@ -238,10 +238,16 @@
                 flex-direction: column;
                 text-align: center;
             }
+        }
 
-            .profile-info {
-                align-items: center;
-            }
+        .video-content-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            z-index: 5;
         }
 
         /* Video frame container - 9:16 aspect ratio (phone-like) */
@@ -883,14 +889,7 @@
             }
         }
 
-        /* Hide new decorative info on small screens */
-        @media (max-width: 1024px) {
-
-            .content-info-left,
-            .content-info-right {
-                display: none;
-            }
-        }
+        /* Removed 1024px hiding rule to avoid dead zone before 768px mobile mode */
 
         .toggle-btn {
             display: flex;
@@ -1461,7 +1460,7 @@
             display: none;
         }
 
-        @media (max-width: 900px) {
+        @media (max-width: 1024px) {
 
             .info-bar,
             .sticker {
@@ -1977,8 +1976,13 @@
             }
         }
 
-        /* ========== MOBILE REELS MODE (≤ 768px) ========== */
-        @media (max-width: 768px) {
+        /* ========== MOBILE REELS MODE (≤ 1024px) ========== */
+        @media (max-width: 1024px) {
+            .video-content-wrapper {
+                width: 100vw;
+                height: 100vh;
+                overflow: hidden;
+            }
 
             /* --- Video frame: edge-to-edge, no radius --- */
             .video-frame {
@@ -1990,42 +1994,56 @@
                 opacity: 1 !important;
                 transform: none !important;
                 transition: none !important;
+                z-index: 1 !important;
             }
 
             .video-section {
+                height: 100vh !important;
                 overflow: hidden;
             }
 
-            .video-section.active .video-frame {
-                transform: none;
-            }
-
-            /* Video fills the full frame */
             .video-frame video {
                 width: 100%;
                 height: 100%;
                 object-fit: cover;
             }
 
-            /* --- Content overlay: bottom-left on top of video --- */
+            /* --- Content overlay: bottom-left INSIDE wrapper --- */
             .content-info-left {
-                position: fixed !important;
+                position: absolute !important;
                 left: 16px !important;
                 bottom: 80px !important;
                 top: auto !important;
                 right: 80px !important;
                 transform: none !important;
                 width: auto !important;
-                max-width: calc(100vw - 100px) !important;
+                max-width: calc(100vw - 110px) !important;
                 z-index: 200 !important;
+                opacity: 0 !important;
+                visibility: hidden !important;
+                text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8) !important;
                 pointer-events: auto !important;
-                text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+                transition: opacity 0.3s ease !important;
             }
 
             .video-section.active .content-info-left {
-                opacity: 1;
-                transform: none;
-                transition: opacity 0.3s ease;
+                opacity: 1 !important;
+                visibility: visible !important;
+                transform: none !important;
+            }
+
+            /* --- Action buttons positioning (Vertical Center Right) --- */
+            .video-nav-arrows {
+                display: flex !important;
+                position: fixed !important;
+                left: auto !important;
+                right: 12px !important;
+                top: 50% !important;
+                bottom: auto !important;
+                transform: translateY(-50%) !important;
+                flex-direction: column;
+                gap: 16px;
+                z-index: 9005 !important;
             }
 
             .content-title {
@@ -2074,20 +2092,6 @@
                 z-index: 50;
             }
 
-            /* --- Right side action buttons (Reels-style) --- */
-            .video-nav-arrows {
-                display: flex !important;
-                position: fixed !important;
-                left: auto !important;
-                right: 12px !important;
-                top: 50% !important;
-                bottom: auto !important;
-                transform: translateY(-50%) !important;
-                flex-direction: column;
-                gap: 16px;
-                z-index: 200;
-            }
-
             .nav-arrow-btn {
                 width: 44px;
                 height: 44px;
@@ -2110,8 +2114,7 @@
 
             /* --- Control bar repositioned for mobile --- */
             .control-bar {
-                bottom: 16px !important;
-                z-index: 300;
+                display: none !important;
             }
 
             /* --- Navbar adjustments --- */
@@ -2178,25 +2181,30 @@
                 font-size: 13px !important;
             }
 
-            /* --- Landscape video mobile override --- */
-            .video-section.landscape-mode .video-frame {
-                width: 100vw !important;
-                height: 100vh !important;
-                aspect-ratio: unset !important;
-                border-radius: 0 !important;
-                margin-bottom: 0 !important;
-                margin-right: 0 !important;
+            /* --- Landscape video mobile override (Films tab) --- */
+            .video-section.landscape-mode .video-frame video {
+                aspect-ratio: 16/9 !important;
+                object-fit: contain !important;
+                background: transparent !important;
             }
 
             .video-section.landscape-mode .content-info-left {
-                position: fixed !important;
+                position: absolute !important;
                 left: 16px !important;
                 bottom: 80px !important;
                 top: auto !important;
                 transform: none !important;
                 width: auto !important;
-                max-width: calc(100vw - 100px) !important;
+                max-width: calc(100vw - 110px) !important;
                 text-align: left !important;
+                z-index: 200 !important;
+                opacity: 0 !important;
+                visibility: hidden !important;
+            }
+
+            .video-section.active.landscape-mode .content-info-left {
+                opacity: 1 !important;
+                visibility: visible !important;
             }
 
             .video-section.landscape-mode .content-desc {
@@ -2567,27 +2575,32 @@
                              data-category="${tab.id}"
                              data-section-index="${currentSectionIndex}"
                              data-video-src="${video.src}">
-                            <div class="content-info-left">
-                                ${video.description ? `<p class="content-desc">${video.description}</p>` : ''}
-                                ${video.title ? `<h2 class="content-title">${video.title}</h2>` : ''}
-                                ${video.link ? `<a class="content-link" href="${video.link.url}" target="_blank" rel="noopener noreferrer"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M19.902 4.098a3.75 3.75 0 00-5.304 0l-4.5 4.5a3.75 3.75 0 001.035 6.037.75.75 0 01-.646 1.353 5.25 5.25 0 01-1.449-8.45l4.5-4.5a5.25 5.25 0 117.424 7.424l-1.757 1.757a.75.75 0 11-1.06-1.06l1.757-1.757a3.75 3.75 0 000-5.304zm-7.389 4.267a.75.75 0 011-.353 5.25 5.25 0 011.449 8.45l-4.5 4.5a5.25 5.25 0 11-7.424-7.424l1.757-1.757a.75.75 0 111.06 1.06l-1.757 1.757a3.75 3.75 0 105.304 5.304l4.5-4.5a3.75 3.75 0 00-1.035-6.037.75.75 0 01-.354-1z" clip-rule="evenodd" /></svg>${video.link.text}</a>` : ''}
-                            </div>
-                            <div class="video-frame" onclick="toggleVideo('${video.id}')">
-                                <video id="${video.id}" ${isFirstVideo ? `src="${video.src}"` : ''} data-src="${video.src}" muted playsinline preload="${preloadStrategy}" onended="scrollToNextVideo(this)"></video>
-                                <div class="play-overlay-btn" id="btn-${video.id}"><svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" /></svg></div>
-                                <div class="video-seekbar" data-for="${video.id}" onclick="seekVideo(event, '${video.id}')">
-                                    <div class="video-seekbar-fill" id="seekbar-${video.id}"></div>
+                            
+                            <div class="video-content-wrapper">
+                                <div class="content-info-left">
+                                    ${video.description ? `<p class="content-desc">${video.description}</p>` : ''}
+                                    ${video.title ? `<h2 class="content-title">${video.title}</h2>` : ''}
+                                    ${video.link ? `<a class="content-link" href="${video.link.url}" target="_blank" rel="noopener noreferrer"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M19.902 4.098a3.75 3.75 0 00-5.304 0l-4.5 4.5a3.75 3.75 0 001.035 6.037.75.75 0 01-.646 1.353 5.25 5.25 0 01-1.449-8.45l4.5-4.5a5.25 5.25 0 117.424 7.424l-1.757 1.757a.75.75 0 11-1.06-1.06l1.757-1.757a3.75 3.75 0 000-5.304zm-7.389 4.267a.75.75 0 011-.353 5.25 5.25 0 011.449 8.45l-4.5 4.5a5.25 5.25 0 11-7.424-7.424l1.757-1.757a.75.75 0 111.06 1.06l-1.757 1.757a3.75 3.75 0 105.304 5.304l4.5-4.5a3.75 3.75 0 00-1.035-6.037.75.75 0 01-.354-1z" clip-rule="evenodd" /></svg>${video.link.text}</a>` : ''}
                                 </div>
-                            </div>
-                            <div class="content-info-right">
-                                ${video.comments ? video.comments.map(comment => `
-                                    <div class="comment-pill">
-                                        <div class="comment-icon" style="background: ${comment.type === 'avatar' ? (comment.avatarColor || '#3498db') : 'rgba(255,255,255,0.2)'};">
-                                            ${getCommentIcon(comment.type)}
-                                        </div>
-                                        <span>${comment.text}</span>
+                                
+                                <div class="video-frame" onclick="toggleVideo('${video.id}')">
+                                    <video id="${video.id}" ${isFirstVideo ? `src="${video.src}"` : ''} data-src="${video.src}" muted playsinline preload="${preloadStrategy}" onended="scrollToNextVideo(this)"></video>
+                                    <div class="play-overlay-btn" id="btn-${video.id}"><svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" /></svg></div>
+                                    <div class="video-seekbar" data-for="${video.id}" onclick="seekVideo(event, '${video.id}')">
+                                        <div class="video-seekbar-fill" id="seekbar-${video.id}"></div>
                                     </div>
-                                `).join('') : ''}
+                                </div>
+
+                                <div class="content-info-right">
+                                    ${video.comments ? video.comments.map(comment => `
+                                        <div class="comment-pill">
+                                            <div class="comment-icon" style="background: ${comment.type === 'avatar' ? (comment.avatarColor || '#3498db') : 'rgba(255,255,255,0.2)'};">
+                                                ${getCommentIcon(comment.type)}
+                                            </div>
+                                            <span>${comment.text}</span>
+                                        </div>
+                                    `).join('') : ''}
+                                </div>
                             </div>
                         </div>
                     `;
@@ -2743,7 +2756,7 @@
                         }
                     }
                 });
-            }, { threshold: 0.5 });
+            }, { threshold: 0.2 });
 
             // Observe all section types (Grid is now an overlay, not observed)
             document.querySelectorAll('.landing-section, .video-section').forEach(section => {
@@ -2968,6 +2981,21 @@
                 btnText.textContent = 'Mute';
             }
         }
+
+        // --- Volume key detection: auto-unmute on volume up/down ---
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'AudioVolumeUp' || e.key === 'AudioVolumeDown' ||
+                e.key === 'VolumeUp' || e.key === 'VolumeDown') {
+                if (isMuted) {
+                    isMuted = false;
+                    updateMuteUI();
+                    if (currentVideoId) {
+                        const video = document.getElementById(currentVideoId);
+                        if (video) video.muted = false;
+                    }
+                }
+            }
+        });
 
         // --- Like Button Functions ---
         // --- Like Button Functions (Per-Video with Cloudflare Worker) ---

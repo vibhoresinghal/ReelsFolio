@@ -2397,6 +2397,7 @@
         let isScrolling = false;
         let userPaused = {}; // Track which videos were paused by the user
         let totalSectionsCount = 0; // Total sections for nav arrow visibility
+        let playVideoDebounceTimer = null; // Debounce video playback during scroll
 
 
         // DOM Elements
@@ -2728,8 +2729,8 @@
                             if (controlBar) controlBar.classList.remove('hidden');
                             if (logoBtn) logoBtn.classList.add('active');
                             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-                            playVideo('landing-video');
-                            if (!isWarping) updateLikeButtonForCurrentVideo('landing');
+                            if (!isWarping) debouncedPlayVideo('landing-video');
+                            if (!isWarping) updateLikeButtonForCurrentVideo('landing', false, true);
                         } else if (isVideo) {
                             if (controlBar) controlBar.classList.remove('hidden');
                             if (logoBtn) logoBtn.classList.remove('active');
@@ -2742,8 +2743,8 @@
                             });
 
                             const videoId = entry.target.getAttribute('data-video-id');
-                            playVideo(videoId);
-                            if (!isWarping) updateLikeButtonForCurrentVideo(videoId);
+                            if (!isWarping) debouncedPlayVideo(videoId);
+                            if (!isWarping) updateLikeButtonForCurrentVideo(videoId, false, true);
                         }
                     } else {
                         entry.target.classList.remove('active');
@@ -2756,7 +2757,7 @@
                         }
                     }
                 });
-            }, { threshold: 0.2 });
+            }, { threshold: 0.7 });
 
             // Observe all section types (Grid is now an overlay, not observed)
             document.querySelectorAll('.landing-section, .video-section').forEach(section => {
@@ -2805,6 +2806,23 @@
         }
 
         // --- Video Control Functions ---
+
+        // Debounced play: cancels any pending play and schedules a new one.
+        // This prevents audio bleed from intermediate sections during fast scrolling.
+        function debouncedPlayVideo(videoId) {
+            // Cancel any previous pending play
+            clearTimeout(playVideoDebounceTimer);
+            // Immediately mute AND pause ALL videos to kill any audio instantly
+            document.querySelectorAll('.video-section video, .landing-section video').forEach(v => {
+                v.muted = true;
+                if (!v.paused) v.pause();
+            });
+            // Schedule play for the target video after scroll settles
+            playVideoDebounceTimer = setTimeout(() => {
+                playVideo(videoId);
+            }, 150);
+        }
+
 
         function playVideo(videoId) {
             const video = document.getElementById(videoId);
@@ -3522,6 +3540,12 @@
                     container.style.scrollSnapType = 'none';
                     container.style.scrollBehavior = 'auto';
 
+                    // Mute and pause ALL videos before the jump
+                    document.querySelectorAll('.video-section video, .landing-section video').forEach(v => {
+                        v.muted = true;
+                        if (!v.paused) v.pause();
+                    });
+
                     // Jump to 2 sections vertically away from target for more scroll motion
                     container.scrollTop = targetTop - (direction * sectionHeight * 2);
 
@@ -3553,6 +3577,16 @@
 
                             // Enable observer updates again
                             isWarping = false;
+
+                            // Play the target video now that warp is done
+                            const targetSection = container.querySelector('.landing-section, .video-section');
+                            const snappedIndex = Math.round(container.scrollTop / sectionHeight);
+                            const allSections = container.querySelectorAll('.landing-section, .video-section');
+                            if (allSections[snappedIndex]) {
+                                const vid = allSections[snappedIndex].getAttribute('data-video-id');
+                                if (vid) playVideo(vid);
+                                else if (allSections[snappedIndex].classList.contains('landing-section')) playVideo('landing-video');
+                            }
                         }, 800);
                     }, 100);
                 }, 200);
@@ -3571,11 +3605,14 @@
                     container.style.scrollSnapType = originalSnapType || '';
                     isWarping = false; // Re-enable observer updates
 
-                    // Force update for target (since observer might have been skipped)
-                    // Note: scrollToCategory already called explicit update!
-                    // But if it wasn't via scrollToCategory (e.g. arrow click), we might need it?
-                    // Arrow clicks just scroll by height? No, updateNavArrows handles visibility.
-                    // Arrow click calls smartScrollTo?
+                    // Play the correct video now that scroll settled
+                    const snappedIndex = Math.round(container.scrollTop / sectionHeight);
+                    const allSections = container.querySelectorAll('.landing-section, .video-section');
+                    if (allSections[snappedIndex]) {
+                        const vid = allSections[snappedIndex].getAttribute('data-video-id');
+                        if (vid) playVideo(vid);
+                        else if (allSections[snappedIndex].classList.contains('landing-section')) playVideo('landing-video');
+                    }
                 }, 800);
             }
         }

@@ -1045,7 +1045,7 @@
             justify-content: flex-start;
             padding-top: 160px;
             /* Increased to avoid clash with lowered navbar */
-            z-index: 3000;
+            z-index: 10000;
             background: rgba(15, 7, 26, 0.98);
             backdrop-filter: blur(30px);
             -webkit-backdrop-filter: blur(30px);
@@ -2115,14 +2115,7 @@
                 opacity: 0.9;
             }
 
-            .nav-arrow-btn.like-btn {
-                width: 44px;
-                height: 44px;
-            }
 
-            .nav-arrow-btn.like-btn.has-likes {
-                height: 64px;
-            }
 
             /* --- Control bar repositioned for mobile --- */
             .control-bar {
@@ -2248,6 +2241,12 @@
                 height: calc((100vh - 200px) / 2.5) !important;
                 height: calc((100dvh - 200px) / 2.5) !important;
                 min-height: 140px !important;
+            }
+
+            /* --- Grid overlay adjustments for mobile --- */
+            .grid-overlay {
+                padding-top: 100px;
+                z-index: 10000;
             }
         }
 

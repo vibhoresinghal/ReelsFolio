@@ -3621,6 +3621,12 @@
         function goToVideoFromGrid(categoryId, videoIndex) {
             closeGridOverlay();
 
+            // Immediately silence all videos before scrolling
+            document.querySelectorAll('.video-section video, .landing-section video').forEach(v => {
+                v.muted = true;
+                if (!v.paused) v.pause();
+            });
+
             const container = document.getElementById('mainScrollContainer');
             if (!container) return;
 

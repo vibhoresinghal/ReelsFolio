@@ -37,6 +37,7 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body,
@@ -1976,11 +1977,20 @@
             }
         }
 
-        /* ========== MOBILE REELS MODE (≤ 1024px) ========== */
         @media (max-width: 1024px) {
+
+            .video-container,
+            .landing-section,
+            .main-scroll-container,
+            .tabs-world {
+                height: 100vh !important;
+                height: 100dvh !important;
+            }
+
             .video-content-wrapper {
                 width: 100vw;
                 height: 100vh;
+                height: 100dvh;
                 overflow: hidden;
             }
 
@@ -1988,6 +1998,7 @@
             .video-frame {
                 width: 100vw !important;
                 height: 100vh !important;
+                height: 100dvh !important;
                 aspect-ratio: unset !important;
                 border-radius: 0 !important;
                 box-shadow: none !important;
@@ -1999,6 +2010,7 @@
 
             .video-section {
                 height: 100vh !important;
+                height: 100dvh !important;
                 overflow: hidden;
             }
 
@@ -2147,6 +2159,7 @@
             .landing-video-frame {
                 width: 100vw !important;
                 height: 100vh !important;
+                height: 100dvh !important;
                 aspect-ratio: unset !important;
                 border-radius: 0 !important;
                 box-shadow: none !important;
@@ -2233,6 +2246,7 @@
 
             .grid-item {
                 height: calc((100vh - 200px) / 2.5) !important;
+                height: calc((100dvh - 200px) / 2.5) !important;
                 min-height: 140px !important;
             }
         }

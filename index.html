@@ -381,26 +381,57 @@
             transform: translate(-50%, 0);
         }
 
+        /* Make the entire like button fully opaque when liked, overriding default button opacity */
+        .nav-arrow-btn.like-btn.liked {
+            opacity: 1;
+        }
+
+        .nav-arrow-btn.like-btn.liked svg path {
+            clip-path: url(#heartClip);
+        }
+
         .nav-arrow-btn.like-btn.liked svg {
-            fill: #ff4757;
-            stroke: #ff4757;
+            fill: url(#heartGradient);
+            stroke: url(#strokeGradient);
+            /* Draws the fill first, then the stroke on top. This makes it an "inside" border. */
+            paint-order: fill stroke;
+            /* width of 3px is used because the clip-path cuts off the outer 1.5px */
+            stroke-width: 3;
         }
 
-        .nav-arrow-btn.like-btn.pulse svg {
-            animation: heartPulse 0.3s ease-out;
+        .nav-arrow-btn.like-btn.pulse:not(.has-likes) svg {
+            animation: heartPulseCenter 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
-        @keyframes heartPulse {
+        .nav-arrow-btn.like-btn.pulse.has-likes svg {
+            animation: heartPulseTop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes heartPulseCenter {
             0% {
-                transform: scale(1);
+                transform: translate(-50%, -50%) scale(1);
             }
 
-            50% {
-                transform: scale(1.25);
+            40% {
+                transform: translate(-50%, -50%) scale(1.35);
             }
 
             100% {
-                transform: scale(1);
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        @keyframes heartPulseTop {
+            0% {
+                transform: translate(-50%, 0) scale(1);
+            }
+
+            40% {
+                transform: translate(-50%, 0) scale(1.35);
+            }
+
+            100% {
+                transform: translate(-50%, 0) scale(1);
             }
         }
 
@@ -428,19 +459,18 @@
             position: fixed;
             pointer-events: none;
             z-index: 9999;
-            animation: flyAwayHeart 1.2s ease-out forwards;
+            will-change: transform, opacity;
+            transform: translate(-50%, -50%);
         }
 
-        @keyframes flyAwayHeart {
-            0% {
-                opacity: 1;
-                transform: translate(0, 0) scale(1);
-            }
-
-            100% {
-                opacity: 0;
-                transform: translate(var(--end-x), var(--end-y)) scale(0.5);
-            }
+        /* Burst Particle */
+        .like-burst-particle {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9998;
+            border-radius: 50%;
+            will-change: transform, opacity;
+            background: #ff3b3b;
         }
 
         /* Hide nav arrows on mobile */
@@ -2381,6 +2411,20 @@
     <div class="video-nav-arrows" id="fixedNavArrows">
         <button class="nav-arrow-btn like-btn" id="likeBtn" onclick="toggleLike()" aria-label="Like this video">
             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" id="likeIcon">
+                <defs>
+                    <linearGradient id="heartGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#F2282B" />
+                        <stop offset="100%" stop-color="#FF2C9D" />
+                    </linearGradient>
+                    <linearGradient id="strokeGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="rgba(255, 255, 255, 0.6)" />
+                        <stop offset="100%" stop-color="rgba(255, 255, 255, 0)" />
+                    </linearGradient>
+                    <clipPath id="heartClip">
+                        <path
+                            d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                    </clipPath>
+                </defs>
                 <path
                     d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
             </svg>
@@ -3102,6 +3146,7 @@
 
             // Create flying heart effect
             createFlyingHeart(likeBtn);
+            createLikeBurst(likeBtn);
 
             // Haptic feedback for mobile
             if ('vibrate' in navigator) {
@@ -3157,32 +3202,106 @@
 
         function createFlyingHeart(button) {
             const rect = button.getBoundingClientRect();
-            const centerX = rect.left + rect.width / 2;
-            const centerY = rect.top + rect.height / 2;
+            const svgIcon = button.querySelector('svg');
+            const iconRect = svgIcon ? svgIcon.getBoundingClientRect() : rect;
+
+            const centerX = iconRect.left + iconRect.width / 2;
+            const centerY = iconRect.top + iconRect.height / 2;
 
             const flyingHeart = document.createElement('div');
             flyingHeart.className = 'flying-heart';
-            flyingHeart.innerHTML = '❤️';
-            flyingHeart.style.left = `${centerX}px`;
-            flyingHeart.style.top = `${centerY}px`;
-            flyingHeart.style.fontSize = `${18 + Math.random() * 8}px`;
+            flyingHeart.innerHTML = `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: 100%; fill: url(#heartGradient); stroke: url(#strokeGradient); stroke-width: 3; paint-order: fill stroke; clip-path: url(#heartClip);">
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path>
+            </svg>`;
 
-            // Random upward trajectory
-            const angle = (270 + (Math.random() - 0.5) * 60) * (Math.PI / 180);
-            const distance = 60 + Math.random() * 40;
-            const endX = Math.cos(angle) * distance;
-            const endY = Math.sin(angle) * distance;
-
-            flyingHeart.style.setProperty('--end-x', `${endX}px`);
-            flyingHeart.style.setProperty('--end-y', `${endY}px`);
+            Object.assign(flyingHeart.style, {
+                left: `${centerX}px`,
+                top: `${centerY}px`,
+                width: '28px',
+                height: '28px',
+                opacity: '0'
+            });
 
             document.body.appendChild(flyingHeart);
 
-            setTimeout(() => {
-                if (flyingHeart.parentNode) {
-                    flyingHeart.remove();
+            // GSAP settings for an organic, curved float away
+            const xDrift = (Math.random() - 0.5) * 60;
+            const yDrift = - (80 + Math.random() * 50);
+            const rot = (Math.random() - 0.5) * 45;
+
+            const tl = gsap.timeline({
+                onComplete: () => {
+                    if (flyingHeart.parentNode) flyingHeart.remove();
                 }
-            }, 1200);
+            });
+
+            tl.fromTo(flyingHeart,
+                { opacity: 0.8, scale: 0.5, x: 0, y: 0, rotation: 0 },
+                { opacity: 1, scale: 1.2, x: xDrift * 0.3, y: yDrift * 0.3, rotation: rot * 0.5, duration: 0.3, ease: "back.out(1.5)" }
+            ).to(flyingHeart, {
+                opacity: 0,
+                scale: 0.8,
+                x: xDrift,
+                y: yDrift,
+                rotation: rot,
+                duration: 0.7,
+                ease: "power2.out"
+            });
+        }
+
+        function createLikeBurst(button) {
+            const svgIcon = button.querySelector('svg');
+            const iconRect = svgIcon ? svgIcon.getBoundingClientRect() : button.getBoundingClientRect();
+
+            const centerX = iconRect.left + iconRect.width / 2;
+            const centerY = iconRect.top + iconRect.height / 2;
+
+            const particleCount = 6 + Math.floor(Math.random() * 4); // 6 to 9 particles
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'like-burst-particle';
+
+                // Playful, vibrant colors matching the premium aesthetic
+                const colors = ['#ff3b3b', '#e80b91', '#ffffff', '#ff007f', '#ff7eb3'];
+                const color = colors[Math.floor(Math.random() * colors.length)];
+
+                const size = 4 + Math.random() * 6; // 4px to 10px
+
+                Object.assign(particle.style, {
+                    left: `${centerX - size / 2}px`,
+                    top: `${centerY - size / 2}px`,
+                    width: `${size}px`,
+                    height: `${size}px`,
+                    background: color,
+                    opacity: '1'
+                });
+
+                document.body.appendChild(particle);
+
+                // calculate burst trajectory in full 360 circle
+                const angle = (i / particleCount) * Math.PI * 2 + (Math.random() * 0.5 - 0.25);
+                const distance = 25 + Math.random() * 35;
+
+                gsap.to(particle, {
+                    x: Math.cos(angle) * distance,
+                    y: Math.sin(angle) * distance,
+                    opacity: 0,
+                    scale: Math.random() * 0.5 + 0.3,
+                    duration: 0.4 + Math.random() * 0.3,
+                    ease: "power2.out",
+                    onComplete: () => {
+                        if (particle.parentNode) particle.remove();
+                    }
+                });
+            }
+
+            // Tiny satisfying structural wobble/shake on the actual button element
+            // We use fromTo to ensure it always starts the rotation crisp
+            gsap.fromTo(button,
+                { rotation: (Math.random() > 0.5 ? 1 : -1) * (4 + Math.random() * 4) }, // random slight rotation between 4 and 8 deg
+                { rotation: 0, duration: 0.6, ease: "elastic.out(1.2, 0.4)", clearProps: "rotation" }
+            );
         }
 
         function updateLikeButtonVisuals(count, skipAnimation) {

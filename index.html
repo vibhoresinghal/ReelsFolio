@@ -1880,7 +1880,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 10000;
+            z-index: 12000;
             opacity: 0;
             visibility: hidden;
             transition: opacity 0.3s ease, visibility 0.3s ease;
@@ -3496,12 +3496,34 @@
             closeGridOverlay();
             const container = document.getElementById('mainScrollContainer');
             if (container) {
+                // Reset and start playing the landing video immediately so
+                // the user never sees a stale paused frame during the scroll
+                const landingVideo = document.getElementById('landing-video');
+                if (landingVideo) {
+                    landingVideo.currentTime = 0;
+                    landingVideo.muted = isMuted;
+                    landingVideo.play().catch(() => { });
+                    currentVideoId = 'landing-video';
+                    isPlaying = true;
+                }
+
                 const landingSection = container.querySelector('.landing-section');
                 const targetColor = landingSection ? landingSection.getAttribute('data-bg-color') : null;
                 smartScrollTo(0, container, targetColor);
 
                 // Explicitly update like button for landing
                 updateLikeButtonForCurrentVideo('landing', false, true);
+
+                // Safety net: if the observer race-condition paused the video
+                // during the scroll, resume it without resetting currentTime
+                setTimeout(() => {
+                    const lv = document.getElementById('landing-video');
+                    if (lv && lv.paused) {
+                        lv.play().catch(() => { });
+                        currentVideoId = 'landing-video';
+                        isPlaying = true;
+                    }
+                }, 1200);
             }
         }
 

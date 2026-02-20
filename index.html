@@ -3505,6 +3505,15 @@
                     landingVideo.play().catch(() => { });
                     currentVideoId = 'landing-video';
                     isPlaying = true;
+                    userPaused['landing-video'] = false;
+
+                    // Hide the play overlay button since video is now playing
+                    const btn = document.getElementById('btn-landing-video');
+                    if (btn) btn.classList.add('playing');
+
+                    // Update control bar icons
+                    document.getElementById('pauseIcon').style.display = 'block';
+                    document.getElementById('playIcon').style.display = 'none';
                 }
 
                 const landingSection = container.querySelector('.landing-section');

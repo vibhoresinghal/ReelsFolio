@@ -994,6 +994,23 @@
             height: clamp(16px, 3vw, 20px);
         }
 
+        /* Unmute button pulse animation - draws attention until user unmutes */
+        .unmute-btn.pulsing {
+            animation: unmutePulse 2s ease-in-out infinite;
+        }
+
+        @keyframes unmutePulse {
+
+            0%,
+            100% {
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            }
+
+            50% {
+                box-shadow: 0 4px 24px rgba(255, 255, 255, 0.2), 0 0 0 5px rgba(255, 255, 255, 0.08);
+            }
+        }
+
         /* Play/Stop button - responsive circular button */
         .play-stop-btn {
             width: clamp(36px, 7vw, 44px);
@@ -2498,6 +2515,7 @@
 
                 renderApp();
                 initLikeButton(); // Initialize like button state
+                initSoundHint(); // Show 'Tap for sound' hint on first visit
             } catch (error) {
                 console.error('Failed to load videos:', error);
             }
@@ -2990,10 +3008,17 @@
             }
         }
 
-        function toggleVideo(videoId) {
+        function toggleVideo(videoId, fromVideoTap = true) {
             const video = document.getElementById(videoId);
             const btn = document.getElementById('btn-' + videoId);
             if (!video) return;
+
+            // If muted and video is playing, first tap on the VIDEO unmutes instead of pausing
+            // But only when triggered from tapping the video itself, not the control bar
+            if (fromVideoTap && isMuted && !video.paused) {
+                unmuteAndDismissHint();
+                return;
+            }
 
             const isLandingVideo = videoId === 'landing-video';
 
@@ -3001,12 +3026,12 @@
                 video.play();
                 if (btn) {
                     if (isLandingVideo) {
-                        btn.classList.add('playing'); // Hide button when playing
+                        btn.classList.add('playing');
                     } else {
                         btn.classList.remove('paused');
                     }
                 }
-                userPaused[videoId] = false; // User resumed
+                userPaused[videoId] = false;
                 isPlaying = true;
                 document.getElementById('pauseIcon').style.display = 'block';
                 document.getElementById('playIcon').style.display = 'none';
@@ -3014,12 +3039,12 @@
                 video.pause();
                 if (btn) {
                     if (isLandingVideo) {
-                        btn.classList.remove('playing'); // Show button when paused
+                        btn.classList.remove('playing');
                     } else {
                         btn.classList.add('paused');
                     }
                 }
-                userPaused[videoId] = true; // User explicitly paused
+                userPaused[videoId] = true;
                 isPlaying = false;
                 document.getElementById('pauseIcon').style.display = 'none';
                 document.getElementById('playIcon').style.display = 'block';
@@ -3028,7 +3053,7 @@
 
         function togglePlayStop() {
             if (!currentVideoId) return;
-            toggleVideo(currentVideoId);
+            toggleVideo(currentVideoId, false); // false = from control bar, not a video tap
         }
 
         function toggleSound() {
@@ -3039,6 +3064,38 @@
                 const video = document.getElementById(currentVideoId);
                 if (video) video.muted = isMuted;
             }
+
+            // Stop pulsing when user unmutes via the button
+            if (!isMuted) stopUnmutePulse();
+        }
+
+        // Global unmute helper — used by tap-to-unmute, sound button, and volume keys
+        function unmuteAndDismissHint() {
+            if (!isMuted) return;
+            isMuted = false;
+            updateMuteUI();
+            if (currentVideoId) {
+                const video = document.getElementById(currentVideoId);
+                if (video) video.muted = false;
+            }
+            stopUnmutePulse();
+        }
+
+        // Stop the pulse animation on the unmute button
+        function stopUnmutePulse() {
+            const soundBtn = document.getElementById('soundBtn');
+            if (soundBtn) soundBtn.classList.remove('pulsing');
+        }
+
+        // Start the unmute button pulse on first visit
+        function initSoundHint() {
+            // Start pulsing the unmute button to draw attention
+            setTimeout(() => {
+                if (isMuted) {
+                    const soundBtn = document.getElementById('soundBtn');
+                    if (soundBtn) soundBtn.classList.add('pulsing');
+                }
+            }, 1500);
         }
 
         function updateMuteUI() {
@@ -3062,12 +3119,7 @@
             if (e.key === 'AudioVolumeUp' || e.key === 'AudioVolumeDown' ||
                 e.key === 'VolumeUp' || e.key === 'VolumeDown') {
                 if (isMuted) {
-                    isMuted = false;
-                    updateMuteUI();
-                    if (currentVideoId) {
-                        const video = document.getElementById(currentVideoId);
-                        if (video) video.muted = false;
-                    }
+                    unmuteAndDismissHint();
                 }
             }
         });

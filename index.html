@@ -2524,6 +2524,7 @@
         // State
         let videosData = null;
         let isMuted = true;
+        let userManuallyMuted = false; // True when user explicitly clicked mute button
         let isWarping = false; // Flag to prevent BG updates during warp
         let isPlaying = true;
         let observer = null;
@@ -3110,9 +3111,10 @@
             const btn = document.getElementById('btn-' + videoId);
             if (!video) return;
 
-            // If muted and video is playing, first tap on the VIDEO unmutes instead of pausing
-            // But only when triggered from tapping the video itself, not the control bar
-            if (fromVideoTap && isMuted && !video.paused) {
+            // If muted (from autoplay policy, not user choice) and video is playing,
+            // first tap on the VIDEO unmutes instead of pausing.
+            // Once the user has manually muted, this no longer triggers.
+            if (fromVideoTap && isMuted && !userManuallyMuted && !video.paused) {
                 unmuteAndDismissHint();
                 return;
             }
@@ -3155,6 +3157,7 @@
 
         function toggleSound() {
             isMuted = !isMuted;
+            userManuallyMuted = isMuted; // User intentionally chose this state
             updateMuteUI();
 
             if (currentVideoId) {

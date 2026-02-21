@@ -3091,6 +3091,14 @@
             document.addEventListener('touchmove', (e) => { if (activeBar) { e.preventDefault(); doSeek(e); } }, { passive: false });
             document.addEventListener('touchend', endDrag);
             document.addEventListener('touchcancel', endDrag);
+
+            // Block click events on seekbars from bubbling up to the video-frame's
+            // onclick="toggleVideo(...)" — otherwise clicking the seekbar pauses the video
+            document.addEventListener('click', (e) => {
+                if (e.target.closest('.video-seekbar')) {
+                    e.stopPropagation();
+                }
+            }, true); // useCapture = true to intercept before the onclick fires
         })();
 
         function scrollToNextVideo(videoEl) {

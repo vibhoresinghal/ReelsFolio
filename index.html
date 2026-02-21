@@ -602,31 +602,92 @@
             position: absolute;
             bottom: 0;
             left: 0;
-            width: 100%;
-            height: 3px;
-            background: rgba(255, 255, 255, 0.15);
+            right: 0;
+            width: auto;
+            height: 18px;
+            /* Hit area */
             z-index: 110;
             cursor: pointer;
-            transition: height 0.2s ease, opacity 0.3s ease;
-            opacity: 0.8;
+            display: flex;
+            align-items: flex-end;
+            padding: 0 0 0 0;
+            transition: padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .video-seekbar:hover {
-            height: 6px;
-            opacity: 1;
+        .video-seekbar:hover,
+        .video-seekbar.dragging {
+            padding: 0 16px 16px 16px;
+        }
+
+        .video-seekbar-track {
+            width: 100%;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.2);
+            position: relative;
+            border-radius: 0;
+            transition: height 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+                border-radius 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .video-seekbar:hover .video-seekbar-track,
+        .video-seekbar.dragging .video-seekbar-track {
+            height: 5px;
+            border-radius: 20px;
         }
 
         .video-seekbar-fill {
             height: 100%;
             width: 0%;
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 0 2px 2px 0;
-            transition: width 0.1s linear;
+            background: rgba(255, 255, 255, 0.85);
             position: relative;
+            border-radius: 0;
+            transition: border-radius 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .video-seekbar:hover .video-seekbar-fill,
+        .video-seekbar.dragging .video-seekbar-fill {
+            border-radius: 20px 0 0 20px;
+        }
+
+        /* Thumb circle - hidden by default, appears on hover/drag */
+        .video-seekbar-fill::after {
+            content: '';
+            position: absolute;
+            right: -6px;
+            top: 50%;
+            transform: translateY(-50%) scale(0);
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: white;
+            box-shadow: 0 0 6px rgba(0, 0, 0, 0.3), 0 0 12px rgba(255, 255, 255, 0.15);
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            pointer-events: none;
+        }
+
+        .video-seekbar:hover .video-seekbar-fill::after,
+        .video-seekbar.dragging .video-seekbar-fill::after {
+            transform: translateY(-50%) scale(1);
+        }
+
+        /* Buffer / background track subtle styling */
+        .video-seekbar-track::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.08);
+            pointer-events: none;
         }
 
         /* Hide seekbar on landscape video frames — use same bar */
         .video-section.landscape-mode .video-seekbar {
+            border-radius: 0 0 12px 12px;
+        }
+
+        .video-section.landscape-mode .video-seekbar-track {
             border-radius: 0 0 12px 12px;
         }
 
@@ -2606,8 +2667,10 @@
                         <div class="play-overlay-btn" id="btn-landing-video">
                             <svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" /></svg>
                         </div>
-                        <div class="video-seekbar" data-for="landing-video" onclick="seekVideo(event, 'landing-video')">
-                            <div class="video-seekbar-fill" id="seekbar-landing-video"></div>
+                        <div class="video-seekbar" data-for="landing-video">
+                            <div class="video-seekbar-track">
+                                <div class="video-seekbar-fill" id="seekbar-landing-video"></div>
+                            </div>
                         </div>
                     </div>
                     ${generateFloatingItemsHTML(floatingItems)}
@@ -2662,8 +2725,10 @@
                                 <div class="video-frame" onclick="toggleVideo('${video.id}')">
                                     <video id="${video.id}" ${isFirstVideo ? `src="${video.src}"` : ''} data-src="${video.src}" muted playsinline preload="${preloadStrategy}" onended="scrollToNextVideo(this)"></video>
                                     <div class="play-overlay-btn" id="btn-${video.id}"><svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" /></svg></div>
-                                    <div class="video-seekbar" data-for="${video.id}" onclick="seekVideo(event, '${video.id}')">
-                                        <div class="video-seekbar-fill" id="seekbar-${video.id}"></div>
+                                    <div class="video-seekbar" data-for="${video.id}">
+                                        <div class="video-seekbar-track">
+                                            <div class="video-seekbar-fill" id="seekbar-${video.id}"></div>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -2958,42 +3023,74 @@
 
         // --- Seekbar: click/drag to seek ---
         function seekVideo(event, videoId) {
-            event.stopPropagation(); // Prevent toggle play/pause
+            event.stopPropagation();
             const video = document.getElementById(videoId);
-            const bar = event.currentTarget;
-            if (!video || !video.duration) return;
+            const bar = event.currentTarget.closest('.video-seekbar');
+            const track = bar ? bar.querySelector('.video-seekbar-track') : null;
+            if (!video || !video.duration || !track) return;
 
-            const rect = bar.getBoundingClientRect();
-            const x = event.clientX - rect.left;
+            const rect = track.getBoundingClientRect();
+            const x = (event.clientX || event.touches?.[0]?.clientX || 0) - rect.left;
             const pct = Math.max(0, Math.min(1, x / rect.width));
             video.currentTime = pct * video.duration;
         }
 
-        // Enable drag-to-seek on seekbars
-        document.addEventListener('mousedown', (e) => {
-            const bar = e.target.closest('.video-seekbar');
-            if (!bar) return;
-            e.preventDefault();
-            const videoId = bar.getAttribute('data-for');
-            const video = document.getElementById(videoId);
-            if (!video || !video.duration) return;
+        // Unified drag-to-seek for mouse and touch
+        (function initSeekbarDrag() {
+            let activeBar = null;
+            let activeVideo = null;
 
-            const doSeek = (ev) => {
-                const rect = bar.getBoundingClientRect();
-                const x = ev.clientX - rect.left;
+            function startDrag(e) {
+                const bar = e.target.closest('.video-seekbar');
+                if (!bar) return;
+                e.preventDefault();
+                e.stopPropagation();
+
+                const videoId = bar.getAttribute('data-for');
+                const video = document.getElementById(videoId);
+                if (!video || !video.duration) return;
+
+                activeBar = bar;
+                activeVideo = video;
+                bar.classList.add('dragging');
+                doSeek(e);
+            }
+
+            function doSeek(e) {
+                if (!activeBar || !activeVideo) return;
+                const track = activeBar.querySelector('.video-seekbar-track');
+                if (!track) return;
+
+                const rect = track.getBoundingClientRect();
+                const clientX = e.clientX ?? e.touches?.[0]?.clientX ?? 0;
+                const x = clientX - rect.left;
                 const pct = Math.max(0, Math.min(1, x / rect.width));
-                video.currentTime = pct * video.duration;
-            };
-            doSeek(e);
+                activeVideo.currentTime = pct * activeVideo.duration;
 
-            const onMove = (ev) => { doSeek(ev); };
-            const onUp = () => {
-                document.removeEventListener('mousemove', onMove);
-                document.removeEventListener('mouseup', onUp);
-            };
-            document.addEventListener('mousemove', onMove);
-            document.addEventListener('mouseup', onUp);
-        });
+                // Immediately update fill for responsiveness
+                const fill = activeBar.querySelector('.video-seekbar-fill');
+                if (fill) fill.style.width = (pct * 100) + '%';
+            }
+
+            function endDrag() {
+                if (activeBar) {
+                    activeBar.classList.remove('dragging');
+                }
+                activeBar = null;
+                activeVideo = null;
+            }
+
+            // Mouse events
+            document.addEventListener('mousedown', startDrag);
+            document.addEventListener('mousemove', (e) => { if (activeBar) doSeek(e); });
+            document.addEventListener('mouseup', endDrag);
+
+            // Touch events
+            document.addEventListener('touchstart', startDrag, { passive: false });
+            document.addEventListener('touchmove', (e) => { if (activeBar) { e.preventDefault(); doSeek(e); } }, { passive: false });
+            document.addEventListener('touchend', endDrag);
+            document.addEventListener('touchcancel', endDrag);
+        })();
 
         function scrollToNextVideo(videoEl) {
             const currentSection = videoEl.closest('.video-section') || videoEl.closest('.landing-section');

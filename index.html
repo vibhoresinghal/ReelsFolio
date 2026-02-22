@@ -3683,14 +3683,17 @@
                 // Explicitly update like button for landing
                 updateLikeButtonForCurrentVideo('landing', false, true);
 
-                // Safety net: if the observer race-condition paused the video
-                // during the scroll, resume it without resetting currentTime
+                // Safety net: if the observer/smartScrollTo race-condition paused
+                // or muted the video during the scroll, restore it fully
                 setTimeout(() => {
                     const lv = document.getElementById('landing-video');
-                    if (lv && lv.paused) {
-                        lv.play().catch(() => { });
-                        currentVideoId = 'landing-video';
-                        isPlaying = true;
+                    if (lv) {
+                        lv.muted = isMuted; // Restore mute state (smartScrollTo mutes all videos)
+                        if (lv.paused) {
+                            lv.play().catch(() => { });
+                            currentVideoId = 'landing-video';
+                            isPlaying = true;
+                        }
                     }
                 }, 1200);
             }

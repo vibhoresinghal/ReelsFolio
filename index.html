@@ -356,7 +356,7 @@
         }
 
         .nav-arrow-btn.like-btn.has-likes {
-            height: 72px;
+            height: 68px;
         }
 
         .nav-arrow-btn.like-btn svg {
@@ -376,7 +376,7 @@
 
         /* When expanded (has class expand or via JS height change), move icon up */
         .nav-arrow-btn.like-btn.has-likes svg {
-            top: 18px;
+            top: 12px;
             /* Fixed position from top */
             transform: translate(-50%, 0);
         }
@@ -444,7 +444,7 @@
             line-height: 1;
             /* Absolute position to avoid affecting flex alignment of heart */
             position: absolute;
-            bottom: 14px;
+            bottom: 12px;
             left: 0;
             width: 100%;
             transition: opacity 0.2s ease;
@@ -3306,7 +3306,7 @@
                 // Expand if this is the first like shown
                 if (currentCount === 0) {
                     likeBtn.classList.add('has-likes');
-                    gsap.to(likeBtn, { height: 72, duration: 0.3, ease: 'power2.out' });
+                    gsap.to(likeBtn, { height: 68, duration: 0.3, ease: 'power2.out' });
                     gsap.to(likeCount, { opacity: 1, duration: 0.2, delay: 0.1, ease: 'power2.out' });
                 }
 
@@ -3491,7 +3491,7 @@
             // Animate like button based on count
             const hasLikes = count > 0;
             const currentHeight = likeBtn.offsetHeight;
-            const targetHeight = hasLikes ? 72 : 48;
+            const targetHeight = hasLikes ? 68 : 48;
             const isAlreadyExpanded = likeBtn.classList.contains('has-likes');
 
             if (hasLikes) {

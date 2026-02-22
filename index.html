@@ -2569,7 +2569,8 @@
                     if (landing.profileVideo) {
                         const videoPreload = document.createElement('link');
                         videoPreload.rel = 'preload';
-                        videoPreload.as = 'video';
+                        videoPreload.as = 'fetch';
+                        videoPreload.crossOrigin = 'anonymous';
                         videoPreload.href = landing.profileVideo;
                         document.head.appendChild(videoPreload);
                     }

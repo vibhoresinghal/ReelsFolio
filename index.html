@@ -3265,64 +3265,82 @@
             const likeCount = document.getElementById('likeCount');
             const videoId = getCurrentVideoId();
 
-            // Mark as liked by this user
-            likeBtn.classList.add('liked');
-
-            // Track that this user has liked this video
+            // Check if user already liked this video
             const userLikes = JSON.parse(localStorage.getItem('userLikedVideos') || '{}');
-            userLikes[videoId] = true;
+            const isCurrentlyLiked = !!userLikes[videoId];
+
+            if (isCurrentlyLiked) {
+                // === UNLIKE ===
+                likeBtn.classList.remove('liked');
+                delete userLikes[videoId];
+
+                const currentCount = parseInt(likeCount.textContent) || 0;
+                const newCount = Math.max(0, currentCount - 1);
+                likeCount.textContent = newCount;
+
+                // Collapse if count reaches 0
+                if (newCount === 0) {
+                    likeBtn.classList.remove('has-likes');
+                    gsap.to(likeCount, { opacity: 0, duration: 0.15, ease: 'power2.in' });
+                    gsap.to(likeBtn, {
+                        height: 48, duration: 0.3, delay: 0.05, ease: 'power2.out',
+                        onComplete: () => { likeCount.textContent = ''; }
+                    });
+                }
+
+                // Subtle unlike animation
+                gsap.fromTo(likeBtn, { scale: 0.85 }, { scale: 1, duration: 0.3, ease: 'elastic.out(1, 0.4)' });
+
+                // Update cache & sync
+                likesCache[videoId] = newCount;
+                pendingLikes[videoId] = (pendingLikes[videoId] || 0) - 1;
+            } else {
+                // === LIKE ===
+                likeBtn.classList.add('liked');
+                userLikes[videoId] = true;
+
+                const currentCount = parseInt(likeCount.textContent) || 0;
+                const newCount = currentCount + 1;
+                likeCount.textContent = newCount;
+
+                // Expand if this is the first like shown
+                if (currentCount === 0) {
+                    likeBtn.classList.add('has-likes');
+                    gsap.to(likeBtn, { height: 72, duration: 0.3, ease: 'power2.out' });
+                    gsap.to(likeCount, { opacity: 1, duration: 0.2, delay: 0.1, ease: 'power2.out' });
+                }
+
+                // Pulse animation
+                likeBtn.classList.remove('pulse');
+                void likeBtn.offsetWidth;
+                likeBtn.classList.add('pulse');
+
+                // Flying heart + burst
+                createFlyingHeart(likeBtn);
+                createLikeBurst(likeBtn);
+
+                // Haptic feedback for mobile
+                if ('vibrate' in navigator) {
+                    try { navigator.vibrate(30); } catch (e) { }
+                }
+
+                // Update cache & sync
+                likesCache[videoId] = newCount;
+                pendingLikes[videoId] = (pendingLikes[videoId] || 0) + 1;
+            }
+
+            // Save liked state locally
             localStorage.setItem('userLikedVideos', JSON.stringify(userLikes));
 
-            // Increment count (Medium-style clap - each click adds 1)
-            const currentCount = parseInt(likeCount.textContent) || 0;
-            const newCount = currentCount + 1;
-            likeCount.textContent = newCount;
-
-            // Animate button expansion if this is the first like
-            if (currentCount === 0) {
-                likeBtn.classList.add('has-likes');
-                gsap.to(likeBtn, {
-                    height: 72,
-                    duration: 0.3,
-                    ease: 'power2.out'
-                });
-                gsap.to(likeCount, {
-                    opacity: 1,
-                    duration: 0.2,
-                    delay: 0.1,
-                    ease: 'power2.out'
-                });
-            }
-
-            // Update cache
-            likesCache[videoId] = newCount;
-
-            // Track pending likes to sync
-            pendingLikes[videoId] = (pendingLikes[videoId] || 0) + 1;
-
-            // Trigger pulse animation
-            likeBtn.classList.remove('pulse');
-            void likeBtn.offsetWidth; // Force reflow
-            likeBtn.classList.add('pulse');
-
-            // Create flying heart effect
-            createFlyingHeart(likeBtn);
-            createLikeBurst(likeBtn);
-
-            // Haptic feedback for mobile
-            if ('vibrate' in navigator) {
-                try { navigator.vibrate(30); } catch (e) { }
-            }
-
-            // Debounced save to server (batches rapid clicks)
+            // Debounced save to server (batches rapid toggles)
             clearTimeout(likeDebounceTimer);
             likeDebounceTimer = setTimeout(() => {
                 savePendingLikes();
             }, 500);
 
-            // Also save to localStorage as backup
+            // Also save count to localStorage as backup
             const localLikes = JSON.parse(localStorage.getItem('videoLikes') || '{}');
-            localLikes[videoId] = newCount;
+            localLikes[videoId] = likesCache[videoId];
             localStorage.setItem('videoLikes', JSON.stringify(localLikes));
         }
 

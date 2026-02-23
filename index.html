@@ -1057,18 +1057,51 @@
 
         /* Unmute button pulse animation - draws attention until user unmutes */
         .unmute-btn.pulsing {
-            animation: unmutePulse 2s ease-in-out infinite;
+            animation: unmutePulseOuter 2s cubic-bezier(0.25, 1, 0.5, 1) infinite;
         }
 
-        @keyframes unmutePulse {
+        /* Animate the icon gently */
+        .unmute-btn.pulsing svg {
+            animation: iconWiggle 2s ease-in-out infinite;
+            transform-origin: center;
+        }
+
+        @keyframes iconWiggle {
 
             0%,
             100% {
-                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+                transform: rotate(0deg) scale(1);
             }
 
-            50% {
-                box-shadow: 0 4px 24px rgba(255, 255, 255, 0.2), 0 0 0 5px rgba(255, 255, 255, 0.08);
+            10% {
+                transform: rotate(-10deg) scale(1.1);
+            }
+
+            20% {
+                transform: rotate(10deg) scale(1.1);
+            }
+
+            30% {
+                transform: rotate(-10deg) scale(1.1);
+            }
+
+            40% {
+                transform: rotate(10deg) scale(1.1);
+            }
+
+            50%,
+            100% {
+                transform: rotate(0deg) scale(1);
+            }
+        }
+
+        @keyframes unmutePulseOuter {
+            0% {
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2), 0 0 0 0 rgba(255, 255, 255, 0.2);
+            }
+
+            100% {
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2), 0 0 0 20px rgba(255, 255, 255, 0);
             }
         }
 

@@ -3041,6 +3041,8 @@
         (function initSeekbarDrag() {
             let activeBar = null;
             let activeVideo = null;
+            let pendingSeekPct = null; // Throttled seek target
+            let seekRAF = null;
 
             function startDrag(e) {
                 const bar = e.target.closest('.video-seekbar');
@@ -3067,14 +3069,33 @@
                 const clientX = e.clientX ?? e.touches?.[0]?.clientX ?? 0;
                 const x = clientX - rect.left;
                 const pct = Math.max(0, Math.min(1, x / rect.width));
-                activeVideo.currentTime = pct * activeVideo.duration;
 
-                // Immediately update fill for responsiveness
+                // Immediately update fill for visual responsiveness
                 const fill = activeBar.querySelector('.video-seekbar-fill');
                 if (fill) fill.style.width = (pct * 100) + '%';
+
+                // Throttle the expensive video.currentTime via rAF
+                pendingSeekPct = pct;
+                if (!seekRAF) {
+                    seekRAF = requestAnimationFrame(() => {
+                        if (activeVideo && pendingSeekPct !== null) {
+                            activeVideo.currentTime = pendingSeekPct * activeVideo.duration;
+                        }
+                        seekRAF = null;
+                    });
+                }
             }
 
             function endDrag() {
+                // Apply final seek immediately for accuracy
+                if (activeVideo && pendingSeekPct !== null) {
+                    activeVideo.currentTime = pendingSeekPct * activeVideo.duration;
+                }
+                if (seekRAF) {
+                    cancelAnimationFrame(seekRAF);
+                    seekRAF = null;
+                }
+                pendingSeekPct = null;
                 if (activeBar) {
                     activeBar.classList.remove('dragging');
                 }

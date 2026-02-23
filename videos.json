@@ -238,8 +238,8 @@
                 {
                     "id": "t3v1",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
-                    "thumbnail": "https://placehold.co/360x640/27ae60/FFF?text=Garden",
-                    "bgColor": "#27ae60",
+                    "thumbnail": "https://placehold.co/360x640/1E392A/FFF?text=Garden",
+                    "bgColor": "#1E392A",
                     "title": "Garden Diary",
                     "description": "Weekly progress of my vegetable garden.",
                     "comments": [
@@ -252,8 +252,8 @@
                 {
                     "id": "t3v2",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
-                    "thumbnail": "https://placehold.co/360x640/2ecc71/FFF?text=Cooking",
-                    "bgColor": "#2ecc71",
+                    "thumbnail": "https://placehold.co/360x640/3D1B1B/FFF?text=Cooking",
+                    "bgColor": "#3D1B1B",
                     "title": "Cooking Vlog",
                     "description": "Trying out a new pasta recipe.",
                     "comments": [
@@ -266,8 +266,8 @@
                 {
                     "id": "t3v3",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
-                    "thumbnail": "https://placehold.co/360x640/27ae60/FFF?text=Road",
-                    "bgColor": "#27ae60",
+                    "thumbnail": "https://placehold.co/360x640/1B2A3D/FFF?text=Road",
+                    "bgColor": "#1B2A3D",
                     "title": "Road Trip",
                     "description": "Highlights from a cross-country drive.",
                     "comments": [
@@ -280,8 +280,8 @@
                 {
                     "id": "t3v4",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
-                    "thumbnail": "https://placehold.co/360x640/2ecc71/FFF?text=Morning",
-                    "bgColor": "#2ecc71",
+                    "thumbnail": "https://placehold.co/360x640/3D2E15/FFF?text=Morning",
+                    "bgColor": "#3D2E15",
                     "title": "Morning Routine",
                     "description": "My daily start to a productive day.",
                     "comments": [

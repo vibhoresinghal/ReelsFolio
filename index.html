@@ -2662,7 +2662,7 @@
                             ${generateLocationTagsHTML(landing.locations)}
                         </div>
                     </div>
-                    <div class="landing-video-frame" onclick="toggleVideo('landing-video')">
+                    <div class="landing-video-frame" data-tap-video="landing-video">
                         <video id="landing-video" src="${landing.profileVideo || ''}" poster="${landing.profileVideoThumbnail || ''}" muted playsinline preload="auto" onended="scrollToNextVideo(this)"></video>
                         <div class="mute-indicator" id="muteHint">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 4.06c0-1.336-1.616-2.005-2.56-1.06l-4.5 4.5H4.508c-1.141 0-2.318 0-2.402.933H2.03c-.01 0-.01.015-.01.033v6.088c0 .018 0 .033.01.033h.076c.084.933 1.261.933 2.402.933h1.932l4.5 4.5c.945.945 2.56.276 2.56-1.06V4.06zM17.78 9.22a.75.75 0 10-1.06 1.06L18.44 12l-1.72 1.72a.75.75 0 101.06 1.06l1.72-1.72 1.72 1.72a.75.75 0 101.06-1.06L20.56 12l1.72-1.72a.75.75 0 10-1.06-1.06l-1.72 1.72-1.72-1.72z" /></svg>
@@ -2726,7 +2726,7 @@
                                     ${video.link ? `<a class="content-link" href="${video.link.url}" target="_blank" rel="noopener noreferrer"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M19.902 4.098a3.75 3.75 0 00-5.304 0l-4.5 4.5a3.75 3.75 0 001.035 6.037.75.75 0 01-.646 1.353 5.25 5.25 0 01-1.449-8.45l4.5-4.5a5.25 5.25 0 117.424 7.424l-1.757 1.757a.75.75 0 11-1.06-1.06l1.757-1.757a3.75 3.75 0 000-5.304zm-7.389 4.267a.75.75 0 011-.353 5.25 5.25 0 011.449 8.45l-4.5 4.5a5.25 5.25 0 11-7.424-7.424l1.757-1.757a.75.75 0 111.06 1.06l-1.757 1.757a3.75 3.75 0 105.304 5.304l4.5-4.5a3.75 3.75 0 00-1.035-6.037.75.75 0 01-.354-1z" clip-rule="evenodd" /></svg>${video.link.text}</a>` : ''}
                                 </div>
                                 
-                                <div class="video-frame" onclick="toggleVideo('${video.id}')">
+                                <div class="video-frame" data-tap-video="${video.id}">
                                     <video id="${video.id}" ${isFirstVideo ? `src="${video.src}"` : ''} data-src="${video.src}" muted playsinline preload="${preloadStrategy}" onended="scrollToNextVideo(this)"></video>
                                     <div class="play-overlay-btn" id="btn-${video.id}"><svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" /></svg></div>
                                     <div class="video-seekbar" data-for="${video.id}">
@@ -4287,6 +4287,174 @@
                 el.style.cursor = 'move';
             });
         }
+
+        // Double-tap to like + single-tap for play/pause
+        function initDoubleTapLike() {
+            let lastTapTime = 0;
+            let tapTimer = null;
+            let lastTapVideoId = null;
+
+            document.addEventListener('click', (e) => {
+                const frame = e.target.closest('[data-tap-video]');
+                if (!frame) return;
+                if (e.target.closest('.video-seekbar')) return;
+
+                const videoId = frame.getAttribute('data-tap-video');
+
+                if (e.target.closest('.play-overlay-btn')) {
+                    clearTimeout(tapTimer);
+                    lastTapTime = 0;
+                    lastTapVideoId = null;
+                    toggleVideo(videoId);
+                    return;
+                }
+                const now = Date.now();
+                const DOUBLE_TAP_DELAY = 300;
+
+                if (lastTapVideoId === videoId && (now - lastTapTime) < DOUBLE_TAP_DELAY) {
+                    clearTimeout(tapTimer);
+                    tapTimer = null;
+                    lastTapTime = 0;
+                    lastTapVideoId = null;
+                    doubleTapLike(e, videoId);
+                } else {
+                    lastTapTime = now;
+                    lastTapVideoId = videoId;
+                    clearTimeout(tapTimer);
+                    tapTimer = setTimeout(() => {
+                        tapTimer = null;
+                        lastTapTime = 0;
+                        lastTapVideoId = null;
+                        toggleVideo(videoId);
+                    }, DOUBLE_TAP_DELAY);
+                }
+            });
+        }
+
+        let _dtTapCount = 0;
+        let _dtResetTimer = null;
+        let _dtActiveHeart = null;
+        let _dtActiveTl = null;
+
+        function doubleTapLike(e, videoId) {
+            const userLikes = JSON.parse(localStorage.getItem('userLikedVideos') || '{}');
+            if (!userLikes[getCurrentVideoId()]) {
+                toggleLike();
+            }
+
+            _dtTapCount++;
+            clearTimeout(_dtResetTimer);
+            _dtResetTimer = setTimeout(() => { _dtTapCount = 0; }, 1200);
+
+            pumpCenterHeart(e.clientX, e.clientY, _dtTapCount);
+            if (navigator.vibrate) navigator.vibrate(30);
+        }
+
+        const _dtHeartSVG = `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">
+            <defs>
+                <linearGradient id="dtHeartFill" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stop-color="#F2282B"/>
+                    <stop offset="100%" stop-color="#FF2C9D"/>
+                </linearGradient>
+                <linearGradient id="dtHeartStroke" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stop-color="rgba(255,255,255,0.6)"/>
+                    <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+                </linearGradient>
+                <clipPath id="dtHeartClip">
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                </clipPath>
+            </defs>
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+                  fill="url(#dtHeartFill)" stroke="url(#dtHeartStroke)" stroke-width="3" paint-order="fill stroke" clip-path="url(#dtHeartClip)"/>
+        </svg>`;
+
+        function getHeartSize(tapCount) {
+            const base = 120;
+            const grow = 30;
+            const max = 340;
+            return Math.min(base + (tapCount - 1) * grow, max);
+        }
+
+        function pumpCenterHeart(x, y, tapCount) {
+            const size = getHeartSize(tapCount);
+
+            if (_dtActiveHeart && _dtActiveTl) {
+                _dtActiveTl.kill();
+                const rot = (Math.random() - 0.5) * 18;
+
+                const tl = gsap.timeline();
+                _dtActiveTl = tl;
+
+                tl.to(_dtActiveHeart, {
+                    width: size,
+                    height: size,
+                    scale: 1.2,
+                    rotation: rot,
+                    duration: 0.15,
+                    ease: 'power3.out',
+                    overwrite: true
+                }).to(_dtActiveHeart, {
+                    scale: 1,
+                    duration: 0.5,
+                    ease: 'elastic.out(1.1, 0.3)'
+                });
+
+                clearTimeout(_dtActiveHeart._exitTimer);
+                _dtActiveHeart._exitTimer = setTimeout(() => dismissHeart(_dtActiveHeart), 650);
+                return;
+            }
+
+            const heart = document.createElement('div');
+            heart.className = 'flying-heart';
+            heart.innerHTML = _dtHeartSVG;
+
+            Object.assign(heart.style, {
+                left: `${x}px`,
+                top: `${y}px`,
+                width: `${size}px`,
+                height: `${size}px`,
+                opacity: '0',
+                filter: 'drop-shadow(0 6px 28px rgba(0,0,0,0.5))'
+            });
+
+            document.body.appendChild(heart);
+            _dtActiveHeart = heart;
+
+            const rot = (Math.random() - 0.5) * 14;
+            const tl = gsap.timeline();
+            _dtActiveTl = tl;
+
+            tl.fromTo(heart,
+                { opacity: 0, scale: 0, y: 50 },
+                { opacity: 1, scale: 1.2, y: 0, rotation: rot, duration: 0.22, ease: 'back.out(2.5)' }
+            ).to(heart,
+                { scale: 1, duration: 0.5, ease: 'elastic.out(1.1, 0.3)' }
+            );
+
+            heart._exitTimer = setTimeout(() => dismissHeart(heart), 650);
+        }
+
+        function dismissHeart(heart) {
+            if (heart !== _dtActiveHeart) { heart.remove(); return; }
+            _dtActiveHeart = null;
+            _dtActiveTl = null;
+
+            const floatY = -(140 + Math.random() * 100);
+            const driftX = (Math.random() - 0.5) * 60;
+            const rot = (Math.random() - 0.5) * 35;
+
+            gsap.to(heart, {
+                opacity: 0,
+                y: floatY,
+                x: driftX,
+                rotation: rot,
+                duration: 0.75,
+                ease: 'power2.in',
+                onComplete: () => heart.remove()
+            });
+        }
+
+        initDoubleTapLike();
 
         // Initialize
         initApp();

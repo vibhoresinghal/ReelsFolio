@@ -92,155 +92,6 @@
             position: relative;
         }
 
-        /* Hero Landing Section - Profile Header (scrolls with page) */
-        .hero-section {
-            width: 100vw;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: clamp(30px, 5vh, 50px) 20px clamp(20px, 3vh, 30px);
-            position: relative;
-            background: linear-gradient(180deg, #2d1b4e 0%, #1a0f2e 100%);
-            /* No scroll-snap - this scrolls naturally */
-        }
-
-        /* Profile Header */
-        .profile-header {
-            display: flex;
-            align-items: center;
-            gap: clamp(16px, 3vw, 32px);
-            margin-bottom: clamp(16px, 3vh, 24px);
-        }
-
-        .profile-photo {
-            width: clamp(80px, 12vw, 120px);
-            height: clamp(80px, 12vw, 120px);
-            border-radius: 50%;
-            object-fit: cover;
-            border: 4px solid #d4a855;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-        }
-
-        .profile-info {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .profile-name {
-            font-size: clamp(22px, 4vw, 36px);
-            font-weight: 700;
-            color: white;
-            margin: 0;
-            line-height: 1.1;
-        }
-
-        .profile-title {
-            font-size: clamp(12px, 1.5vw, 15px);
-            color: rgba(255, 255, 255, 0.7);
-            margin: 0 0 12px 0;
-        }
-
-        .profile-actions {
-            display: flex;
-            gap: 12px;
-        }
-
-        .profile-btn {
-            padding: 10px 24px;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            font-family: inherit;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            text-decoration: none;
-        }
-
-        .profile-btn.primary {
-            background: #7c3aed;
-            color: white;
-            border: none;
-        }
-
-        .profile-btn.primary:hover {
-            background: #6d28d9;
-            transform: translateY(-2px);
-        }
-
-        .profile-btn.secondary {
-            background: transparent;
-            color: white;
-            border: 2px solid #7c3aed;
-        }
-
-        .profile-btn.secondary:hover {
-            background: rgba(124, 58, 237, 0.2);
-            transform: translateY(-2px);
-        }
-
-        /* Stats */
-        .profile-stats {
-            display: flex;
-            gap: clamp(32px, 6vw, 64px);
-            margin-top: 16px;
-        }
-
-        .stat-item {
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: clamp(20px, 3vw, 28px);
-            font-weight: 700;
-            color: white;
-            display: block;
-        }
-
-        .stat-label {
-            font-size: clamp(11px, 1.5vw, 13px);
-            color: rgba(255, 255, 255, 0.6);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        /* Skills/Icons Row */
-        .profile-skills {
-            display: flex;
-            gap: clamp(12px, 2vw, 18px);
-            /* Reduced top margin further to move circles up, INCREASED bottom margin MAX for more gap */
-            margin: clamp(0px, 0.5vh, 4px) 0 clamp(80px, 12vh, 120px) 0;
-        }
-
-        .skill-circle {
-            width: clamp(36px, 4.5vw, 48px);
-            height: clamp(36px, 4.5vw, 48px);
-            border-radius: 50%;
-            background: rgba(124, 58, 237, 0.4);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
-        }
-
-        .skill-circle:hover {
-            background: rgba(124, 58, 237, 0.6);
-            transform: scale(1.1);
-        }
-
-        .skill-circle svg {
-            width: 50%;
-            height: 50%;
-            color: white;
-        }
-
-        @media (max-width: 768px) {
-            .profile-header {
-                flex-direction: column;
-                text-align: center;
-            }
-        }
-
         .video-content-wrapper {
             position: relative;
             display: flex;
@@ -595,6 +446,47 @@
             width: 28px;
             height: 28px;
             margin-left: 3px;
+        }
+
+        /* Mute indicator — shown on the active video frame when muted */
+        .mute-indicator {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            padding: 6px 12px 6px 8px;
+            color: white;
+            font-size: 12px;
+            font-weight: 500;
+            z-index: 110;
+            pointer-events: none;
+            opacity: 0;
+            transform: scale(0.9);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .mute-indicator.visible {
+            opacity: 1;
+            transform: scale(1);
+            animation: muteHintPulse 2s ease-in-out infinite;
+        }
+
+        .mute-indicator svg {
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+        }
+
+        @keyframes muteHintPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
         }
 
         /* ========== VIDEO SEEKBAR ========== */
@@ -1591,11 +1483,7 @@
             /* Acts as a simple wrapper, content flows naturally */
         }
 
-        /* Section markers for each category (invisible, used for scroll anchors) */
-        .section-marker {
-            height: 0;
-            width: 100%;
-        }
+
 
         /* Hide grid button when tabs are visible */
         .grid-btn {
@@ -1912,71 +1800,6 @@
             }
         }
 
-        /* Landing Bottom Toggle/Switch Element */
-        .landing-toggle {
-            position: absolute;
-            bottom: clamp(80px, 12vh, 120px);
-            right: clamp(40px, 8vw, 120px);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            background: rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 10px 16px;
-            border-radius: 30px;
-            z-index: 10;
-        }
-
-        .landing-toggle .toggle-line {
-            width: 60px;
-            height: 8px;
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 4px;
-        }
-
-        .landing-toggle .toggle-circle {
-            width: 24px;
-            height: 24px;
-            background: rgba(255, 255, 255, 0.4);
-            border-radius: 50%;
-        }
-
-        /* Scroll Indicator */
-        .landing-scroll-indicator {
-            position: absolute;
-            bottom: clamp(20px, 4vh, 40px);
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 12px;
-            animation: bounce 2s ease-in-out infinite;
-            cursor: pointer;
-            z-index: 10;
-        }
-
-        .landing-scroll-indicator svg {
-            width: 24px;
-            height: 24px;
-        }
-
-        @keyframes bounce {
-
-            0%,
-            100% {
-                transform: translateX(-50%) translateY(0);
-            }
-
-            50% {
-                transform: translateX(-50%) translateY(8px);
-            }
-        }
-
         /* ========== FLOATING ITEM MODAL STYLES ========== */
 
         .floating-modal-overlay {
@@ -2156,10 +1979,6 @@
             .floating-modal-content {
                 min-width: unset;
                 max-width: unset;
-            }
-
-            .landing-toggle {
-                display: none;
             }
 
             .floating-item {
@@ -2681,6 +2500,40 @@
         const gridBtn = document.getElementById('gridBtn');
         const controlBar = document.querySelector('.control-bar');
 
+        // --- Lightweight Analytics ---
+        const _analyticsQueue = [];
+        const _videoWatchTimers = {};
+
+        const _analyticsWorkerUrl = 'https://reelsfolio-likes.vibhoresinghal.workers.dev';
+
+        function trackEvent(action, data) {
+            const event = { action, ...data, ts: Date.now() };
+            _analyticsQueue.push(event);
+            try {
+                navigator.sendBeacon(
+                    _analyticsWorkerUrl + '/events',
+                    JSON.stringify(event)
+                );
+            } catch (_) { /* endpoint may not exist yet — silent */ }
+        }
+
+        function startWatchTimer(videoId) {
+            if (_videoWatchTimers[videoId]) return;
+            _videoWatchTimers[videoId] = setTimeout(() => {
+                const section = document.querySelector(`[data-video-id="${videoId}"]`);
+                const category = section ? section.getAttribute('data-category') : 'landing';
+                trackEvent('video_watched', { videoId, category });
+                delete _videoWatchTimers[videoId];
+            }, 3000);
+        }
+
+        function cancelWatchTimer(videoId) {
+            if (_videoWatchTimers[videoId]) {
+                clearTimeout(_videoWatchTimers[videoId]);
+                delete _videoWatchTimers[videoId];
+            }
+        }
+
         // Safety: Clear warping flag on user interaction to ensure UI updates resume
         window.addEventListener('wheel', () => { if (isWarping) isWarping = false; }, { passive: true });
         window.addEventListener('touchstart', () => { if (isWarping) isWarping = false; }, { passive: true });
@@ -2741,7 +2594,8 @@
                 eye: `<svg viewBox="0 0 24 24" fill="currentColor" style="${iconStyle}"><path d="M12 15a3 3 0 100-6 3 3 0 000 6z" /><path fill-rule="evenodd" d="M1.323 11.447C2.811 6.976 7.028 3.75 12.001 3.75c4.97 0 9.185 3.223 10.675 7.69.12.362.12.752 0 1.113-1.487 4.471-5.705 7.697-10.677 7.697-4.97 0-9.186-3.223-10.675-7.69a1.762 1.762 0 010-1.113zM17.25 12a5.25 5.25 0 11-10.5 0 5.25 5.25 0 0110.5 0z" clip-rule="evenodd" /></svg>`,
                 award: `<svg viewBox="0 0 24 24" fill="currentColor" style="${iconStyle}"><path fill-rule="evenodd" d="M5.166 2.621v.858c-1.035.148-2.059.33-3.071.543a.75.75 0 00-.584.859 6.753 6.753 0 006.138 5.6 6.73 6.73 0 002.743 1.346A6.707 6.707 0 019.279 15H8.54c-1.036 0-1.875.84-1.875 1.875V19.5h-.75a.75.75 0 000 1.5h2.625c.621 0 1.125-.504 1.125-1.125v-2.625a.375.375 0 01.375-.375h4.92a.375.375 0 01.375.375v2.625c0 .621.504 1.125 1.125 1.125H18a.75.75 0 000-1.5h-.75v-2.625c0-1.036-.84-1.875-1.875-1.875h-.739a6.706 6.706 0 01-1.112-3.173 6.73 6.73 0 002.743-1.347 6.753 6.753 0 006.139-5.6.75.75 0 00-.585-.858 47.077 47.077 0 00-3.07-.543V2.62a.75.75 0 00-.658-.744 49.22 49.22 0 00-6.093-.377c-2.063 0-4.096.128-6.093.377a.75.75 0 00-.657.744zm0 2.629c0 1.196.312 2.32.857 3.294A5.266 5.266 0 013.16 5.337a45.6 45.6 0 012.006-.343v.256zm13.5 0v-.256c.674.1 1.343.214 2.006.343a5.265 5.265 0 01-2.863 3.207 6.72 6.72 0 00.857-3.294z" clip-rule="evenodd" /></svg>`,
                 code: `<svg viewBox="0 0 24 24" fill="currentColor" style="${iconStyle}"><path fill-rule="evenodd" d="M14.447 3.027a.75.75 0 01.527.92l-4.5 16.5a.75.75 0 01-1.448-.394l4.5-16.5a.75.75 0 01.921-.526zM16.72 6.22a.75.75 0 011.06 0l5.25 5.25a.75.75 0 010 1.06l-5.25 5.25a.75.75 0 11-1.06-1.06L21.44 12l-4.72-4.72a.75.75 0 010-1.06zm-9.44 0a.75.75 0 010 1.06L2.56 12l4.72 4.72a.75.75 0 11-1.06 1.06L.97 12.53a.75.75 0 010-1.06l5.25-5.25a.75.75 0 011.06 0z" clip-rule="evenodd" /></svg>`,
-                camera: `<svg viewBox="0 0 24 24" fill="currentColor" style="${iconStyle}"><path d="M12 9a3.75 3.75 0 100 7.5A3.75 3.75 0 0012 9z" /><path fill-rule="evenodd" d="M9.344 3.071a49.52 49.52 0 015.312 0c.967.052 1.83.585 2.332 1.39l.821 1.317c.24.383.645.643 1.11.71.386.054.77.113 1.152.177 1.432.239 2.429 1.493 2.429 2.909V18a3 3 0 01-3 3h-15a3 3 0 01-3-3V9.574c0-1.416.997-2.67 2.429-2.909.382-.064.766-.123 1.151-.178a1.56 1.56 0 001.11-.71l.822-1.315a2.942 2.942 0 012.332-1.39zM6.75 12.75a5.25 5.25 0 1110.5 0 5.25 5.25 0 01-10.5 0zm12-2.25a.75.75 0 01.75-.75h.008a.75.75 0 01.75.75v.008a.75.75 0 01-.75.75H19.5a.75.75 0 01-.75-.75V10.5z" clip-rule="evenodd" /></svg>`
+                camera: `<svg viewBox="0 0 24 24" fill="currentColor" style="${iconStyle}"><path d="M12 9a3.75 3.75 0 100 7.5A3.75 3.75 0 0012 9z" /><path fill-rule="evenodd" d="M9.344 3.071a49.52 49.52 0 015.312 0c.967.052 1.83.585 2.332 1.39l.821 1.317c.24.383.645.643 1.11.71.386.054.77.113 1.152.177 1.432.239 2.429 1.493 2.429 2.909V18a3 3 0 01-3 3h-15a3 3 0 01-3-3V9.574c0-1.416.997-2.67 2.429-2.909.382-.064.766-.123 1.151-.178a1.56 1.56 0 001.11-.71l.822-1.315a2.942 2.942 0 012.332-1.39zM6.75 12.75a5.25 5.25 0 1110.5 0 5.25 5.25 0 01-10.5 0zm12-2.25a.75.75 0 01.75-.75h.008a.75.75 0 01.75.75v.008a.75.75 0 01-.75.75H19.5a.75.75 0 01-.75-.75V10.5z" clip-rule="evenodd" /></svg>`,
+                avatar: `<svg viewBox="0 0 24 24" fill="white" style="${iconStyle}"><path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clip-rule="evenodd" /></svg>`
             };
             return icons[type] || '';
         }
@@ -2810,6 +2664,10 @@
                     </div>
                     <div class="landing-video-frame" onclick="toggleVideo('landing-video')">
                         <video id="landing-video" src="${landing.profileVideo || ''}" poster="${landing.profileVideoThumbnail || ''}" muted playsinline preload="auto" onended="scrollToNextVideo(this)"></video>
+                        <div class="mute-indicator" id="muteHint">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 4.06c0-1.336-1.616-2.005-2.56-1.06l-4.5 4.5H4.508c-1.141 0-2.318 0-2.402.933H2.03c-.01 0-.01.015-.01.033v6.088c0 .018 0 .033.01.033h.076c.084.933 1.261.933 2.402.933h1.932l4.5 4.5c.945.945 2.56.276 2.56-1.06V4.06zM17.78 9.22a.75.75 0 10-1.06 1.06L18.44 12l-1.72 1.72a.75.75 0 101.06 1.06l1.72-1.72 1.72 1.72a.75.75 0 101.06-1.06L20.56 12l1.72-1.72a.75.75 0 10-1.06-1.06l-1.72 1.72-1.72-1.72z" /></svg>
+                            <span>Tap for sound</span>
+                        </div>
                         <div class="play-overlay-btn" id="btn-landing-video">
                             <svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" /></svg>
                         </div>
@@ -3136,6 +2994,7 @@
             video.play().catch(e => console.log('Autoplay blocked:', e));
 
             video.muted = isMuted;
+            startWatchTimer(videoId);
 
             // Attach seekbar updater if not already attached
             if (!video._seekbarAttached) {
@@ -3165,8 +3024,7 @@
             if (!video) return;
 
             video.pause();
-            // Don't show play button for system-initiated pauses (scrolling away)
-            // Only show if it was previously user-paused
+            cancelWatchTimer(videoId);
         }
 
         // --- Seekbar: click/drag to seek ---
@@ -3333,7 +3191,7 @@
 
         function toggleSound() {
             isMuted = !isMuted;
-            userManuallyMuted = isMuted; // User intentionally chose this state
+            userManuallyMuted = isMuted;
             updateMuteUI();
 
             if (currentVideoId) {
@@ -3341,8 +3199,11 @@
                 if (video) video.muted = isMuted;
             }
 
-            // Stop pulsing when user unmutes via the button
-            if (!isMuted) stopUnmutePulse();
+            if (!isMuted) {
+                stopUnmutePulse();
+            } else {
+                showMuteIndicator();
+            }
         }
 
         // Global unmute helper — used by tap-to-unmute, sound button, and volume keys
@@ -3357,21 +3218,30 @@
             stopUnmutePulse();
         }
 
-        // Stop the pulse animation on the unmute button
         function stopUnmutePulse() {
             const soundBtn = document.getElementById('soundBtn');
             if (soundBtn) soundBtn.classList.remove('pulsing');
+            hideMuteIndicator();
         }
 
-        // Start the unmute button pulse on first visit
         function initSoundHint() {
-            // Start pulsing the unmute button to draw attention
             setTimeout(() => {
                 if (isMuted) {
                     const soundBtn = document.getElementById('soundBtn');
                     if (soundBtn) soundBtn.classList.add('pulsing');
+                    showMuteIndicator();
                 }
             }, 1500);
+        }
+
+        function showMuteIndicator() {
+            const hint = document.getElementById('muteHint');
+            if (hint) hint.classList.add('visible');
+        }
+
+        function hideMuteIndicator() {
+            const hint = document.getElementById('muteHint');
+            if (hint) hint.classList.remove('visible');
         }
 
         function updateMuteUI() {
@@ -3432,7 +3302,6 @@
             const likeCount = document.getElementById('likeCount');
             const videoId = getCurrentVideoId();
 
-            // Check if user already liked this video
             const userLikes = JSON.parse(localStorage.getItem('userLikedVideos') || '{}');
             const isCurrentlyLiked = !!userLikes[videoId];
 
@@ -3505,10 +3374,11 @@
                 savePendingLikes();
             }, 500);
 
-            // Also save count to localStorage as backup
             const localLikes = JSON.parse(localStorage.getItem('videoLikes') || '{}');
             localLikes[videoId] = likesCache[videoId];
             localStorage.setItem('videoLikes', JSON.stringify(localLikes));
+
+            trackEvent('like_toggle', { videoId, liked: !isCurrentlyLiked });
         }
 
         async function savePendingLikes() {
@@ -3823,19 +3693,17 @@
             const isGridMode = navbarWrapper && navbarWrapper.classList.contains('grid-mode');
 
             if (isGridMode) {
-                // In grid mode - switch the grid panel
                 switchGridTab(categoryId);
             } else {
-                // Normal mode - scroll to category
                 scrollToCategory(categoryId);
             }
 
-            // Update tab button highlighting
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 const tabId = btn.getAttribute('data-tab-id');
                 btn.classList.toggle('active', tabId === categoryId);
             });
             updateMobileNav(categoryId);
+            trackEvent('tab_visit', { category: categoryId, via: isGridMode ? 'grid' : 'scroll' });
         }
 
         // Navigate to the landing/profile section
@@ -3942,6 +3810,7 @@
             const gridOverlay = document.getElementById('gridOverlay');
             const gridPanelsContainer = document.getElementById('gridPanelsContainer');
             const navbarWrapper = document.getElementById('navbarWrapper');
+            trackEvent('grid_open', {});
 
             // Determine which category to show based on current scroll position
             const currentSection = document.querySelector('.video-section.active, .landing-section.active');
@@ -4251,6 +4120,61 @@
                 e.preventDefault();
             }
         }, { passive: false });
+
+        // Horizontal swipe between categories (mobile)
+        (function initCategorySwipe() {
+            let swipeStartX = 0, swipeStartY = 0, swiping = false;
+            const SWIPE_THRESHOLD = 70;
+            const ANGLE_LIMIT = 30;
+
+            function getCategoryOrder() {
+                if (!videosData || !videosData.tabs) return [];
+                return ['home', ...videosData.tabs.map(t => t.id)];
+            }
+
+            function getCurrentCategory() {
+                const active = document.querySelector('.video-section.active, .landing-section.active');
+                if (!active) return 'home';
+                if (active.classList.contains('landing-section')) return 'home';
+                return active.getAttribute('data-category') || 'home';
+            }
+
+            const container = document.getElementById('mainScroll');
+            if (!container) return;
+
+            container.addEventListener('touchstart', (e) => {
+                if (e.target.closest('.video-seekbar') || e.target.closest('.floating-item')) return;
+                swipeStartX = e.touches[0].clientX;
+                swipeStartY = e.touches[0].clientY;
+                swiping = true;
+            }, { passive: true });
+
+            container.addEventListener('touchend', (e) => {
+                if (!swiping) return;
+                swiping = false;
+                const dx = e.changedTouches[0].clientX - swipeStartX;
+                const dy = e.changedTouches[0].clientY - swipeStartY;
+                const angle = Math.abs(Math.atan2(dy, dx) * 180 / Math.PI);
+
+                if (Math.abs(dx) < SWIPE_THRESHOLD) return;
+                if (angle > ANGLE_LIMIT && angle < (180 - ANGLE_LIMIT)) return;
+
+                const cats = getCategoryOrder();
+                const current = getCurrentCategory();
+                const idx = cats.indexOf(current);
+                if (idx < 0) return;
+
+                if (dx < 0 && idx < cats.length - 1) {
+                    const next = cats[idx + 1];
+                    if (next === 'home') goToLanding();
+                    else handleTabClick(next);
+                } else if (dx > 0 && idx > 0) {
+                    const prev = cats[idx - 1];
+                    if (prev === 'home') goToLanding();
+                    else handleTabClick(prev);
+                }
+            }, { passive: true });
+        })();
 
         // Keyboard Navigation
         document.addEventListener('keydown', (e) => {

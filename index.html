@@ -2442,7 +2442,7 @@
                 overflow-y: auto;
                 -webkit-overflow-scrolling: touch;
                 overscroll-behavior: contain;
-                padding: 0 16px 80px;
+                padding: 0 16px 16px;
                 scrollbar-width: none;
                 -ms-overflow-style: none;
             }
@@ -2709,9 +2709,9 @@
                 <path d="M12 5v14M19 12l-7 7-7-7" />
             </svg>
         </button>
-        <button class="nav-arrow-btn info-panel-btn" id="infoPanelBtn" onclick="openInfoPanel()" aria-label="Video info">
+        <button class="nav-arrow-btn info-panel-btn" id="infoPanelBtn" onclick="openInfoPanel()" aria-label="Comments">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48.432.447.74 1.04.586 1.641a4.483 4.483 0 0 1-.923 1.785A5.969 5.969 0 0 0 6 21c1.282 0 2.47-.402 3.445-1.087.81.22 1.668.337 2.555.337Z" />
             </svg>
         </button>
     </div>
@@ -4804,7 +4804,7 @@
             // sheetRatio ∈ [0, MAX_SHEET] where 0 = closed, MAX_SHEET = fully open.
             const MAX_SHEET = 0.62;   // sheet can cover up to 62 % of viewport
             const OPEN_SHEET = 0.50;  // default open position (50 %)
-            const DISMISS_THRESHOLD = 0.15; // drag below this → dismiss
+            const DISMISS_THRESHOLD = 0.35; // drag below this → dismiss
 
             let _open = false;
             let _sheetRatio = 0;      // current fraction
@@ -4956,9 +4956,10 @@
                 // Force-hide mute hints (their .visible class overrides GSAP opacity)
                 document.querySelectorAll('.mute-indicator').forEach(el => el.classList.remove('visible'));
 
-                // Populate and open
+                // Populate and open (content scroll locked until sheet reaches max)
                 populateContent(getVideoData());
                 contentEl.scrollTop = 0;
+                lockContentScroll(true);
                 sheet.classList.add('visible');
 
                 // Disable page scroll
@@ -4975,8 +4976,8 @@
                 // Animate sheet down + video back to full
                 gsap.to(sheet, {
                     y: 0,
-                    duration: 0.35,
-                    ease: 'power3.inOut',
+                    duration: 0.45,
+                    ease: 'power2.out',
                     onComplete: () => { sheet.classList.remove('visible'); }
                 });
 
@@ -4988,8 +4989,8 @@
                         '--ip-scale': 1,
                         '--ip-radius': '0px',
                         '--ip-ty': '0px',
-                        duration: 0.35,
-                        ease: 'power3.inOut',
+                        duration: 0.45,
+                        ease: 'power2.out',
                         onComplete: () => {
                             closingFrame.style.removeProperty('--ip-scale');
                             closingFrame.style.removeProperty('--ip-radius');
@@ -5044,6 +5045,14 @@
             let _touchStartY = 0;
             let _dragSource = null; // 'dragger' | 'content' | null
 
+            function isSheetAtMax() {
+                return Math.abs(_sheetRatio - MAX_SHEET) < 0.01;
+            }
+
+            function lockContentScroll(lock) {
+                contentEl.style.overflowY = lock ? 'hidden' : 'auto';
+            }
+
             function onDragStart(e) {
                 const y = e.touches ? e.touches[0].clientY : e.clientY;
                 const fromDragger = dragger.contains(e.target);
@@ -5055,7 +5064,6 @@
                     _dragStartY = y;
                     _dragStartRatio = _sheetRatio;
                 } else if (fromContent) {
-                    // Record the touch start; we'll decide on first move
                     _touchStartY = y;
                     _dragSource = 'content';
                 }
@@ -5064,28 +5072,53 @@
             function onDragMove(e) {
                 const clientY = e.touches ? e.touches[0].clientY : e.clientY;
 
-                // Deferred decision for content touches
                 if (_dragSource === 'content' && !_isDragging) {
                     const delta = clientY - _touchStartY;
-                    // Only steal the gesture if user is pulling DOWN while content
-                    // is at the very top (i.e. wants to dismiss, not scroll)
-                    if (delta > 6 && contentEl.scrollTop <= 0) {
+                    const isScrollUp = delta < 0;
+                    const isScrollDown = delta > 0;
+
+                    // Scrolling UP on content: if sheet isn't at max, expand
+                    // the sheet instead of scrolling content.
+                    if (isScrollUp && !isSheetAtMax() && Math.abs(delta) > 6) {
                         _isDragging = true;
                         _dragStartY = _touchStartY;
                         _dragStartRatio = _sheetRatio;
-                    } else {
-                        return; // let the browser handle it as a normal scroll
+                        lockContentScroll(true);
+                    }
+                    // Scrolling DOWN on content: if content is at top, start
+                    // collapsing the sheet (pull-to-dismiss).
+                    else if (isScrollDown && contentEl.scrollTop <= 0 && delta > 6) {
+                        _isDragging = true;
+                        _dragStartY = _touchStartY;
+                        _dragStartRatio = _sheetRatio;
+                        lockContentScroll(true);
+                    }
+                    else {
+                        return;
                     }
                 }
 
                 if (!_isDragging) return;
                 const deltaY = _dragStartY - clientY;
                 const vh = window.innerHeight;
-                applyLayout(_dragStartRatio + (deltaY / vh), false);
+                const newRatio = _dragStartRatio + (deltaY / vh);
+
+                // If dragging up past max, clamp and unlock content scroll
+                if (newRatio >= MAX_SHEET) {
+                    applyLayout(MAX_SHEET, false);
+                    lockContentScroll(false);
+                    // Hand off to content scroll — reset drag state
+                    _isDragging = false;
+                    _dragSource = null;
+                    return;
+                }
+
+                applyLayout(newRatio, false);
             }
 
             function onDragEnd() {
                 _dragSource = null;
+                lockContentScroll(false);
                 if (!_isDragging) return;
                 _isDragging = false;
 

@@ -47,6 +47,7 @@
         html {
             height: 100%;
             overflow: hidden;
+            background-color: #000;
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             /* Prevent text/element selection site-wide */
             user-select: none;
@@ -63,7 +64,7 @@
             width: 100%;
             height: 100%;
             transition: background-color 0.6s ease-in-out;
-            z-index: -1;
+            z-index: 0;
             will-change: background-color;
             contain: strict;
         }
@@ -1510,6 +1511,8 @@
 
         /* Main scroll container */
         .main-scroll-container {
+            position: relative;
+            z-index: 1;
             height: 100vh;
             width: 100vw;
             overflow: hidden;
@@ -2763,6 +2766,10 @@
                                 
                                 <div class="video-frame" data-tap-video="${video.id}">
                                     <video id="${video.id}" ${isFirstVideo ? `src="${video.src}"` : ''} data-src="${video.src}" muted playsinline preload="${preloadStrategy}" onended="scrollToNextVideo(this)"></video>
+                                    <div class="mute-indicator" data-mute-hint="${video.id}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 4.06c0-1.336-1.616-2.005-2.56-1.06l-4.5 4.5H4.508c-1.141 0-2.318 0-2.402.933H2.03c-.01 0-.01.015-.01.033v6.088c0 .018 0 .033.01.033h.076c.084.933 1.261.933 2.402.933h1.932l4.5 4.5c.945.945 2.56.276 2.56-1.06V4.06zM17.78 9.22a.75.75 0 10-1.06 1.06L18.44 12l-1.72 1.72a.75.75 0 101.06 1.06l1.72-1.72 1.72 1.72a.75.75 0 101.06-1.06L20.56 12l1.72-1.72a.75.75 0 10-1.06-1.06l-1.72 1.72-1.72-1.72z" /></svg>
+                                        <span>Tap for sound</span>
+                                    </div>
                                     <div class="play-overlay-btn" id="btn-${video.id}"><svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" /></svg></div>
                                     <div class="video-seekbar" data-for="${video.id}">
                                         <div class="video-seekbar-track">
@@ -3029,6 +3036,7 @@
             video.play().catch(e => console.log('Autoplay blocked:', e));
 
             video.muted = isMuted;
+            if (isMuted) showMuteIndicator(); else hideMuteIndicator();
             startWatchTimer(videoId);
 
             // Attach seekbar updater if not already attached
@@ -3270,13 +3278,16 @@
         }
 
         function showMuteIndicator() {
-            const hint = document.getElementById('muteHint');
-            if (hint) hint.classList.add('visible');
+            document.querySelectorAll('.mute-indicator').forEach(el => el.classList.remove('visible'));
+            if (currentVideoId) {
+                const hint = document.querySelector(`.mute-indicator[data-mute-hint="${currentVideoId}"]`) ||
+                             document.getElementById('muteHint');
+                if (hint) hint.classList.add('visible');
+            }
         }
 
         function hideMuteIndicator() {
-            const hint = document.getElementById('muteHint');
-            if (hint) hint.classList.remove('visible');
+            document.querySelectorAll('.mute-indicator').forEach(el => el.classList.remove('visible'));
         }
 
         function updateMuteUI() {

@@ -166,11 +166,13 @@
             overflow: hidden;
         }
 
-        .nav-arrow-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-            border-color: rgba(255, 255, 255, 0.5);
-            opacity: 1;
-            transform: scale(1.05);
+        @media (hover: hover) {
+            .nav-arrow-btn:hover {
+                background: rgba(255, 255, 255, 0.2);
+                border-color: rgba(255, 255, 255, 0.5);
+                opacity: 1;
+                transform: scale(1.05);
+            }
         }
 
         .nav-arrow-btn svg {
@@ -196,6 +198,10 @@
         }
 
         /* Like Button Styles - starts as circle, expands to pill with count */
+        .info-panel-btn {
+            display: none;
+        }
+
         .nav-arrow-btn.like-btn {
             width: 48px;
             height: 48px;
@@ -2044,7 +2050,7 @@
                 bottom: auto !important;
                 transform: translateY(-50%) !important;
                 flex-direction: column;
-                gap: 16px;
+                gap: 0;
                 z-index: 9005 !important;
             }
 
@@ -2100,8 +2106,12 @@
                 border: 1.5px solid rgba(255, 255, 255, 0.3);
                 backdrop-filter: blur(4px);
                 -webkit-backdrop-filter: blur(4px);
-                margin-bottom: 0;
+                margin-bottom: 12px;
                 opacity: 0.9;
+            }
+
+            .nav-arrow-btn:last-child {
+                margin-bottom: 0;
             }
 
             .control-bar {
@@ -2379,6 +2389,163 @@
             .video-nav-arrows {
                 right: 8px !important;
             }
+
+            /* --- Info Panel (Instagram-style bottom sheet) --- */
+            .info-panel-btn {
+                display: flex !important;
+            }
+
+            /* The bottom sheet — parked below viewport (top: 100%), GSAP slides it up */
+            .info-panel-sheet {
+                position: fixed;
+                left: 0;
+                right: 0;
+                top: 100%;
+                height: 70vh;
+                z-index: 12000;
+                display: flex;
+                flex-direction: column;
+                background: #111;
+                border-radius: 16px 16px 0 0;
+                pointer-events: none;
+                will-change: transform;
+            }
+
+            .info-panel-sheet.visible {
+                pointer-events: auto;
+            }
+
+            .info-panel-dragger {
+                width: 100%;
+                padding: 12px 0 8px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: grab;
+                touch-action: none;
+                flex-shrink: 0;
+            }
+
+            .info-panel-dragger:active {
+                cursor: grabbing;
+            }
+
+            .info-panel-dragger-pill {
+                width: 36px;
+                height: 4px;
+                border-radius: 2px;
+                background: rgba(255,255,255,0.3);
+            }
+
+            .info-panel-content {
+                flex: 1;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+                overscroll-behavior: contain;
+                padding: 0 16px 80px;
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+            }
+
+            .info-panel-content::-webkit-scrollbar {
+                display: none;
+            }
+
+            .info-panel-header {
+                padding: 4px 0 16px;
+                border-bottom: 1px solid rgba(255,255,255,0.08);
+                margin-bottom: 16px;
+            }
+
+            .info-panel-title {
+                color: white;
+                font-size: 20px;
+                font-weight: 700;
+                line-height: 1.25;
+                margin: 0 0 6px;
+            }
+
+            .info-panel-desc {
+                color: rgba(255,255,255,0.65);
+                font-size: 14px;
+                line-height: 1.5;
+                margin: 0;
+            }
+
+            .info-panel-link {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                margin-top: 12px;
+                padding: 8px 14px;
+                border-radius: 10px;
+                background: rgba(255,255,255,0.08);
+                border: 1px solid rgba(255,255,255,0.12);
+                color: rgba(255,255,255,0.85);
+                font-size: 13px;
+                font-weight: 500;
+                text-decoration: none;
+            }
+
+            .info-panel-link svg {
+                width: 14px;
+                height: 14px;
+                opacity: 0.7;
+            }
+
+            .info-panel-comments-heading {
+                color: rgba(255,255,255,0.4);
+                font-size: 12px;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.06em;
+                margin: 0 0 12px;
+            }
+
+            .info-panel-comment {
+                display: flex;
+                align-items: flex-start;
+                gap: 12px;
+                padding: 12px 0;
+                border-bottom: 1px solid rgba(255,255,255,0.05);
+            }
+
+            .info-panel-comment:last-child {
+                border-bottom: none;
+            }
+
+            .info-panel-comment-icon {
+                width: 36px;
+                height: 36px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-shrink: 0;
+            }
+
+            .info-panel-comment-icon svg {
+                width: 18px;
+                height: 18px;
+            }
+
+            .info-panel-comment-text {
+                color: rgba(255,255,255,0.85);
+                font-size: 14px;
+                line-height: 1.5;
+                padding-top: 7px;
+            }
+
+            /* When info panel is open, GSAP drives transforms via a CSS variable */
+            .video-section.info-panel-active .video-frame,
+            .landing-section.info-panel-active .landing-video-frame {
+                --ip-scale: 1;
+                --ip-radius: 0px;
+                transform: scale(var(--ip-scale)) !important;
+                border-radius: var(--ip-radius) !important;
+                will-change: transform;
+                transform-origin: top center !important;
+            }
         }
 
         /* Hide floating items on smaller screens */
@@ -2541,6 +2708,20 @@
                 <path d="M12 5v14M19 12l-7 7-7-7" />
             </svg>
         </button>
+        <button class="nav-arrow-btn info-panel-btn" id="infoPanelBtn" onclick="openInfoPanel()" aria-label="Video info">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
+            </svg>
+        </button>
+    </div>
+
+    <!-- Info Panel Bottom Sheet (mobile only) -->
+    <div class="info-panel-sheet" id="infoPanelSheet">
+        <div class="info-panel-dragger" id="infoPanelDragger">
+            <div class="info-panel-dragger-pill"></div>
+        </div>
+        <div class="info-panel-content" id="infoPanelContent">
+        </div>
     </div>
 
     <!-- Mobile Bottom Navigation (Instagram-style) -->
@@ -4608,6 +4789,277 @@
         }
 
         initDoubleTapLike();
+
+        // --- Info Panel (Instagram-style bottom sheet) ---
+        // The SAME video stays playing — we just CSS-transform the section and
+        // slide a bottom sheet up. No second <video> element, no re-buffering.
+        (function initInfoPanel() {
+            const sheet = document.getElementById('infoPanelSheet');
+            const contentEl = document.getElementById('infoPanelContent');
+            const dragger = document.getElementById('infoPanelDragger');
+            if (!sheet || !contentEl || !dragger) return;
+
+            // The sheet height = viewport − video area. We express state as
+            // sheetRatio ∈ [0, MAX_SHEET] where 0 = closed, MAX_SHEET = fully open.
+            const MAX_SHEET = 0.62;   // sheet can cover up to 62 % of viewport
+            const OPEN_SHEET = 0.50;  // default open position (50 %)
+            const DISMISS_THRESHOLD = 0.15; // drag below this → dismiss
+
+            let _open = false;
+            let _sheetRatio = 0;      // current fraction
+            let _activeSection = null;
+            let _activeFrame = null;
+            let _isDragging = false;
+            let _dragStartY = 0;
+            let _dragStartRatio = 0;
+
+            function getVideoFrame() {
+                const vid = getCurrentVideoId();
+                if (!vid) return { section: null, frame: null };
+                if (vid === 'landing-video' || vid === 'landing') {
+                    const sec = document.querySelector('.landing-section');
+                    return { section: sec, frame: sec ? sec.querySelector('.landing-video-frame') : null };
+                }
+                const sec = document.querySelector('.video-section.active') ||
+                            document.querySelector(`[data-video-id="${vid}"]`);
+                return { section: sec, frame: sec ? sec.querySelector('.video-frame') : null };
+            }
+
+            function applyLayout(ratio, animate) {
+                _sheetRatio = Math.max(0, Math.min(MAX_SHEET, ratio));
+                const vh = window.innerHeight;
+                const sheetH = _sheetRatio * vh;
+                const videoScale = 1 - _sheetRatio;
+                const radius = _sheetRatio > 0.05 ? 16 : 0;
+
+                if (animate) {
+                    gsap.to(sheet, { y: -sheetH, duration: 0.4, ease: 'power3.out' });
+                    if (_activeFrame) {
+                        gsap.to(_activeFrame, {
+                            '--ip-scale': videoScale,
+                            '--ip-radius': radius + 'px',
+                            duration: 0.4,
+                            ease: 'power3.out'
+                        });
+                    }
+                } else {
+                    gsap.set(sheet, { y: -sheetH });
+                    if (_activeFrame) {
+                        _activeFrame.style.setProperty('--ip-scale', videoScale);
+                        _activeFrame.style.setProperty('--ip-radius', radius + 'px');
+                    }
+                }
+
+                const draggerH = dragger.offsetHeight || 32;
+                contentEl.style.maxHeight = Math.max(0, sheetH - draggerH) + 'px';
+            }
+
+            function getVideoData() {
+                const vid = getCurrentVideoId();
+                if (!vid) return null;
+                if (vid === 'landing-video' || vid === 'landing') {
+                    return {
+                        title: videosData.landingSection.name,
+                        description: videosData.landingSection.bio,
+                        comments: [],
+                        link: null
+                    };
+                }
+                for (const tab of videosData.tabs) {
+                    const found = tab.videos.find(v => v.id === vid);
+                    if (found) return found;
+                }
+                return null;
+            }
+
+            function populateContent(videoData) {
+                if (!videoData) { contentEl.innerHTML = ''; return; }
+                let html = '<div class="info-panel-header">';
+                if (videoData.title) html += `<h2 class="info-panel-title">${videoData.title}</h2>`;
+                if (videoData.description) html += `<p class="info-panel-desc">${videoData.description}</p>`;
+                if (videoData.link) html += `<a class="info-panel-link" href="${videoData.link.url}" target="_blank" rel="noopener noreferrer"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M19.902 4.098a3.75 3.75 0 00-5.304 0l-4.5 4.5a3.75 3.75 0 001.035 6.037.75.75 0 01-.646 1.353 5.25 5.25 0 01-1.449-8.45l4.5-4.5a5.25 5.25 0 117.424 7.424l-1.757 1.757a.75.75 0 11-1.06-1.06l1.757-1.757a3.75 3.75 0 000-5.304zm-7.389 4.267a.75.75 0 011-.353 5.25 5.25 0 011.449 8.45l-4.5 4.5a5.25 5.25 0 11-7.424-7.424l1.757-1.757a.75.75 0 111.06 1.06l-1.757 1.757a3.75 3.75 0 105.304 5.304l4.5-4.5a3.75 3.75 0 00-1.035-6.037.75.75 0 01-.354-1z" clip-rule="evenodd" /></svg>${videoData.link.text}</a>`;
+                html += '</div>';
+                if (videoData.comments && videoData.comments.length > 0) {
+                    html += '<p class="info-panel-comments-heading">Comments</p>';
+                    videoData.comments.forEach(c => {
+                        const bg = c.type === 'avatar' ? (c.avatarColor || '#3498db') : 'rgba(255,255,255,0.12)';
+                        html += `<div class="info-panel-comment">
+                            <div class="info-panel-comment-icon" style="background:${bg}">${getCommentIcon(c.type)}</div>
+                            <div class="info-panel-comment-text">${c.text}</div>
+                        </div>`;
+                    });
+                }
+                contentEl.innerHTML = html;
+            }
+
+            window.openInfoPanel = function() {
+                if (_open) return;
+                const { section, frame } = getVideoFrame();
+                if (!section || !frame) return;
+                _open = true;
+                _activeSection = section;
+                _activeFrame = frame;
+
+                section.classList.add('info-panel-active');
+
+                // Hide side UI while panel is open
+                const navArrows = document.getElementById('fixedNavArrows');
+                const mobileNav = document.getElementById('mobileBottomNav');
+                if (navArrows) gsap.to(navArrows, { opacity: 0, duration: 0.25, onComplete: () => { navArrows.style.pointerEvents = 'none'; } });
+                if (mobileNav) gsap.to(mobileNav, { opacity: 0, duration: 0.25, onComplete: () => { mobileNav.style.pointerEvents = 'none'; } });
+
+                // Hide all video overlays (descriptions, seekbar, profile info)
+                section.querySelectorAll('.content-info-left, .landing-profile-info, .video-seekbar').forEach(el => {
+                    gsap.to(el, { opacity: 0, duration: 0.25 });
+                });
+
+                // Populate and open
+                populateContent(getVideoData());
+                contentEl.scrollTop = 0;
+                sheet.classList.add('visible');
+
+                // Disable page scroll
+                const mainScroll = document.getElementById('mainScrollContainer');
+                if (mainScroll) mainScroll.style.overflow = 'hidden';
+
+                applyLayout(OPEN_SHEET, true);
+            };
+
+            window.closeInfoPanel = function() {
+                if (!_open) return;
+                _open = false;
+
+                // Animate sheet down + video back to full
+                gsap.to(sheet, {
+                    y: 0,
+                    duration: 0.35,
+                    ease: 'power3.inOut',
+                    onComplete: () => { sheet.classList.remove('visible'); }
+                });
+
+                const closingFrame = _activeFrame;
+                const closingSection = _activeSection;
+
+                if (closingFrame) {
+                    gsap.to(closingFrame, {
+                        '--ip-scale': 1,
+                        '--ip-radius': '0px',
+                        duration: 0.35,
+                        ease: 'power3.inOut',
+                        onComplete: () => {
+                            closingFrame.style.removeProperty('--ip-scale');
+                            closingFrame.style.removeProperty('--ip-radius');
+                            if (closingSection) closingSection.classList.remove('info-panel-active');
+                        }
+                    });
+                }
+
+                // Restore UI
+                const navArrows = document.getElementById('fixedNavArrows');
+                const mobileNav = document.getElementById('mobileBottomNav');
+                if (navArrows) { navArrows.style.pointerEvents = ''; gsap.to(navArrows, { opacity: 1, duration: 0.25 }); }
+                if (mobileNav) { mobileNav.style.pointerEvents = ''; gsap.to(mobileNav, { opacity: 1, duration: 0.25 }); }
+
+                if (closingSection) {
+                    closingSection.querySelectorAll('.content-info-left, .landing-profile-info, .video-seekbar').forEach(el => {
+                        gsap.to(el, { opacity: 1, duration: 0.3, delay: 0.15 });
+                    });
+                }
+
+                const mainScroll = document.getElementById('mainScrollContainer');
+                if (mainScroll) mainScroll.style.overflow = '';
+
+                _activeSection = null;
+                _activeFrame = null;
+                _sheetRatio = 0;
+            };
+
+            // --- Tap on video area → close ---
+            // We intercept taps on the video frame when the panel is open.
+            // The double-tap handler already uses click events; we use a
+            // capture-phase listener to steal the event first.
+            document.addEventListener('click', (e) => {
+                if (!_open) return;
+                const frame = e.target.closest('.video-frame, .landing-video-frame');
+                if (frame && frame === _activeFrame) {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    closeInfoPanel();
+                }
+            }, true); // capture phase
+
+            // --- Drag interaction ---
+            // Dragger handle: always draggable.
+            // Content area: only becomes a drag when scrolled to top AND user
+            // pulls downward (to dismiss). This prevents hijacking normal scrolls.
+            let _touchStartY = 0;
+            let _dragSource = null; // 'dragger' | 'content' | null
+
+            function onDragStart(e) {
+                const y = e.touches ? e.touches[0].clientY : e.clientY;
+                const fromDragger = dragger.contains(e.target);
+                const fromContent = contentEl.contains(e.target);
+
+                if (fromDragger) {
+                    _isDragging = true;
+                    _dragSource = 'dragger';
+                    _dragStartY = y;
+                    _dragStartRatio = _sheetRatio;
+                } else if (fromContent) {
+                    // Record the touch start; we'll decide on first move
+                    _touchStartY = y;
+                    _dragSource = 'content';
+                }
+            }
+
+            function onDragMove(e) {
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+                // Deferred decision for content touches
+                if (_dragSource === 'content' && !_isDragging) {
+                    const delta = clientY - _touchStartY;
+                    // Only steal the gesture if user is pulling DOWN while content
+                    // is at the very top (i.e. wants to dismiss, not scroll)
+                    if (delta > 6 && contentEl.scrollTop <= 0) {
+                        _isDragging = true;
+                        _dragStartY = _touchStartY;
+                        _dragStartRatio = _sheetRatio;
+                    } else {
+                        return; // let the browser handle it as a normal scroll
+                    }
+                }
+
+                if (!_isDragging) return;
+                const deltaY = _dragStartY - clientY;
+                const vh = window.innerHeight;
+                applyLayout(_dragStartRatio + (deltaY / vh), false);
+            }
+
+            function onDragEnd() {
+                _dragSource = null;
+                if (!_isDragging) return;
+                _isDragging = false;
+
+                if (_sheetRatio < DISMISS_THRESHOLD) {
+                    closeInfoPanel();
+                } else {
+                    const mid = (OPEN_SHEET + MAX_SHEET) / 2;
+                    const target = _sheetRatio > mid ? MAX_SHEET : OPEN_SHEET;
+                    applyLayout(target, true);
+                }
+            }
+
+            sheet.addEventListener('touchstart', onDragStart, { passive: true });
+            sheet.addEventListener('mousedown', onDragStart);
+            window.addEventListener('touchmove', onDragMove, { passive: true });
+            window.addEventListener('mousemove', onDragMove);
+            window.addEventListener('touchend', onDragEnd);
+            window.addEventListener('mouseup', onDragEnd);
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && _open) closeInfoPanel();
+            });
+        })();
 
         // Initialize
         initApp();

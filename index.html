@@ -2274,11 +2274,28 @@
                 font-size: 13px !important;
             }
 
-            /* Landscape video overrides (Films tab) */
+            /* Landscape video overrides (Films tab) — no cropping, frame fills section */
+            .video-section.landscape-mode .video-frame {
+                width: 100vw !important;
+                height: 100% !important;
+                aspect-ratio: unset !important;
+                border-radius: 0 !important;
+                margin: 0 !important;
+            }
+
             .video-section.landscape-mode .video-frame video {
-                aspect-ratio: 16/9 !important;
                 object-fit: contain !important;
+                object-position: center center !important;
                 background: transparent !important;
+            }
+
+            .video-section.landscape-mode .video-seekbar {
+                bottom: 0 !important;
+                border-radius: 0 !important;
+            }
+
+            .video-section.landscape-mode .video-seekbar-track {
+                border-radius: 0 !important;
             }
 
             .video-section.landscape-mode .content-info-left {
@@ -2575,6 +2592,15 @@
         let totalSectionsCount = 0; // Total sections for nav arrow visibility
         let playVideoDebounceTimer = null; // Debounce video playback during scroll
 
+
+        function getSectionHeight() {
+            if (window.innerWidth <= 600) {
+                const nav = document.querySelector('.mobile-bottom-nav');
+                const navH = nav ? nav.offsetHeight : 56;
+                return window.innerHeight - navH;
+            }
+            return window.innerHeight;
+        }
 
         // DOM Elements
         const bgLayer = document.getElementById('bgLayer');
@@ -2907,7 +2933,7 @@
 
             if (!container || !upArrow || !downArrow) return;
 
-            const sectionHeight = window.innerHeight;
+            const sectionHeight = getSectionHeight();
             const currentIndex = Math.round(container.scrollTop / sectionHeight);
 
             // Hide up arrow on first section (index 0)
@@ -3376,7 +3402,7 @@
             const container = document.getElementById('mainScrollContainer');
             if (!container) return 'landing';
 
-            const sectionHeight = window.innerHeight;
+            const sectionHeight = getSectionHeight();
             const currentIndex = Math.round(container.scrollTop / sectionHeight);
             const sections = container.querySelectorAll('.landing-section, .video-section');
 
@@ -3862,7 +3888,7 @@
             const sectionIndex = allSections.indexOf(section);
 
             if (sectionIndex >= 0) {
-                const targetTop = sectionIndex * window.innerHeight;
+                const targetTop = sectionIndex * getSectionHeight();
                 const targetColor = section.getAttribute('data-bg-color');
                 smartScrollTo(targetTop, container, targetColor);
 
@@ -3879,7 +3905,7 @@
 
             const sections = container.querySelectorAll('.landing-section, .video-section');
             if (sections[index]) {
-                const targetTop = index * window.innerHeight;
+                const targetTop = index * getSectionHeight();
                 const targetColor = sections[index].getAttribute('data-bg-color');
                 smartScrollTo(targetTop, container, targetColor);
             }
@@ -3989,7 +4015,7 @@
         function smartScrollTo(targetTop, container, targetColor = null) {
             const currentTop = container.scrollTop;
             const distance = Math.abs(targetTop - currentTop);
-            const sectionHeight = window.innerHeight;
+            const sectionHeight = getSectionHeight();
 
             // If jumping more than 4 sections away, use Warp Zoom
             if (distance > sectionHeight * 4) {
@@ -4121,7 +4147,7 @@
             });
 
             if (absoluteIndex >= 0) {
-                const targetTop = absoluteIndex * window.innerHeight;
+                const targetTop = absoluteIndex * getSectionHeight();
                 const targetColor = targetSection.getAttribute('data-bg-color');
                 smartScrollTo(targetTop, container, targetColor);
 
@@ -4138,7 +4164,7 @@
 
             const sections = container.querySelectorAll('.landing-section, .video-section');
             if (sections[index]) {
-                const targetTop = index * window.innerHeight;
+                const targetTop = index * getSectionHeight();
 
                 // Temporarily disable scroll-snap for smooth programmatic scrolling
                 const originalSnapType = container.style.scrollSnapType;
@@ -4165,7 +4191,7 @@
             const container = document.getElementById('mainScrollContainer');
             if (!container) return;
 
-            const sectionHeight = window.innerHeight;
+            const sectionHeight = getSectionHeight();
             const sections = container.querySelectorAll('.landing-section, .video-section');
             const totalSections = sections.length;
 

@@ -2619,12 +2619,15 @@
         function trackEvent(action, data) {
             const event = { action, ...data, ts: Date.now() };
             _analyticsQueue.push(event);
-            try {
-                navigator.sendBeacon(
-                    _analyticsWorkerUrl + '/events',
-                    JSON.stringify(event)
-                );
-            } catch (_) { /* endpoint may not exist yet — silent */ }
+            // Fire beacon off the critical path so it never blocks INP
+            setTimeout(() => {
+                try {
+                    navigator.sendBeacon(
+                        _analyticsWorkerUrl + '/events',
+                        JSON.stringify(event)
+                    );
+                } catch (_) { /* endpoint may not exist yet — silent */ }
+            }, 0);
         }
 
         function startWatchTimer(videoId) {
@@ -2649,8 +2652,10 @@
         window.addEventListener('touchstart', () => { if (isWarping) isWarping = false; }, { passive: true });
         window.addEventListener('keydown', () => { if (isWarping) isWarping = false; }, { passive: true });
 
+        let _mobileNavItems = null;
         function updateMobileNav(activeTabId) {
-            document.querySelectorAll('.mobile-nav-item').forEach(btn => {
+            if (!_mobileNavItems) _mobileNavItems = document.querySelectorAll('.mobile-nav-item');
+            _mobileNavItems.forEach(btn => {
                 btn.classList.toggle('active', btn.getAttribute('data-tab-id') === activeTabId);
             });
         }
@@ -3483,20 +3488,25 @@
                 pendingLikes[videoId] = (pendingLikes[videoId] || 0) + 1;
             }
 
-            // Save liked state locally
-            localStorage.setItem('userLikedVideos', JSON.stringify(userLikes));
+            // Defer persistence off the critical path (INP optimisation).
+            // localStorage is synchronous I/O — moving it after paint keeps
+            // the interaction response fast.
+            const likedState = !isCurrentlyLiked;
+            const cachedCount = likesCache[videoId];
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    localStorage.setItem('userLikedVideos', JSON.stringify(userLikes));
+                    const localLikes = JSON.parse(localStorage.getItem('videoLikes') || '{}');
+                    localLikes[videoId] = cachedCount;
+                    localStorage.setItem('videoLikes', JSON.stringify(localLikes));
+                    trackEvent('like_toggle', { videoId, liked: likedState });
+                }, 0);
+            });
 
-            // Debounced save to server (batches rapid toggles)
             clearTimeout(likeDebounceTimer);
             likeDebounceTimer = setTimeout(() => {
                 savePendingLikes();
             }, 500);
-
-            const localLikes = JSON.parse(localStorage.getItem('videoLikes') || '{}');
-            localLikes[videoId] = likesCache[videoId];
-            localStorage.setItem('videoLikes', JSON.stringify(localLikes));
-
-            trackEvent('like_toggle', { videoId, liked: !isCurrentlyLiked });
         }
 
         async function savePendingLikes() {
@@ -3807,30 +3817,39 @@
 
         // Handle tab button clicks - switch grid panel if in grid mode, otherwise scroll
         function handleTabClick(categoryId) {
-            const navbarWrapper = document.getElementById('navbarWrapper');
-            const isGridMode = navbarWrapper && navbarWrapper.classList.contains('grid-mode');
-
-            if (isGridMode) {
-                switchGridTab(categoryId);
-            } else {
-                scrollToCategory(categoryId);
-            }
-
+            // Update visual state immediately so the browser can paint the active
+            // indicator before any heavy scroll / DOM work runs (INP optimisation).
+            updateMobileNav(categoryId);
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 const tabId = btn.getAttribute('data-tab-id');
                 btn.classList.toggle('active', tabId === categoryId);
             });
-            updateMobileNav(categoryId);
-            trackEvent('tab_visit', { category: categoryId, via: isGridMode ? 'grid' : 'scroll' });
+
+            const navbarWrapper = document.getElementById('navbarWrapper');
+            const isGridMode = navbarWrapper && navbarWrapper.classList.contains('grid-mode');
+
+            // Defer expensive scroll / grid switch + analytics to after next paint
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    if (isGridMode) {
+                        switchGridTab(categoryId);
+                    } else {
+                        scrollToCategory(categoryId);
+                    }
+                    trackEvent('tab_visit', { category: categoryId, via: isGridMode ? 'grid' : 'scroll' });
+                }, 0);
+            });
         }
 
         // Navigate to the landing/profile section
         function goToLanding() {
+            // Paint the active nav state immediately (INP optimisation)
+            updateMobileNav('home');
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+
             closeGridOverlay();
             const container = document.getElementById('mainScrollContainer');
             if (container) {
-                // Reset and start playing the landing video immediately so
-                // the user never sees a stale paused frame during the scroll
                 const landingVideo = document.getElementById('landing-video');
                 if (landingVideo) {
                     landingVideo.currentTime = 0;
@@ -3840,22 +3859,21 @@
                     isPlaying = true;
                     userPaused['landing-video'] = false;
 
-                    // Hide the play overlay button since video is now playing
                     const btn = document.getElementById('btn-landing-video');
                     if (btn) btn.classList.add('playing');
 
-                    // Update control bar icons
                     document.getElementById('pauseIcon').style.display = 'block';
                     document.getElementById('playIcon').style.display = 'none';
                 }
 
                 const landingSection = container.querySelector('.landing-section');
                 const targetColor = landingSection ? landingSection.getAttribute('data-bg-color') : null;
-                smartScrollTo(0, container, targetColor);
 
-                // Explicitly update like button for landing
-                updateLikeButtonForCurrentVideo('landing', false, true);
-                updateMobileNav('home');
+                // Defer heavy scroll to after the next paint frame
+                requestAnimationFrame(() => {
+                    smartScrollTo(0, container, targetColor);
+                    updateLikeButtonForCurrentVideo('landing', false, true);
+                });
 
                 // Safety net: if the observer/smartScrollTo race-condition paused
                 // or muted the video during the scroll, restore it fully
@@ -4411,6 +4429,7 @@
             let lastTapTime = 0;
             let tapTimer = null;
             let lastTapVideoId = null;
+            const DOUBLE_TAP_DELAY = 280;
 
             document.addEventListener('click', (e) => {
                 const frame = e.target.closest('[data-tap-video]');
@@ -4427,7 +4446,6 @@
                     return;
                 }
                 const now = Date.now();
-                const DOUBLE_TAP_DELAY = 300;
 
                 if (lastTapVideoId === videoId && (now - lastTapTime) < DOUBLE_TAP_DELAY) {
                     clearTimeout(tapTimer);
@@ -4439,6 +4457,18 @@
                     lastTapTime = now;
                     lastTapVideoId = videoId;
                     clearTimeout(tapTimer);
+
+                    // Provide immediate visual feedback before the delay resolves.
+                    // This satisfies INP by painting a response frame within ~50ms.
+                    const video = document.getElementById(videoId);
+                    if (video && !video.paused && isMuted && !userManuallyMuted) {
+                        // First-tap-unmute path — execute immediately, no delay needed
+                        lastTapTime = 0;
+                        lastTapVideoId = null;
+                        unmuteAndDismissHint();
+                        return;
+                    }
+
                     tapTimer = setTimeout(() => {
                         tapTimer = null;
                         lastTapTime = 0;
@@ -4455,17 +4485,22 @@
         let _dtActiveTl = null;
 
         function doubleTapLike(e, videoId) {
-            const userLikes = JSON.parse(localStorage.getItem('userLikedVideos') || '{}');
-            if (!userLikes[getCurrentVideoId()]) {
-                toggleLike();
-            }
-
+            // Show the heart animation + haptic immediately (visual response)
             _dtTapCount++;
             clearTimeout(_dtResetTimer);
             _dtResetTimer = setTimeout(() => { _dtTapCount = 0; }, 1200);
-
             pumpCenterHeart(e.clientX, e.clientY, _dtTapCount);
             if (navigator.vibrate) navigator.vibrate(30);
+
+            // Defer the like toggle (localStorage I/O) to after the next paint
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    const userLikes = JSON.parse(localStorage.getItem('userLikedVideos') || '{}');
+                    if (!userLikes[getCurrentVideoId()]) {
+                        toggleLike();
+                    }
+                }, 0);
+            });
         }
 
         const _dtHeartSVG = `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">

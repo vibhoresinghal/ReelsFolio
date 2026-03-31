@@ -2185,6 +2185,10 @@
                 height: calc(100dvh - 56px - env(safe-area-inset-bottom, 0px)) !important;
             }
 
+            .video-container {
+                scroll-behavior: auto !important;
+            }
+
             .video-section {
                 height: calc(100vh - 56px - env(safe-area-inset-bottom, 0px)) !important;
                 height: calc(100dvh - 56px - env(safe-area-inset-bottom, 0px)) !important;
@@ -2227,6 +2231,8 @@
                 text-align: left !important;
                 display: flex !important;
                 flex-direction: column !important;
+                pointer-events: auto !important;
+                cursor: pointer;
             }
 
             .content-title {
@@ -2275,6 +2281,8 @@
                 max-width: none;
                 z-index: 10;
                 text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+                pointer-events: auto;
+                cursor: pointer;
             }
 
             .landing-name {
@@ -4367,19 +4375,23 @@
             if (sections[index]) {
                 const targetTop = index * getSectionHeight();
 
-                // Temporarily disable scroll-snap for smooth programmatic scrolling
+                if (!smooth) {
+                    container.scrollTop = targetTop;
+                    return;
+                }
+
                 const originalSnapType = container.style.scrollSnapType;
                 container.style.scrollSnapType = 'none';
 
-                container.scrollTo({
-                    top: targetTop,
-                    behavior: smooth ? 'smooth' : 'auto'
+                gsap.to(container, {
+                    scrollTop: targetTop,
+                    duration: 0.6,
+                    ease: 'power2.inOut',
+                    onComplete: () => {
+                        container.style.scrollSnapType = originalSnapType || '';
+                        if (!container.style.scrollSnapType) container.style.removeProperty('scroll-snap-type');
+                    }
                 });
-
-                setTimeout(() => {
-                    container.style.scrollSnapType = originalSnapType || '';
-                    if (!container.style.scrollSnapType) container.style.removeProperty('scroll-snap-type');
-                }, smooth ? 800 : 50);
             }
         }
 
@@ -5142,6 +5154,16 @@
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape' && _open) closeInfoPanel();
             });
+
+            // Tap on description area opens the info panel on mobile
+            document.addEventListener('click', (e) => {
+                if (_open) return;
+                if (window.innerWidth > 600) return;
+                if (e.target.closest('.content-info-left') || e.target.closest('.landing-profile-info')) {
+                    e.stopPropagation();
+                    openInfoPanel();
+                }
+            }, true);
         })();
 
         // Initialize

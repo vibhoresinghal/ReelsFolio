@@ -2165,18 +2165,31 @@
         /* ===== MOBILE: <=600px — edge-to-edge video + bottom navbar ===== */
         @media (max-width: 600px) {
 
-            .video-content-wrapper {
-                width: 100vw;
-                height: 100vh;
-                height: 100dvh;
+            /* Shorten all containers so video ends above the navbar */
+            .video-container,
+            .landing-section,
+            .main-scroll-container,
+            .tabs-world {
+                height: calc(100vh - 56px - env(safe-area-inset-bottom, 0px)) !important;
+                height: calc(100dvh - 56px - env(safe-area-inset-bottom, 0px)) !important;
+            }
+
+            .video-section {
+                height: calc(100vh - 56px - env(safe-area-inset-bottom, 0px)) !important;
+                height: calc(100dvh - 56px - env(safe-area-inset-bottom, 0px)) !important;
                 overflow: hidden;
             }
 
-            /* Video frame: edge-to-edge, no radius */
+            .video-content-wrapper {
+                width: 100vw;
+                height: 100%;
+                overflow: hidden;
+            }
+
+            /* Video frame: fills the shortened section */
             .video-frame {
                 width: 100vw !important;
-                height: 100vh !important;
-                height: 100dvh !important;
+                height: 100% !important;
                 aspect-ratio: unset !important;
                 border-radius: 0 !important;
                 box-shadow: none !important;
@@ -2193,21 +2206,47 @@
                 object-position: center bottom;
             }
 
-            /* Content overlay: bottom-left, full-bleed positioning */
+            /* Content overlay: above seekbar within shortened frame */
             .content-info-left {
                 left: 16px !important;
-                bottom: 72px !important;
+                bottom: 24px !important;
                 right: 80px !important;
                 transform: none !important;
                 max-width: calc(100vw - 110px) !important;
                 text-align: left !important;
+                display: flex !important;
+                flex-direction: column !important;
             }
 
-            /* Landing section: edge-to-edge */
+            .content-title {
+                order: -1 !important;
+                font-size: 16px !important;
+                margin-bottom: 2px !important;
+            }
+
+            .content-desc {
+                font-size: 11px !important;
+                line-height: 1.35 !important;
+                margin-bottom: 4px !important;
+            }
+
+            .content-link {
+                font-size: 11px !important;
+                padding: 5px 10px !important;
+                margin-top: 4px !important;
+                gap: 6px !important;
+                align-self: flex-start !important;
+            }
+
+            .content-link svg {
+                width: 14px !important;
+                height: 14px !important;
+            }
+
+            /* Landing frame: fills the shortened section */
             .landing-video-frame {
                 width: 100vw !important;
-                height: 100vh !important;
-                height: 100dvh !important;
+                height: 100% !important;
                 aspect-ratio: unset !important;
                 border-radius: 0 !important;
                 box-shadow: none !important;
@@ -2221,7 +2260,7 @@
             .landing-profile-info {
                 left: 16px;
                 right: 16px;
-                bottom: 72px;
+                bottom: 24px;
                 max-width: none;
                 z-index: 10;
                 text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
@@ -2245,7 +2284,7 @@
             .video-section.landscape-mode .content-info-left {
                 position: absolute !important;
                 left: 16px !important;
-                bottom: 72px !important;
+                bottom: 24px !important;
                 top: auto !important;
                 transform: none !important;
                 width: auto !important;
@@ -2284,10 +2323,16 @@
                 display: flex !important;
             }
 
-            /* Lift seekbar above mobile bottom nav */
+            /* Seekbar at bottom of shortened frame, hidden during scroll */
             .video-seekbar {
-                bottom: calc(56px + env(safe-area-inset-bottom, 0px)) !important;
-                transition: none !important;
+                bottom: 0 !important;
+                opacity: 0 !important;
+                transition: opacity 0.3s ease !important;
+            }
+
+            .video-section.active .video-seekbar,
+            .landing-section.active .video-seekbar {
+                opacity: 1 !important;
             }
 
             /* Disable hover/drag expansion on mobile — Instagram-style flat bar */

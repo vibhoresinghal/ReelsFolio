@@ -2541,10 +2541,11 @@
             .landing-section.info-panel-active .landing-video-frame {
                 --ip-scale: 1;
                 --ip-radius: 0px;
-                transform: scale(var(--ip-scale)) !important;
+                --ip-ty: 0px;
+                transform: translateY(var(--ip-ty)) scale(var(--ip-scale)) !important;
                 border-radius: var(--ip-radius) !important;
                 will-change: transform;
-                transform-origin: top center !important;
+                transform-origin: center center !important;
             }
         }
 
@@ -4829,8 +4830,17 @@
                 _sheetRatio = Math.max(0, Math.min(MAX_SHEET, ratio));
                 const vh = window.innerHeight;
                 const sheetH = _sheetRatio * vh;
-                const videoScale = 1 - _sheetRatio;
-                const radius = _sheetRatio > 0.05 ? 16 : 0;
+                // Shrink the video slightly more than the available area
+                // so there's visible padding above and below it.
+                const videoScale = 1 - _sheetRatio * 1.12;
+
+                const t = Math.max(0, (_sheetRatio - 0.05) / (MAX_SHEET - 0.05));
+                const radius = t * 32;
+
+                // Center the video in the area above the sheet, nudged down
+                // to compensate for the dragger/border-radius visual weight.
+                const draggerVisualH = (dragger.offsetHeight || 32) + 16;
+                const ty = -(_sheetRatio * vh) / 2 + (_sheetRatio > 0.05 ? draggerVisualH / 2 : 0);
 
                 if (animate) {
                     gsap.to(sheet, { y: -sheetH, duration: 0.4, ease: 'power3.out' });
@@ -4838,6 +4848,7 @@
                         gsap.to(_activeFrame, {
                             '--ip-scale': videoScale,
                             '--ip-radius': radius + 'px',
+                            '--ip-ty': ty + 'px',
                             duration: 0.4,
                             ease: 'power3.out'
                         });
@@ -4847,9 +4858,39 @@
                     if (_activeFrame) {
                         _activeFrame.style.setProperty('--ip-scale', videoScale);
                         _activeFrame.style.setProperty('--ip-radius', radius + 'px');
+                        _activeFrame.style.setProperty('--ip-ty', ty + 'px');
                     }
                 }
 
+                const draggerH = dragger.offsetHeight || 32;
+                contentEl.style.maxHeight = Math.max(0, sheetH - draggerH) + 'px';
+            }
+
+            function applyLayoutSnap(targetRatio, goingUp) {
+                const clamped = Math.max(0, Math.min(MAX_SHEET, targetRatio));
+                const vh = window.innerHeight;
+                const sheetH = clamped * vh;
+                const videoScale = 1 - clamped * 1.12;
+                const t = Math.max(0, (clamped - 0.05) / (MAX_SHEET - 0.05));
+                const radius = t * 32;
+                const draggerVisualH = (dragger.offsetHeight || 32) + 16;
+                const ty = -(clamped * vh) / 2 + (clamped > 0.05 ? draggerVisualH / 2 : 0);
+
+                const ease = goingUp ? 'back.out(0.8)' : 'power3.out';
+                const dur = goingUp ? 0.5 : 0.4;
+
+                gsap.to(sheet, { y: -sheetH, duration: dur, ease });
+                if (_activeFrame) {
+                    gsap.to(_activeFrame, {
+                        '--ip-scale': videoScale,
+                        '--ip-radius': radius + 'px',
+                        '--ip-ty': ty + 'px',
+                        duration: dur,
+                        ease
+                    });
+                }
+
+                _sheetRatio = clamped;
                 const draggerH = dragger.offsetHeight || 32;
                 contentEl.style.maxHeight = Math.max(0, sheetH - draggerH) + 'px';
             }
@@ -4912,6 +4953,8 @@
                 section.querySelectorAll('.content-info-left, .landing-profile-info, .video-seekbar').forEach(el => {
                     gsap.to(el, { opacity: 0, duration: 0.25 });
                 });
+                // Force-hide mute hints (their .visible class overrides GSAP opacity)
+                document.querySelectorAll('.mute-indicator').forEach(el => el.classList.remove('visible'));
 
                 // Populate and open
                 populateContent(getVideoData());
@@ -4922,7 +4965,7 @@
                 const mainScroll = document.getElementById('mainScrollContainer');
                 if (mainScroll) mainScroll.style.overflow = 'hidden';
 
-                applyLayout(OPEN_SHEET, true);
+                applyLayoutSnap(OPEN_SHEET, true);
             };
 
             window.closeInfoPanel = function() {
@@ -4944,11 +4987,13 @@
                     gsap.to(closingFrame, {
                         '--ip-scale': 1,
                         '--ip-radius': '0px',
+                        '--ip-ty': '0px',
                         duration: 0.35,
                         ease: 'power3.inOut',
                         onComplete: () => {
                             closingFrame.style.removeProperty('--ip-scale');
                             closingFrame.style.removeProperty('--ip-radius');
+                            closingFrame.style.removeProperty('--ip-ty');
                             if (closingSection) closingSection.classList.remove('info-panel-active');
                         }
                     });
@@ -4964,6 +5009,10 @@
                     closingSection.querySelectorAll('.content-info-left, .landing-profile-info, .video-seekbar').forEach(el => {
                         gsap.to(el, { opacity: 1, duration: 0.3, delay: 0.15 });
                     });
+                    // Restore mute hint if still muted
+                    if (isMuted) {
+                        setTimeout(() => { if (typeof showMuteIndicator === 'function') showMuteIndicator(); }, 350);
+                    }
                 }
 
                 const mainScroll = document.getElementById('mainScrollContainer');
@@ -5045,7 +5094,8 @@
                 } else {
                     const mid = (OPEN_SHEET + MAX_SHEET) / 2;
                     const target = _sheetRatio > mid ? MAX_SHEET : OPEN_SHEET;
-                    applyLayout(target, true);
+                    const goingUp = target > _sheetRatio;
+                    applyLayoutSnap(target, goingUp);
                 }
             }
 

@@ -148,6 +148,129 @@
             left: calc(50% + min(85vw, calc(65vh * 16 / 9)) / 2 + 24px);
         }
 
+        .fullscreen-btn .fullscreen-exit-icon {
+            display: none;
+        }
+
+        body.desktop-fullscreen-mode {
+            background: #000;
+        }
+
+        body.desktop-fullscreen-mode .bg-layer {
+            background: #000 !important;
+            transition: none !important;
+        }
+
+        body.desktop-fullscreen-mode .navbar-wrapper,
+        body.desktop-fullscreen-mode .control-bar,
+        body.desktop-fullscreen-mode .content-info-left,
+        body.desktop-fullscreen-mode .content-info-right,
+        body.desktop-fullscreen-mode .landing-profile-info,
+        body.desktop-fullscreen-mode .floating-item,
+        body.desktop-fullscreen-mode .landing-sticker {
+            opacity: 0 !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+        }
+
+        body.desktop-fullscreen-mode .video-container,
+        body.desktop-fullscreen-mode .landing-section,
+        body.desktop-fullscreen-mode .video-section,
+        body.desktop-fullscreen-mode .video-content-wrapper {
+            width: 100vw !important;
+            height: 100vh !important;
+            height: 100dvh !important;
+        }
+
+        body.desktop-fullscreen-mode .video-frame,
+        body.desktop-fullscreen-mode .landing-video-frame,
+        body.desktop-fullscreen-mode .video-section.landscape-mode .video-frame {
+            width: 100vw !important;
+            height: 100vh !important;
+            height: 100dvh !important;
+            aspect-ratio: unset !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+            margin: 0 !important;
+            opacity: 1 !important;
+            transform: none !important;
+        }
+
+        body.desktop-fullscreen-mode .video-frame video,
+        body.desktop-fullscreen-mode .landing-video-frame video,
+        body.desktop-fullscreen-mode .video-section.landscape-mode .video-frame video {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: contain !important;
+            object-position: center !important;
+            background: #000 !important;
+        }
+
+        body.desktop-fullscreen-mode .play-overlay-btn,
+        body.desktop-fullscreen-mode .mute-indicator {
+            display: none !important;
+        }
+
+        body.desktop-fullscreen-mode .video-nav-arrows {
+            display: flex !important;
+            left: auto !important;
+            right: 20px !important;
+            top: 20px !important;
+            transform: none !important;
+            z-index: 13000 !important;
+        }
+
+        body.desktop-fullscreen-mode .video-nav-arrows .nav-arrow-btn:not(.fullscreen-btn) {
+            display: none !important;
+        }
+
+        body.desktop-fullscreen-mode .fullscreen-btn .fullscreen-enter-icon {
+            display: none;
+        }
+
+        body.desktop-fullscreen-mode .fullscreen-btn .fullscreen-exit-icon {
+            display: block;
+        }
+
+        @media (min-width: 601px) {
+            body::before {
+                content: '';
+                position: fixed;
+                inset: 0;
+                z-index: 900;
+                pointer-events: none;
+                background: rgba(0, 0, 0, 0.82);
+                opacity: 0;
+                transition: opacity 1.6s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+
+            body.desktop-immersive-mode::before {
+                opacity: 1;
+            }
+
+            body.desktop-immersive-layer-active .video-section.active .video-content-wrapper,
+            body.desktop-immersive-layer-active .landing-section.active .landing-video-frame {
+                position: relative;
+                z-index: 901 !important;
+            }
+
+            body.desktop-immersive-mode .navbar-wrapper,
+            body.desktop-immersive-mode .control-bar,
+            body.desktop-immersive-mode .video-nav-arrows,
+            body.desktop-immersive-mode .video-section.active .content-info-left,
+            body.desktop-immersive-mode .video-section.active .content-info-right {
+                opacity: 0.12 !important;
+                transition: opacity 1.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            }
+
+            body.desktop-immersive-mode .landing-profile-info,
+            body.desktop-immersive-mode .floating-item,
+            body.desktop-immersive-mode .landing-sticker {
+                opacity: 0.08 !important;
+                transition: opacity 1.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            }
+        }
+
         .nav-arrow-btn {
             width: 48px;
             height: 48px;
@@ -2175,13 +2298,60 @@
         /* ===== MOBILE: <=600px — edge-to-edge video + bottom navbar ===== */
         @media (max-width: 600px) {
 
-            /* Shorten all containers so video ends above the navbar */
+            html,
+            body,
+            .bg-layer {
+                background: #000 !important;
+                background-color: #000 !important;
+                transition: none !important;
+            }
+
+            .video-container,
+            .landing-section,
+            .video-section,
+            .video-content-wrapper,
+            .video-frame,
+            .landing-video-frame,
+            .video-frame video,
+            .landing-video-frame video {
+                background: #000 !important;
+                background-color: #000 !important;
+            }
+
+            /* Mobile production defaults: retain functionality but hide experimental UI. */
+            .landing-name,
+            .landing-bio,
+            .landing-locations {
+                display: none !important;
+            }
+
+            .video-section .content-info-left {
+                display: none !important;
+            }
+
+            .mobile-bottom-nav,
+            .video-nav-arrows,
+            .control-bar {
+                opacity: 0 !important;
+                visibility: hidden !important;
+                pointer-events: none !important;
+            }
+
+            /* Text is hidden, so mobile frames no longer need readability scrims. */
+            .video-frame::after,
+            .landing-video-frame::after {
+                content: none !important;
+                display: none !important;
+                background: none !important;
+            }
+
+            /* The hidden site navbar reserves no space: video uses the full browser viewport. */
             .video-container,
             .landing-section,
             .main-scroll-container,
             .tabs-world {
-                height: calc(100vh - 56px - env(safe-area-inset-bottom, 0px)) !important;
-                height: calc(100dvh - 56px - env(safe-area-inset-bottom, 0px)) !important;
+                height: 100vh !important;
+                height: 100dvh !important;
             }
 
             .video-container {
@@ -2189,8 +2359,8 @@
             }
 
             .video-section {
-                height: calc(100vh - 56px - env(safe-area-inset-bottom, 0px)) !important;
-                height: calc(100dvh - 56px - env(safe-area-inset-bottom, 0px)) !important;
+                height: 100vh !important;
+                height: 100dvh !important;
                 overflow: hidden;
             }
 
@@ -2706,6 +2876,15 @@
             </svg>
             <span class="like-count" id="likeCount"></span>
         </button>
+        <button class="nav-arrow-btn fullscreen-btn" id="fullscreenBtn" onclick="toggleDesktopFullscreen()"
+            aria-label="Enter fullscreen video mode" title="Fullscreen video">
+            <svg class="fullscreen-enter-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5" />
+            </svg>
+            <svg class="fullscreen-exit-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3 8h5V3M21 8h-5V3M3 16h5v5M21 16h-5v5" />
+            </svg>
+        </button>
         <button class="nav-arrow-btn hidden" id="navArrowUp" onclick="navigate(-1)" aria-label="Previous section">
             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path d="M12 19V5M5 12l7-7 7 7" />
@@ -2798,7 +2977,9 @@
         function getSectionHeight() {
             if (window.innerWidth <= 600) {
                 const nav = document.querySelector('.mobile-bottom-nav');
-                const navH = nav ? nav.offsetHeight : 56;
+                const navStyle = nav ? getComputedStyle(nav) : null;
+                const navIsVisible = navStyle && navStyle.display !== 'none' && navStyle.visibility !== 'hidden';
+                const navH = navIsVisible ? nav.offsetHeight : 0;
                 return window.innerHeight - navH;
             }
             return window.innerHeight;
@@ -3509,6 +3690,144 @@
             if (!currentVideoId) return;
             toggleVideo(currentVideoId, false); // false = from control bar, not a video tap
         }
+
+        function getActiveVideoForFullscreen() {
+            const visibleId = getCurrentVideoId();
+            return document.getElementById(visibleId === 'landing' ? 'landing-video' : visibleId);
+        }
+
+        async function toggleDesktopFullscreen() {
+            if (window.innerWidth <= 600 || !document.fullscreenEnabled) return;
+
+            try {
+                if (document.fullscreenElement) {
+                    await document.exitFullscreen();
+                } else {
+                    await document.documentElement.requestFullscreen();
+                }
+            } catch (error) {
+                console.warn('Fullscreen mode could not be changed:', error);
+            }
+        }
+
+        function syncDesktopFullscreenMode() {
+            const isFullscreen = document.fullscreenElement === document.documentElement;
+            document.body.classList.toggle('desktop-fullscreen-mode', isFullscreen);
+
+            const button = document.getElementById('fullscreenBtn');
+            if (button) {
+                button.setAttribute('aria-label', isFullscreen
+                    ? 'Exit fullscreen video mode'
+                    : 'Enter fullscreen video mode');
+                button.title = isFullscreen ? 'Exit fullscreen' : 'Fullscreen video';
+            }
+
+            if (!isFullscreen) return;
+
+            const video = getActiveVideoForFullscreen();
+            if (!video) return;
+            currentVideoId = video.id;
+            isPlaying = true;
+            userPaused[video.id] = false;
+            video.muted = isMuted;
+            video.play().catch(error => console.log('Fullscreen playback blocked:', error));
+
+            const pauseIcon = document.getElementById('pauseIcon');
+            const playIcon = document.getElementById('playIcon');
+            if (pauseIcon) pauseIcon.style.display = 'block';
+            if (playIcon) playIcon.style.display = 'none';
+        }
+
+        document.addEventListener('fullscreenchange', syncDesktopFullscreenMode);
+
+        if (!document.fullscreenEnabled) {
+            document.getElementById('fullscreenBtn')?.classList.add('hidden');
+        }
+
+        const IMMERSIVE_IDLE_DELAY = 2500;
+        const IMMERSIVE_FADE_DURATION = 1600;
+        let immersiveIdleTimer = null;
+        let immersiveLayerTimer = null;
+        let lastImmersivePointerX = null;
+        let lastImmersivePointerY = null;
+
+        function canEnterDesktopImmersiveMode() {
+            if (window.innerWidth <= 600 || document.hidden || document.fullscreenElement) return false;
+            if (isWarping || isScrolling) return false;
+            if (document.querySelector('.grid-overlay.visible, .floating-modal-overlay.active')) return false;
+
+            const video = getActiveVideoForFullscreen();
+            return !!video && !video.paused && !video.ended;
+        }
+
+        function leaveDesktopImmersiveMode() {
+            document.body.classList.remove('desktop-immersive-mode');
+            if (!document.body.classList.contains('desktop-immersive-layer-active')) return;
+
+            clearTimeout(immersiveLayerTimer);
+            immersiveLayerTimer = setTimeout(() => {
+                immersiveLayerTimer = null;
+                if (!document.body.classList.contains('desktop-immersive-mode')) {
+                    document.body.classList.remove('desktop-immersive-layer-active');
+                }
+            }, IMMERSIVE_FADE_DURATION);
+        }
+
+        function cancelDesktopImmersiveMode() {
+            clearTimeout(immersiveIdleTimer);
+            immersiveIdleTimer = null;
+            leaveDesktopImmersiveMode();
+        }
+
+        function scheduleDesktopImmersiveMode() {
+            clearTimeout(immersiveIdleTimer);
+            immersiveIdleTimer = null;
+            leaveDesktopImmersiveMode();
+
+            if (!canEnterDesktopImmersiveMode()) return;
+            immersiveIdleTimer = setTimeout(() => {
+                immersiveIdleTimer = null;
+                if (canEnterDesktopImmersiveMode()) {
+                    clearTimeout(immersiveLayerTimer);
+                    immersiveLayerTimer = null;
+                    document.body.classList.add('desktop-immersive-layer-active');
+                    document.body.classList.add('desktop-immersive-mode');
+                }
+            }, IMMERSIVE_IDLE_DELAY);
+        }
+
+        function noteDesktopInteraction() {
+            scheduleDesktopImmersiveMode();
+        }
+
+        document.addEventListener('play', scheduleDesktopImmersiveMode, true);
+        document.addEventListener('playing', scheduleDesktopImmersiveMode, true);
+        document.addEventListener('pause', cancelDesktopImmersiveMode, true);
+        document.addEventListener('ended', cancelDesktopImmersiveMode, true);
+        document.addEventListener('pointerdown', noteDesktopInteraction, true);
+        document.addEventListener('wheel', noteDesktopInteraction, { passive: true, capture: true });
+        document.addEventListener('scroll', noteDesktopInteraction, { passive: true, capture: true });
+        document.addEventListener('keydown', noteDesktopInteraction, true);
+        document.addEventListener('pointermove', event => {
+            if (lastImmersivePointerX === null ||
+                Math.abs(event.clientX - lastImmersivePointerX) > 4 ||
+                Math.abs(event.clientY - lastImmersivePointerY) > 4) {
+                lastImmersivePointerX = event.clientX;
+                lastImmersivePointerY = event.clientY;
+                noteDesktopInteraction();
+            }
+        }, { passive: true });
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) cancelDesktopImmersiveMode();
+            else scheduleDesktopImmersiveMode();
+        });
+        document.addEventListener('fullscreenchange', () => {
+            if (document.fullscreenElement) cancelDesktopImmersiveMode();
+            else scheduleDesktopImmersiveMode();
+        });
+        window.addEventListener('resize', noteDesktopInteraction, { passive: true });
+        window.addEventListener('blur', cancelDesktopImmersiveMode);
 
         function toggleSound() {
             isMuted = !isMuted;

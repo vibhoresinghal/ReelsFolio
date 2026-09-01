@@ -581,6 +581,66 @@
             margin-left: 3px;
         }
 
+        .play-overlay-btn .play-with-sound-ring {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 118px;
+            height: 118px;
+            margin: 0;
+            overflow: visible;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            animation: rotatePlayWithSound 10s linear infinite;
+        }
+
+        body.experience-awaiting-start .play-overlay-btn .play-with-sound-ring {
+            display: block;
+        }
+
+        body.experience-awaiting-start .play-overlay-btn::before {
+            content: '';
+            position: absolute;
+            inset: -30px;
+            border-radius: 50%;
+        }
+
+        body.experience-awaiting-start .video-frame .play-overlay-btn {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        body.experience-awaiting-start .fullscreen-btn {
+            display: none;
+        }
+
+        .play-with-sound-ring text {
+            fill: white;
+            font-family: 'Inter', sans-serif;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 1.8px;
+            text-transform: uppercase;
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+        }
+
+        @keyframes rotatePlayWithSound {
+            from {
+                transform: translate(-50%, -50%) rotate(0deg);
+            }
+
+            to {
+                transform: translate(-50%, -50%) rotate(360deg);
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .play-overlay-btn .play-with-sound-ring {
+                animation: none;
+            }
+        }
+
         /* Mute indicator — shown on the active video frame when muted */
         .mute-indicator {
             position: absolute;
@@ -2741,7 +2801,7 @@
     </style>
 </head>
 
-<body>
+<body class="experience-awaiting-start">
     <!-- Background that transitions with each video -->
     <div class="bg-layer" id="bgLayer"></div>
 
@@ -2822,7 +2882,7 @@
     </button>
 
     <!-- Control Bar -->
-    <div class="control-bar">
+    <div class="control-bar hidden">
         <!-- Play/Stop Button -->
         <button class="play-stop-btn" id="playStopBtn" onclick="togglePlayStop()">
             <svg id="pauseIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
@@ -2964,7 +3024,8 @@
         let isMuted = true;
         let userManuallyMuted = false; // True when user explicitly clicked mute button
         let isWarping = false; // Flag to prevent BG updates during warp
-        let isPlaying = true;
+        let isPlaying = false;
+        let hasStartedExperience = false;
         let observer = null;
         let currentVideoId = null;
         let videosReady = {};
@@ -3051,14 +3112,6 @@
                 // Dynamically preload critical landing resources
                 const landing = videosData.landingSection;
                 if (landing) {
-                    // Preload landing video thumbnail for instant display
-                    if (landing.profileVideoThumbnail) {
-                        const imgPreload = document.createElement('link');
-                        imgPreload.rel = 'preload';
-                        imgPreload.as = 'image';
-                        imgPreload.href = landing.profileVideoThumbnail;
-                        document.head.appendChild(imgPreload);
-                    }
                     // Preload landing video for faster playback
                     if (landing.profileVideo) {
                         const videoPreload = document.createElement('link');
@@ -3102,7 +3155,6 @@
             if (!videosData || !videosData.tabs) return;
 
             const landing = videosData.landingSection || {};
-            const floatingItems = landing.floatingItems || [];
 
             // 1. Generate Tabs Navigation HTML - these are now scroll anchors or grid switchers
             const tabButtonsHTML = videosData.tabs.map((tab, index) =>
@@ -3111,30 +3163,6 @@
 
             // Populate Global Fixed Tabs
             if (globalTabs) globalTabs.innerHTML = tabButtonsHTML;
-
-            // Helper function to generate floating items HTML
-            function generateFloatingItemsHTML(items) {
-                return items.map(item => {
-                    const posStyle = [];
-                    if (item.position.top) posStyle.push(`top: ${item.position.top}`);
-                    if (item.position.bottom) posStyle.push(`bottom: ${item.position.bottom}`);
-                    if (item.position.left) posStyle.push(`left: ${item.position.left}`);
-                    if (item.position.right) posStyle.push(`right: ${item.position.right}`);
-
-                    const rotation = item.rotation || '0deg';
-                    const inlineStyle = `${posStyle.join('; ')}; --init-rotation: ${rotation}; transform: rotate(${rotation});`;
-
-                    return `
-                        <div class="floating-item size-${item.size}" 
-                             style="${inlineStyle}"
-                             onclick="openFloatingModal('${item.id}')"
-                             data-item-id="${item.id}">
-                            <img src="${item.thumbnail}" alt="${item.title}" draggable="false" loading="lazy"
-                                 onload="this.classList.add('loaded'); this.parentElement.classList.add('loaded');">
-                        </div>
-                    `;
-                }).join('');
-            }
 
             // Generate location tags HTML
             function generateLocationTagsHTML(locations) {
@@ -3160,35 +3188,23 @@
                         </div>
                     </div>
                     <div class="landing-video-frame" data-tap-video="landing-video">
-                        <video id="landing-video" src="${landing.profileVideo || ''}" poster="${landing.profileVideoThumbnail || ''}" muted playsinline loop preload="auto"></video>
+                        <video id="landing-video" src="${landing.profileVideo || ''}" muted playsinline loop preload="auto"></video>
                         <div class="mute-indicator" id="muteHint">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 4.06c0-1.336-1.616-2.005-2.56-1.06l-4.5 4.5H4.508c-1.141 0-2.318 0-2.402.933H2.03c-.01 0-.01.015-.01.033v6.088c0 .018 0 .033.01.033h.076c.084.933 1.261.933 2.402.933h1.932l4.5 4.5c.945.945 2.56.276 2.56-1.06V4.06zM17.78 9.22a.75.75 0 10-1.06 1.06L18.44 12l-1.72 1.72a.75.75 0 101.06 1.06l1.72-1.72 1.72 1.72a.75.75 0 101.06-1.06L20.56 12l1.72-1.72a.75.75 0 10-1.06-1.06l-1.72 1.72-1.72-1.72z" /></svg>
                             <span>Tap for sound</span>
                         </div>
                         <div class="play-overlay-btn" id="btn-landing-video">
                             <svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" /></svg>
+                            <svg class="play-with-sound-ring" viewBox="0 0 120 120" aria-hidden="true">
+                                <defs><path id="play-sound-path-landing" d="M60,60 m-47,0 a47,47 0 1,1 94,0 a47,47 0 1,1 -94,0" /></defs>
+                                <text><textPath href="#play-sound-path-landing">PLAY WITH SOUND • PLAY WITH SOUND • </textPath></text>
+                            </svg>
                         </div>
                         <div class="video-seekbar" data-for="landing-video">
                             <div class="video-seekbar-track">
                                 <div class="video-seekbar-fill" id="seekbar-landing-video"></div>
                             </div>
                         </div>
-                    </div>
-                    ${generateFloatingItemsHTML(floatingItems)}
-                    <div class="landing-sticker star" style="top: 5%; left: -2%; width: clamp(120px, 18vw, 200px); transform: rotate(-10deg);">
-                        <img src="assets/star.svg" alt="star" style="width: 100%; height: 100%;">
-                    </div>
-                    <div class="landing-sticker heart" style="top: 10%; right: 26%; width: clamp(80px, 10vw, 130px); transform: rotate(15deg);">
-                        <img src="assets/heart.svg" alt="heart" style="width: 100%; height: 100%;">
-                    </div>
-                    <div class="landing-sticker plus" style="bottom: 5%; left: 28%; width: clamp(80px, 12vw, 150px); transform: rotate(-5deg); z-index: 12;">
-                        <img src="assets/plus.svg" alt="plus" style="width: 100%; height: 100%;">
-                    </div>
-                    <div class="landing-sticker star2" style="bottom: 25%; right: 2%; width: clamp(40px, 5vw, 70px); transform: rotate(10deg);">
-                        <img src="assets/star2.svg" alt="star2" style="width: 100%; height: 100%;">
-                    </div>
-                    <div class="landing-sticker wine" style="bottom: -5%; left: -2%; width: clamp(60px, 8vw, 100px); transform: rotate(30deg);">
-                        <img src="assets/wine.svg" alt="wine" style="width: 100%; height: 100%;">
                     </div>
                 </div>
             `;
@@ -3229,7 +3245,13 @@
                                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 4.06c0-1.336-1.616-2.005-2.56-1.06l-4.5 4.5H4.508c-1.141 0-2.318 0-2.402.933H2.03c-.01 0-.01.015-.01.033v6.088c0 .018 0 .033.01.033h.076c.084.933 1.261.933 2.402.933h1.932l4.5 4.5c.945.945 2.56.276 2.56-1.06V4.06zM17.78 9.22a.75.75 0 10-1.06 1.06L18.44 12l-1.72 1.72a.75.75 0 101.06 1.06l1.72-1.72 1.72 1.72a.75.75 0 101.06-1.06L20.56 12l1.72-1.72a.75.75 0 10-1.06-1.06l-1.72 1.72-1.72-1.72z" /></svg>
                                         <span>Tap for sound</span>
                                     </div>
-                                    <div class="play-overlay-btn" id="btn-${video.id}"><svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" /></svg></div>
+                                    <div class="play-overlay-btn" id="btn-${video.id}">
+                                        <svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" /></svg>
+                                        <svg class="play-with-sound-ring" viewBox="0 0 120 120" aria-hidden="true">
+                                            <defs><path id="play-sound-path-${video.id}" d="M60,60 m-47,0 a47,47 0 1,1 94,0 a47,47 0 1,1 -94,0" /></defs>
+                                            <text><textPath href="#play-sound-path-${video.id}">PLAY WITH SOUND • PLAY WITH SOUND • </textPath></text>
+                                        </svg>
+                                    </div>
                                     <div class="video-seekbar" data-for="${video.id}">
                                         <div class="video-seekbar-track">
                                             <div class="video-seekbar-fill" id="seekbar-${video.id}"></div>
@@ -3257,6 +3279,20 @@
             // Put all content in the single scroll container
             tabsContainer.innerHTML = `<div class="video-container" id="mainScrollContainer">${allSectionsHTML}</div>`;
 
+            // Decode and reveal the landing video's opening frame without playing it.
+            // A tiny seek is more reliable than currentTime 0 across mobile browsers.
+            const landingVideo = document.getElementById('landing-video');
+            const revealLandingFirstFrame = () => {
+                if (!hasStartedExperience && landingVideo?.paused && landingVideo.readyState >= 2) {
+                    landingVideo.currentTime = 0.01;
+                }
+            };
+            if (landingVideo?.readyState >= 2) {
+                revealLandingFirstFrame();
+            } else {
+                landingVideo?.addEventListener('loadeddata', revealLandingFirstFrame, { once: true });
+            }
+
             // Initialize background with landing color
             bgLayer.style.backgroundColor = landing.bgColor || '#2d1b4e';
 
@@ -3273,7 +3309,6 @@
             initDraggable();
 
             // Mark landing video frame as loaded when video is ready
-            const landingVideo = document.getElementById('landing-video');
             const landingFrame = document.querySelector('.landing-video-frame');
             if (landingVideo && landingFrame) {
                 landingVideo.addEventListener('loadeddata', () => {
@@ -3371,14 +3406,14 @@
                         }
 
                         if (isLanding) {
-                            if (controlBar) controlBar.classList.remove('hidden');
+                            if (controlBar) controlBar.classList.toggle('hidden', !hasStartedExperience);
                             if (logoBtn) logoBtn.classList.add('active');
                             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
                             updateMobileNav('home');
-                            if (!isWarping) debouncedPlayVideo('landing-video');
+                            if (!isWarping && hasStartedExperience) debouncedPlayVideo('landing-video');
                             if (!isWarping) updateLikeButtonForCurrentVideo('landing', false, true);
                         } else if (isVideo) {
-                            if (controlBar) controlBar.classList.remove('hidden');
+                            if (controlBar) controlBar.classList.toggle('hidden', !hasStartedExperience);
                             if (logoBtn) logoBtn.classList.remove('active');
 
                             // Highlight tab based on current video's category
@@ -3390,7 +3425,7 @@
                             updateMobileNav(category);
 
                             const videoId = entry.target.getAttribute('data-video-id');
-                            if (!isWarping) debouncedPlayVideo(videoId);
+                            if (!isWarping && hasStartedExperience) debouncedPlayVideo(videoId);
                             if (!isWarping) updateLikeButtonForCurrentVideo(videoId, false, true);
                         }
                     } else {
@@ -3457,6 +3492,8 @@
         // Debounced play: cancels any pending play and schedules a new one.
         // This prevents audio bleed from intermediate sections during fast scrolling.
         function debouncedPlayVideo(videoId) {
+            if (!hasStartedExperience) return;
+
             // Cancel any previous pending play
             clearTimeout(playVideoDebounceTimer);
             // Immediately mute AND pause ALL videos to kill any audio instantly
@@ -3472,6 +3509,8 @@
 
 
         function playVideo(videoId) {
+            if (!hasStartedExperience) return;
+
             const video = document.getElementById(videoId);
             if (!video) return;
 
@@ -3492,9 +3531,9 @@
             document.getElementById('playIcon').style.display = 'none';
 
             video.currentTime = 0;
+            video.muted = isMuted;
             video.play().catch(e => console.log('Autoplay blocked:', e));
 
-            video.muted = isMuted;
             if (isMuted) showMuteIndicator(); else hideMuteIndicator();
             startWatchTimer(videoId);
 
@@ -3519,6 +3558,29 @@
                     btn.classList.remove('paused');
                 }
             }
+        }
+
+        function startExperienceWithSound(videoId) {
+            if (hasStartedExperience) {
+                toggleVideo(videoId);
+                return;
+            }
+
+            clearTimeout(playVideoDebounceTimer);
+            hasStartedExperience = true;
+            isMuted = false;
+            userManuallyMuted = false;
+            document.body.classList.remove('experience-awaiting-start');
+
+            document.querySelectorAll('.video-section video, .landing-section video').forEach(video => {
+                video.pause();
+                video.muted = true;
+            });
+
+            if (controlBar) controlBar.classList.remove('hidden');
+            updateMuteUI();
+            hideMuteIndicator();
+            playVideo(videoId);
         }
 
         function pauseVideo(videoId) {
@@ -3684,7 +3746,7 @@
         }
 
         async function toggleDesktopFullscreen() {
-            if (window.innerWidth <= 600 || !document.fullscreenEnabled) return;
+            if (!hasStartedExperience || window.innerWidth <= 600 || !document.fullscreenEnabled) return;
 
             try {
                 if (document.fullscreenElement) {
@@ -4358,7 +4420,7 @@
             const container = document.getElementById('mainScrollContainer');
             if (container) {
                 const landingVideo = document.getElementById('landing-video');
-                if (landingVideo) {
+                if (landingVideo && hasStartedExperience) {
                     landingVideo.currentTime = 0;
                     landingVideo.muted = isMuted;
                     landingVideo.play().catch(() => { });
@@ -4386,7 +4448,7 @@
                 // or muted the video during the scroll, restore it fully
                 setTimeout(() => {
                     const lv = document.getElementById('landing-video');
-                    if (lv) {
+                    if (lv && hasStartedExperience) {
                         lv.muted = isMuted; // Restore mute state (smartScrollTo mutes all videos)
                         if (lv.paused) {
                             lv.play().catch(() => { });
@@ -4953,9 +5015,18 @@
                     clearTimeout(tapTimer);
                     lastTapTime = 0;
                     lastTapVideoId = null;
-                    toggleVideo(videoId);
+                    if (hasStartedExperience) {
+                        toggleVideo(videoId);
+                    } else {
+                        startExperienceWithSound(videoId);
+                    }
                     return;
                 }
+
+                // Before playback is unlocked, only the explicit center button
+                // may start a video with sound.
+                if (!hasStartedExperience) return;
+
                 const now = Date.now();
 
                 if (lastTapVideoId === videoId && (now - lastTapTime) < DOUBLE_TAP_DELAY) {

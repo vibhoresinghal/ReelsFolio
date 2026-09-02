@@ -611,10 +611,6 @@
             pointer-events: auto;
         }
 
-        body.experience-awaiting-start .fullscreen-btn {
-            display: none;
-        }
-
         .play-with-sound-ring text {
             fill: white;
             font-family: 'Inter', sans-serif;
@@ -3356,8 +3352,8 @@
 
             if (!container || !upArrow || !downArrow) return;
 
-            const sectionHeight = getSectionHeight();
-            const currentIndex = Math.round(container.scrollTop / sectionHeight);
+            const sections = container.querySelectorAll('.landing-section, .video-section');
+            const currentIndex = getClosestSectionIndex(container, sections);
 
             // Hide up arrow on first section (index 0)
             if (currentIndex === 0) {
@@ -3746,7 +3742,7 @@
         }
 
         async function toggleDesktopFullscreen() {
-            if (!hasStartedExperience || window.innerWidth <= 600 || !document.fullscreenEnabled) return;
+            if (window.innerWidth <= 600 || !document.fullscreenEnabled) return;
 
             try {
                 if (document.fullscreenElement) {
@@ -3772,6 +3768,9 @@
             }
 
             if (!isFullscreen) return;
+            // Entering fullscreen before the experience starts should not
+            // implicitly start playback; the center play control remains active.
+            if (!hasStartedExperience) return;
 
             const video = getActiveVideoForFullscreen();
             if (!video) return;
@@ -4745,30 +4744,77 @@
             }
         }
 
-        // Scroll to a specific section in the main container
+        let navigationTween = null;
+        let navigationScrollStyles = null;
+
+        function restoreNavigationScrollStyles(container) {
+            if (!navigationScrollStyles) return;
+            container.style.scrollSnapType = navigationScrollStyles.scrollSnapType;
+            container.style.scrollBehavior = navigationScrollStyles.scrollBehavior;
+            navigationScrollStyles = null;
+        }
+
+        function getClosestSectionIndex(container, sections) {
+            let closestIndex = 0;
+            let closestDistance = Infinity;
+
+            sections.forEach((section, index) => {
+                const distance = Math.abs(section.offsetTop - container.scrollTop);
+                if (distance < closestDistance) {
+                    closestDistance = distance;
+                    closestIndex = index;
+                }
+            });
+
+            return closestIndex;
+        }
+
+        // Scroll to a specific section using its real position. Calculating the
+        // destination from viewport height is unreliable when browser chrome or
+        // the mobile navigation changes the usable viewport.
         function scrollToVideo(index, smooth = true) {
             const container = document.getElementById('mainScrollContainer');
             if (!container) return;
 
             const sections = container.querySelectorAll('.landing-section, .video-section');
             if (sections[index]) {
-                const targetTop = index * getSectionHeight();
+                const targetTop = sections[index].offsetTop;
 
                 if (!smooth) {
+                    if (navigationTween) navigationTween.kill();
+                    navigationTween = null;
+                    restoreNavigationScrollStyles(container);
                     container.scrollTop = targetTop;
                     return;
                 }
 
-                const originalSnapType = container.style.scrollSnapType;
-                container.style.scrollSnapType = 'none';
+                // A new click retargets the current movement instead of fighting it.
+                if (navigationTween) navigationTween.kill();
+                navigationTween = null;
+                restoreNavigationScrollStyles(container);
 
-                gsap.to(container, {
+                navigationScrollStyles = {
+                    scrollSnapType: container.style.scrollSnapType,
+                    scrollBehavior: container.style.scrollBehavior
+                };
+                container.style.scrollSnapType = 'none';
+                container.style.scrollBehavior = 'auto';
+
+                const distance = Math.abs(targetTop - container.scrollTop);
+                const duration = Math.min(0.72, Math.max(0.45, distance / 1400));
+
+                navigationTween = gsap.to(container, {
                     scrollTop: targetTop,
-                    duration: 0.6,
-                    ease: 'power2.inOut',
+                    duration,
+                    ease: 'power3.inOut',
+                    overwrite: 'auto',
                     onComplete: () => {
-                        container.style.scrollSnapType = originalSnapType || '';
-                        if (!container.style.scrollSnapType) container.style.removeProperty('scroll-snap-type');
+                        container.scrollTop = targetTop;
+                        navigationTween = null;
+                        restoreNavigationScrollStyles(container);
+                        isScrolling = false;
+                        navigationTargetIndex = null;
+                        updateNavArrows();
                     }
                 });
             }
@@ -4777,13 +4823,11 @@
         // Navigate to next/previous section (for keyboard navigation)
         // Queued navigation - allows updating target mid-transition
         let navigationTargetIndex = null;
-        let navigationScrollId = 0; // Track current scroll animation
 
         function navigate(direction) {
             const container = document.getElementById('mainScrollContainer');
             if (!container) return;
 
-            const sectionHeight = getSectionHeight();
             const sections = container.querySelectorAll('.landing-section, .video-section');
             const totalSections = sections.length;
 
@@ -4793,8 +4837,8 @@
                 // We're mid-transition - update from current target
                 baseIndex = navigationTargetIndex;
             } else {
-                // Fresh navigation - calculate from scroll position
-                baseIndex = Math.round(container.scrollTop / sectionHeight);
+                // Fresh navigation - use actual section positions.
+                baseIndex = getClosestSectionIndex(container, sections);
             }
 
             let newIndex = baseIndex + direction;
@@ -4808,19 +4852,9 @@
 
             // Update target and start/restart scroll
             navigationTargetIndex = newIndex;
-            navigationScrollId++; // Invalidate any previous scroll timeout
-            const thisScrollId = navigationScrollId;
 
             isScrolling = true;
             scrollToVideo(newIndex);
-
-            // Reset scrolling flag after animation completes (only for this scroll)
-            setTimeout(() => {
-                if (navigationScrollId === thisScrollId) {
-                    isScrolling = false;
-                    navigationTargetIndex = null;
-                }
-            }, 800);
         }
 
         // Block horizontal scroll on trackpad (prevent visual glitches)
@@ -4887,6 +4921,16 @@
 
         // Keyboard Navigation
         document.addEventListener('keydown', (e) => {
+            const isTyping = e.target instanceof HTMLElement &&
+                (e.target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName));
+
+            if (!isTyping && !e.repeat && !e.ctrlKey && !e.metaKey && !e.altKey &&
+                e.key.toLowerCase() === 'f') {
+                e.preventDefault();
+                toggleDesktopFullscreen();
+                return;
+            }
+
             if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
                 navigate(1);
             } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {

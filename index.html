@@ -2999,13 +2999,6 @@
             </svg>
             <span>Projects</span>
         </button>
-        <button class="mobile-nav-item" data-tab-id="life" onclick="handleTabClick('life')">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
-                <circle cx="12" cy="13" r="3" />
-            </svg>
-            <span>Life</span>
-        </button>
         <button class="mobile-nav-item" data-tab-id="films" onclick="handleTabClick('films')">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect width="18" height="18" x="3" y="3" rx="2" />
@@ -3018,6 +3011,13 @@
                 <path d="M17 16.5h4" />
             </svg>
             <span>Films</span>
+        </button>
+        <button class="mobile-nav-item" data-tab-id="life" onclick="handleTabClick('life')">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
+                <circle cx="12" cy="13" r="3" />
+            </svg>
+            <span>Life</span>
         </button>
     </nav>
 
@@ -3179,7 +3179,7 @@
             }
 
             // 2. Render SINGLE continuous scroll container with ALL content
-            // Structure: Landing -> Zeta videos -> Personal videos -> Life videos -> Films videos
+            // Structure: Landing -> Zeta -> Personal -> Films -> Life
             let allSectionsHTML = `
                 <!-- LANDING SECTION -->
                 <div class="landing-section active" id="section-landing" data-video-id="landing" data-bg-color="${landing.bgColor || '#2d1b4e'}">

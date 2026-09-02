@@ -95,67 +95,38 @@
                 {
                     "id": "t1v1",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/PZ_2.mp4",
-                    "thumbnail": "https://placehold.co/360x640/2c3e50/FFF?text=Mountain",
+                    "thumbnail": "https://placehold.co/360x640/2c3e50/FFF?text=Acquisition",
                     "bgColor": "#091E1E",
-                    "title": "PayZapp",
+                    "title": "Acquisition on PayZapp",
                     "description": "Redesigned the core app experience. Simplified onboarding and navigation. Reworked key user journeys.",
-                    "comments": [
-                        {
-                            "text": "Shot on GoPro Hero 11",
-                            "type": "camera"
-                        }
-                    ]
+                    "comments": []
                 },
                 {
                     "id": "t1v2",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
-                    "thumbnail": "https://placehold.co/360x640/16213e/FFF?text=Zeta",
+                    "thumbnail": "https://placehold.co/360x640/16213e/FFF?text=Growth",
                     "bgColor": "#16213e",
-                    "title": "Project Zeta",
-                    "description": "An experimental interface exploring deep sea biomes through interactive data visualization.",
-                    "comments": [
-                        {
-                            "text": "Inspired by Blue Planet II",
-                            "type": "avatar",
-                            "avatarColor": "#2980b9"
-                        },
-                        {
-                            "text": "Won internal design award",
-                            "type": "award"
-                        }
-                    ]
+                    "title": "Growth & Retention on PayZapp",
+                    "description": "Designed growth and retention loops to keep people coming back after their first transaction.",
+                    "comments": []
                 },
                 {
                     "id": "t1v3",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
-                    "thumbnail": "https://placehold.co/360x640/0f3460/FFF?text=Neon",
+                    "thumbnail": "https://placehold.co/360x640/0f3460/FFF?text=Unicorn",
                     "bgColor": "#0f3460",
-                    "title": "Neon Dreams",
-                    "description": "Cyberpunk aesthetic study using CSS-only lighting effects and motion blur.",
-                    "comments": [
-                        {
-                            "text": "The glow effects are insane!",
-                            "type": "fire"
-                        },
-                        {
-                            "text": "Pure CSS, no JS",
-                            "type": "code"
-                        }
-                    ]
+                    "title": "Unicorn Design System",
+                    "description": "A shared design system used across Zeta products to keep interfaces consistent and faster to ship.",
+                    "comments": []
                 },
                 {
                     "id": "t1v4",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
-                    "thumbnail": "https://placehold.co/360x640/533483/FFF?text=Purple",
+                    "thumbnail": "https://placehold.co/360x640/533483/FFF?text=Neo",
                     "bgColor": "#533483",
-                    "title": "Purple Haze",
-                    "description": "Atmospheric motion graphics designed for lofi hip hop radio backgrounds.",
-                    "comments": [
-                        {
-                            "text": "Used by 5 YouTube channels",
-                            "type": "eye"
-                        }
-                    ]
+                    "title": "Neo",
+                    "description": "Product design for Neo, focused on a clearer, more confident everyday banking experience.",
+                    "comments": []
                 }
             ]
         },
@@ -185,48 +156,42 @@
                             "type": "heart"
                         }
                     ]
+                }
+            ]
+        },
+        {
+            "id": "films",
+            "label": "Films",
+            "videos": [
+                {
+                    "id": "t4v1",
+                    "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/Sakleshpur_handbrake.mp4",
+                    "thumbnail": "https://pub-145d32622a7e4d2586d93017e4e1221c.r2.dev/Sakleshpur.png",
+                    "bgColor": "#08350b",
+                    "title": "A Weekend in Sakleshpur",
+                    "description": "this is the first video i made using my new camera FUJIFILM XS-20",
+                    "isLandscape": true,
+                    "comments": []
                 },
                 {
-                    "id": "t2v2",
-                    "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
-                    "thumbnail": "https://placehold.co/360x640/34495e/FFF?text=City",
-                    "bgColor": "#34495e",
-                    "title": "City Lights",
-                    "description": "Urban photography series capturing the city at night.",
-                    "comments": [
-                        {
-                            "text": "Golden hour perfection",
-                            "type": "sparkle"
-                        }
-                    ]
+                    "id": "t4v2",
+                    "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/Delhi%20in%20a%20lapse.mp4",
+                    "thumbnail": "https://pub-145d32622a7e4d2586d93017e4e1221c.r2.dev/Delhi.png",
+                    "bgColor": "#213E47",
+                    "title": "Delhi in a lapse",
+                    "description": "My first video ever",
+                    "isLandscape": true,
+                    "comments": []
                 },
                 {
-                    "id": "t2v3",
-                    "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
-                    "thumbnail": "https://placehold.co/360x640/2c3e50/FFF?text=Forest",
-                    "bgColor": "#2c3e50",
-                    "title": "Forest",
-                    "description": "Cinematic B-roll from a weekend camping trip.",
-                    "comments": [
-                        {
-                            "text": "Shot on FUJIFILM XS-20",
-                            "type": "camera"
-                        }
-                    ]
-                },
-                {
-                    "id": "t2v4",
-                    "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
-                    "thumbnail": "https://placehold.co/360x640/34495e/FFF?text=River",
-                    "bgColor": "#34495e",
-                    "title": "River Flow",
-                    "description": "Slow motion study of water dynamics.",
-                    "comments": [
-                        {
-                            "text": "240fps slow motion",
-                            "type": "eye"
-                        }
-                    ]
+                    "id": "t4v3",
+                    "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/Leh_2018_16-9.mp4",
+                    "thumbnail": "https://pub-145d32622a7e4d2586d93017e4e1221c.r2.dev/Ladakh.png",
+                    "bgColor": "#2C435F",
+                    "title": "Ladakh 2018",
+                    "description": "That one college trip",
+                    "isLandscape": true,
+                    "comments": []
                 }
             ]
         },
@@ -289,42 +254,6 @@
                             "type": "check"
                         }
                     ]
-                }
-            ]
-        },
-        {
-            "id": "films",
-            "label": "Films",
-            "videos": [
-                {
-                    "id": "t4v1",
-                    "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/Sakleshpur_handbrake.mp4",
-                    "thumbnail": "https://pub-145d32622a7e4d2586d93017e4e1221c.r2.dev/Sakleshpur.png",
-                    "bgColor": "#08350b",
-                    "title": "A Weekend in Sakleshpur",
-                    "description": "this is the first video i made using my new camera FUJIFILM XS-20",
-                    "isLandscape": true,
-                    "comments": []
-                },
-                {
-                    "id": "t4v2",
-                    "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/Delhi%20in%20a%20lapse.mp4",
-                    "thumbnail": "https://pub-145d32622a7e4d2586d93017e4e1221c.r2.dev/Delhi.png",
-                    "bgColor": "#213E47",
-                    "title": "Delhi in a lapse",
-                    "description": "My first video ever",
-                    "isLandscape": true,
-                    "comments": []
-                },
-                {
-                    "id": "t4v3",
-                    "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/Leh_2018_16-9.mp4",
-                    "thumbnail": "https://pub-145d32622a7e4d2586d93017e4e1221c.r2.dev/Ladakh.png",
-                    "bgColor": "#2C435F",
-                    "title": "Ladakh 2018",
-                    "description": "That one college trip",
-                    "isLandscape": true,
-                    "comments": []
                 }
             ]
         }

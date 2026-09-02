@@ -2787,6 +2787,107 @@
                 will-change: transform;
                 transform-origin: center center !important;
             }
+
+            /* Paused mobile state: show only the title and primary reel actions. */
+            body:not(.mobile-immersive-mode) .video-section.active .content-info-left {
+                display: flex !important;
+                opacity: 1 !important;
+                visibility: visible !important;
+            }
+
+            body:not(.mobile-immersive-mode) .landing-section.active .landing-profile-info {
+                opacity: 1 !important;
+                visibility: visible !important;
+            }
+
+            body:not(.mobile-immersive-mode) .landing-section.active .landing-name {
+                display: block !important;
+            }
+
+            .video-section .content-desc,
+            .video-section .content-link,
+            .landing-bio,
+            .landing-locations {
+                display: none !important;
+            }
+
+            body:not(.mobile-immersive-mode) .video-nav-arrows {
+                display: flex !important;
+                opacity: 1 !important;
+                visibility: visible !important;
+                pointer-events: auto !important;
+            }
+
+            .video-nav-arrows .fullscreen-btn,
+            .video-nav-arrows .info-panel-btn {
+                display: none !important;
+            }
+
+            .video-nav-arrows,
+            .video-section .content-info-left,
+            .landing-profile-info {
+                transition:
+                    opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+                    visibility 0s linear 0.4s !important;
+            }
+
+            /* Playing mobile state: leave only the video and seek bar visible. */
+            body.mobile-immersive-mode .video-nav-arrows,
+            body.mobile-immersive-mode .video-section .content-info-left,
+            body.mobile-immersive-mode .landing-profile-info {
+                opacity: 0 !important;
+                visibility: hidden !important;
+                pointer-events: none !important;
+            }
+
+            /* A tap reveals playback controls without pausing the video. */
+            body.mobile-immersive-mode.mobile-controls-visible .video-nav-arrows,
+            body.mobile-immersive-mode.mobile-controls-visible .video-section.active .content-info-left,
+            body.mobile-immersive-mode.mobile-controls-visible .landing-section.active .landing-profile-info {
+                opacity: 1 !important;
+                visibility: visible !important;
+                pointer-events: auto !important;
+                transition:
+                    opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+                    visibility 0s !important;
+            }
+
+            body.mobile-immersive-mode.mobile-controls-visible .video-section.active .content-info-left {
+                display: flex !important;
+            }
+
+            body.mobile-immersive-mode.mobile-controls-visible .landing-section.active .landing-name {
+                display: block !important;
+            }
+
+            body.mobile-immersive-mode.mobile-controls-visible .video-section.active .play-overlay-btn,
+            body.mobile-immersive-mode.mobile-controls-visible .landing-section.active .play-overlay-btn {
+                display: flex !important;
+                opacity: 1 !important;
+                visibility: visible !important;
+                pointer-events: auto !important;
+                transform: translate(-50%, -50%) scale(1) !important;
+                transition:
+                    opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+                    transform 0.4s cubic-bezier(0.22, 1, 0.36, 1) !important;
+            }
+
+            body.mobile-immersive-mode.mobile-controls-visible .play-overlay-btn > svg:not(.play-with-sound-ring) {
+                display: none;
+            }
+
+            body.mobile-immersive-mode.mobile-controls-visible .play-overlay-btn::after {
+                content: '';
+                width: 18px;
+                height: 22px;
+                border-radius: 2px;
+                background: linear-gradient(
+                    to right,
+                    #fff 0 6px,
+                    transparent 6px 12px,
+                    #fff 12px 18px
+                );
+            }
         }
 
         /* Hide floating items on smaller screens */
@@ -3129,6 +3230,7 @@
                 renderApp();
                 initLikeButton(); // Initialize like button state
                 initSoundHint(); // Show 'Tap for sound' hint on first visit
+                initMobileFirstReelNudge();
             } catch (error) {
                 console.error('Failed to load videos:', error);
             }
@@ -3893,6 +3995,153 @@
         });
         window.addEventListener('resize', noteDesktopInteraction, { passive: true });
         window.addEventListener('blur', cancelDesktopImmersiveMode);
+
+        const MOBILE_CONTROLS_IDLE_DELAY = 2600;
+        let mobileControlsTimer = null;
+        let firstReelNudgeTimer = null;
+        let firstReelNudgeTimeline = null;
+        let firstReelNudgeStyles = null;
+
+        function restoreFirstReelNudgeStyles(container) {
+            if (!container || !firstReelNudgeStyles) return;
+            container.style.scrollSnapType = firstReelNudgeStyles.scrollSnapType;
+            container.style.scrollBehavior = firstReelNudgeStyles.scrollBehavior;
+            firstReelNudgeStyles = null;
+        }
+
+        function cancelFirstReelNudge() {
+            if (!firstReelNudgeTimer && !firstReelNudgeTimeline) return;
+
+            clearTimeout(firstReelNudgeTimer);
+            firstReelNudgeTimer = null;
+
+            const container = document.getElementById('mainScrollContainer');
+            if (firstReelNudgeTimeline) {
+                firstReelNudgeTimeline.kill();
+                firstReelNudgeTimeline = null;
+            }
+            if (container) container.scrollTop = 0;
+            restoreFirstReelNudgeStyles(container);
+        }
+
+        function runFirstReelNudge() {
+            firstReelNudgeTimer = null;
+            const container = document.getElementById('mainScrollContainer');
+            const landingVideo = document.getElementById('landing-video');
+            const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+            if (!container || !landingVideo || window.innerWidth > 600 || reduceMotion ||
+                landingVideo.paused || landingVideo.ended || container.scrollTop > 2 ||
+                document.body.classList.contains('mobile-controls-visible')) {
+                return;
+            }
+
+            firstReelNudgeStyles = {
+                scrollSnapType: container.style.scrollSnapType,
+                scrollBehavior: container.style.scrollBehavior
+            };
+            container.style.scrollSnapType = 'none';
+            container.style.scrollBehavior = 'auto';
+
+            firstReelNudgeTimeline = gsap.timeline({
+                repeat: 1,
+                repeatDelay: 0.22,
+                onComplete: () => {
+                    firstReelNudgeTimeline = null;
+                    container.scrollTop = 0;
+                    restoreFirstReelNudgeStyles(container);
+                }
+            });
+            firstReelNudgeTimeline
+                .to(container, {
+                    scrollTop: 30,
+                    duration: 0.62,
+                    ease: 'power2.out'
+                })
+                .to(container, {
+                    scrollTop: 5,
+                    duration: 0.48,
+                    ease: 'power2.inOut'
+                })
+                .to(container, {
+                    scrollTop: 12,
+                    duration: 0.28,
+                    ease: 'power1.out'
+                })
+                .to(container, {
+                    scrollTop: 0,
+                    duration: 0.42,
+                    ease: 'power2.out'
+                });
+        }
+
+        function initMobileFirstReelNudge() {
+            const landingVideo = document.getElementById('landing-video');
+            if (!landingVideo) return;
+
+            let previousTime = landingVideo.currentTime || 0;
+            landingVideo.addEventListener('timeupdate', () => {
+                const duration = landingVideo.duration;
+                const currentTime = landingVideo.currentTime;
+                const looped = Number.isFinite(duration) && duration > 2 &&
+                    previousTime > duration * 0.8 &&
+                    currentTime < duration * 0.2;
+                previousTime = currentTime;
+
+                if (!looped || window.innerWidth > 600) return;
+                clearTimeout(firstReelNudgeTimer);
+                firstReelNudgeTimer = setTimeout(runFirstReelNudge, 650);
+            });
+
+            ['pointerdown', 'wheel', 'keydown'].forEach(eventName => {
+                document.addEventListener(eventName, cancelFirstReelNudge, {
+                    passive: true,
+                    capture: true
+                });
+            });
+        }
+
+        function hideMobilePlaybackControls() {
+            clearTimeout(mobileControlsTimer);
+            mobileControlsTimer = null;
+            document.body.classList.remove('mobile-controls-visible');
+        }
+
+        function showMobilePlaybackControls() {
+            if (window.innerWidth > 600) return;
+
+            const video = getActiveVideoForFullscreen();
+            if (!video || video.paused || video.ended) return;
+
+            document.body.classList.add('mobile-controls-visible');
+            clearTimeout(mobileControlsTimer);
+            mobileControlsTimer = setTimeout(
+                hideMobilePlaybackControls,
+                MOBILE_CONTROLS_IDLE_DELAY
+            );
+        }
+
+        function syncMobileImmersiveMode() {
+            if (window.innerWidth > 600) {
+                document.body.classList.remove('mobile-immersive-mode');
+                hideMobilePlaybackControls();
+                return;
+            }
+
+            const video = getActiveVideoForFullscreen();
+            const isActivelyPlaying = !!video && !video.paused && !video.ended;
+            document.body.classList.toggle('mobile-immersive-mode', isActivelyPlaying);
+            if (!isActivelyPlaying) hideMobilePlaybackControls();
+        }
+
+        const scheduleMobileImmersiveSync = () => requestAnimationFrame(syncMobileImmersiveMode);
+        document.addEventListener('play', scheduleMobileImmersiveSync, true);
+        document.addEventListener('playing', scheduleMobileImmersiveSync, true);
+        document.addEventListener('pause', scheduleMobileImmersiveSync, true);
+        document.addEventListener('ended', scheduleMobileImmersiveSync, true);
+        document.addEventListener('scroll', scheduleMobileImmersiveSync, { passive: true, capture: true });
+        window.addEventListener('resize', scheduleMobileImmersiveSync, { passive: true });
+        syncMobileImmersiveMode();
 
         function toggleSound() {
             isMuted = !isMuted;
@@ -5075,7 +5324,8 @@
             });
         }
 
-        // Double-tap to like + single-tap for play/pause
+        // Double-tap to like. On mobile, a single tap reveals playback
+        // controls; only the center control changes the playback state.
         function initDoubleTapLike() {
             let lastTapTime = 0;
             let tapTimer = null;
@@ -5106,6 +5356,11 @@
                 if (!hasStartedExperience) return;
 
                 const now = Date.now();
+                const video = document.getElementById(videoId);
+                const isMobilePlaying = window.innerWidth <= 600 &&
+                    video && !video.paused && !video.ended;
+
+                if (isMobilePlaying) showMobilePlaybackControls();
 
                 if (lastTapVideoId === videoId && (now - lastTapTime) < DOUBLE_TAP_DELAY) {
                     clearTimeout(tapTimer);
@@ -5120,8 +5375,8 @@
 
                     // Provide immediate visual feedback before the delay resolves.
                     // This satisfies INP by painting a response frame within ~50ms.
-                    const video = document.getElementById(videoId);
-                    if (video && !video.paused && isMuted && !userManuallyMuted) {
+                    if (window.innerWidth > 600 &&
+                        video && !video.paused && isMuted && !userManuallyMuted) {
                         // First-tap-unmute path — execute immediately, no delay needed
                         lastTapTime = 0;
                         lastTapVideoId = null;
@@ -5133,7 +5388,7 @@
                         tapTimer = null;
                         lastTapTime = 0;
                         lastTapVideoId = null;
-                        toggleVideo(videoId);
+                        if (window.innerWidth > 600) toggleVideo(videoId);
                     }, DOUBLE_TAP_DELAY);
                 }
             });

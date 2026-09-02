@@ -3538,6 +3538,7 @@
             video.play().catch(e => console.log('Autoplay blocked:', e));
 
             if (isMuted) showMuteIndicator(); else hideMuteIndicator();
+            syncMutePulse();
             startWatchTimer(videoId);
 
             // Attach seekbar updater if not already attached
@@ -3584,6 +3585,7 @@
             updateMuteUI();
             hideMuteIndicator();
             playVideo(videoId);
+            syncMutePulse();
         }
 
         function pauseVideo(videoId) {
@@ -3592,6 +3594,7 @@
 
             video.pause();
             cancelWatchTimer(videoId);
+            syncMutePulse();
         }
 
         // --- Seekbar: click/drag to seek ---
@@ -3736,6 +3739,7 @@
                 document.getElementById('pauseIcon').style.display = 'none';
                 document.getElementById('playIcon').style.display = 'block';
             }
+            syncMutePulse();
         }
 
         function togglePlayStop() {
@@ -3901,10 +3905,11 @@
             }
 
             if (!isMuted) {
-                stopUnmutePulse();
+                hideMuteIndicator();
             } else {
                 showMuteIndicator();
             }
+            syncMutePulse();
         }
 
         // Global unmute helper — used by tap-to-unmute, sound button, and volume keys
@@ -3916,7 +3921,20 @@
                 const video = document.getElementById(currentVideoId);
                 if (video) video.muted = false;
             }
-            stopUnmutePulse();
+            hideMuteIndicator();
+            syncMutePulse();
+        }
+
+        function isCurrentVideoPlaying() {
+            if (!hasStartedExperience) return false;
+            const video = document.getElementById(currentVideoId);
+            return !!(video && !video.paused && !video.ended);
+        }
+
+        function syncMutePulse() {
+            const soundBtn = document.getElementById('soundBtn');
+            if (!soundBtn) return;
+            soundBtn.classList.toggle('pulsing', isMuted && isCurrentVideoPlaying());
         }
 
         function stopUnmutePulse() {
@@ -3927,10 +3945,12 @@
 
         function initSoundHint() {
             setTimeout(() => {
-                if (isMuted) {
+                if (isMuted && isCurrentVideoPlaying()) {
                     const soundBtn = document.getElementById('soundBtn');
                     if (soundBtn) soundBtn.classList.add('pulsing');
                     showMuteIndicator();
+                } else {
+                    syncMutePulse();
                 }
             }, 1500);
         }
@@ -3962,6 +3982,7 @@
                 unmutedIcon.style.display = 'block';
                 btnText.textContent = 'Mute';
             }
+            syncMutePulse();
         }
 
         // --- Volume key detection: auto-unmute on volume up/down ---

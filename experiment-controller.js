@@ -19,6 +19,16 @@
     let currentPreviewMode = 'desktop';
     const haloDefaults = { size: 72, darkness: 66, blur: 30 };
     const haloState = { ...haloDefaults };
+    const resumeButtonDefaults = {
+        fontSize: 11.5,
+        fontWeight: 500,
+        letterSpacing: 0.2,
+        iconGap: 6,
+        buttonGap: 8,
+        paddingX: 16,
+        height: 48
+    };
+    const resumeButtonState = { ...resumeButtonDefaults };
     const mobilePresets = {
         iosSafari: {
             label: 'iPhone 12 · Safari',
@@ -837,6 +847,45 @@
                     </div>
 
                     <div class="section" data-desktop-controls>
+                        <span class="position-title">Resume button typography</span>
+                        <div class="label-row">
+                            <label for="resume-font-size">Font size</label>
+                            <span class="value" data-resume-button-value="fontSize">11.5px</span>
+                        </div>
+                        <input id="resume-font-size" type="range" min="8" max="20" step="0.5" value="11.5" data-resume-button="fontSize">
+                        <div class="label-row">
+                            <label for="resume-font-weight">Font weight</label>
+                            <span class="value" data-resume-button-value="fontWeight">500</span>
+                        </div>
+                        <input id="resume-font-weight" type="range" min="400" max="900" step="50" value="500" data-resume-button="fontWeight">
+                        <div class="label-row">
+                            <label for="resume-letter-spacing">Letter spacing</label>
+                            <span class="value" data-resume-button-value="letterSpacing">0.2px</span>
+                        </div>
+                        <input id="resume-letter-spacing" type="range" min="-1" max="5" step="0.1" value="0.2" data-resume-button="letterSpacing">
+                        <div class="label-row">
+                            <label for="resume-icon-gap">Icon / text gap</label>
+                            <span class="value" data-resume-button-value="iconGap">6px</span>
+                        </div>
+                        <input id="resume-icon-gap" type="range" min="0" max="24" step="1" value="6" data-resume-button="iconGap">
+                        <div class="label-row">
+                            <label for="resume-button-gap">Gap between buttons</label>
+                            <span class="value" data-resume-button-value="buttonGap">8px</span>
+                        </div>
+                        <input id="resume-button-gap" type="range" min="0" max="24" step="1" value="8" data-resume-button="buttonGap">
+                        <div class="label-row">
+                            <label for="resume-padding-x">Horizontal padding</label>
+                            <span class="value" data-resume-button-value="paddingX">16px</span>
+                        </div>
+                        <input id="resume-padding-x" type="range" min="4" max="40" step="1" value="16" data-resume-button="paddingX">
+                        <div class="label-row">
+                            <label for="resume-button-height">Button height</label>
+                            <span class="value" data-resume-button-value="height">48px</span>
+                        </div>
+                        <input id="resume-button-height" type="range" min="34" max="72" step="1" value="48" data-resume-button="height">
+                    </div>
+
+                    <div class="section" data-desktop-controls>
                         <div class="label-row">
                             <span>Active video</span>
                             <span class="video-name" data-active-video></span>
@@ -1071,6 +1120,7 @@
         const positionInputs = [...shadow.querySelectorAll('[data-position]')];
         const previewModeButtons = [...shadow.querySelectorAll('[data-preview-mode]')];
         const haloInputs = [...shadow.querySelectorAll('[data-halo]')];
+        const resumeButtonInputs = [...shadow.querySelectorAll('[data-resume-button]')];
         const desktopControlSections = [...shadow.querySelectorAll('[data-desktop-controls]')];
         const mobileControlSections = [...shadow.querySelectorAll('[data-mobile-controls]')];
         const previewBackdrop = shadow.querySelector('[data-preview-backdrop]');
@@ -1411,6 +1461,16 @@
             });
         }
 
+        function applyResumeButtonState() {
+            ROOT.style.setProperty('--resume-font-size', `${resumeButtonState.fontSize}px`);
+            ROOT.style.setProperty('--resume-font-weight', String(resumeButtonState.fontWeight));
+            ROOT.style.setProperty('--resume-letter-spacing', `${resumeButtonState.letterSpacing}px`);
+            ROOT.style.setProperty('--resume-icon-gap', `${resumeButtonState.iconGap}px`);
+            ROOT.style.setProperty('--landing-actions-gap', `${resumeButtonState.buttonGap}px`);
+            ROOT.style.setProperty('--resume-padding-x', `${resumeButtonState.paddingX}px`);
+            ROOT.style.setProperty('--landing-action-height', `${resumeButtonState.height}px`);
+        }
+
         function setPreviewMode(mode) {
             const isMobile = mode === 'mobile';
             const showMockup = isMobile && window.innerWidth > 600;
@@ -1446,6 +1506,17 @@
                 const suffix = property === 'darkness' ? '%' : 'px';
                 shadow.querySelector(`[data-halo-value="${property}"]`).textContent = `${input.value}${suffix}`;
                 applyHaloState();
+            });
+        });
+
+        resumeButtonInputs.forEach(input => {
+            input.addEventListener('input', () => {
+                const property = input.dataset.resumeButton;
+                resumeButtonState[property] = Number(input.value);
+                const unitless = property === 'fontWeight';
+                shadow.querySelector(`[data-resume-button-value="${property}"]`).textContent =
+                    `${input.value}${unitless ? '' : 'px'}`;
+                applyResumeButtonState();
             });
         });
 
@@ -1679,6 +1750,15 @@
                     darknessPercent: haloState.darkness,
                     blurPx: haloState.blur
                 },
+                resumeButton: {
+                    fontSizePx: resumeButtonState.fontSize,
+                    fontWeight: resumeButtonState.fontWeight,
+                    letterSpacingPx: resumeButtonState.letterSpacing,
+                    iconTextGapPx: resumeButtonState.iconGap,
+                    buttonGapPx: resumeButtonState.buttonGap,
+                    horizontalPaddingPx: resumeButtonState.paddingX,
+                    heightPx: resumeButtonState.height
+                },
                 frameHeightVh: Number(sizeInput.value),
                 cornerRadiusPx: Number(radiusInput.value),
                 hideTopNavbar: navbarToggle.checked,
@@ -1762,6 +1842,15 @@
                 shadow.querySelector(`[data-halo-value="${property}"]`).textContent = `${haloState[property]}${suffix}`;
             });
             applyHaloState();
+            Object.assign(resumeButtonState, resumeButtonDefaults);
+            resumeButtonInputs.forEach(input => {
+                const property = input.dataset.resumeButton;
+                input.value = String(resumeButtonState[property]);
+                const unitless = property === 'fontWeight';
+                shadow.querySelector(`[data-resume-button-value="${property}"]`).textContent =
+                    `${resumeButtonState[property]}${unitless ? '' : 'px'}`;
+            });
+            applyResumeButtonState();
             ['navbar', 'controls', 'arrows'].forEach(target => {
                 ROOT.style.removeProperty(`--reelfolio-exp-${target}-x`);
                 ROOT.style.removeProperty(`--reelfolio-exp-${target}-y`);
@@ -1821,6 +1910,7 @@
 
         syncMobilePresetUI();
         applyHaloState();
+        applyResumeButtonState();
         syncForCurrentSection();
     }
 

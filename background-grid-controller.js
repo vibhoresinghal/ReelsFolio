@@ -26,7 +26,12 @@
         offsetY: 0,
         blur: 0,
         blend: 'soft-light',
-        fade: false
+        fade: false,
+        grainEnabled: true,
+        grainOpacity: 37,
+        grainSize: 215,
+        grainContrast: 105,
+        grainBlend: 'soft-light'
     };
     const state = { ...defaults };
 
@@ -344,6 +349,35 @@
                     <span class="label">Fade toward edges</span>
                     <input type="checkbox" checked data-property="fade">
                 </label>
+                <div class="subsection">
+                    <span class="subsection-title">Grain adjustment layer</span>
+                    <label class="toggle">
+                        <span class="label">Enable grain</span>
+                        <input type="checkbox" checked data-property="grainEnabled">
+                    </label>
+                    <div>
+                        <div class="row"><label for="grain-opacity">Amount</label><output data-output="grainOpacity">37%</output></div>
+                        <input id="grain-opacity" type="range" min="0" max="40" step="1" value="37" data-property="grainOpacity">
+                    </div>
+                    <div>
+                        <div class="row"><label for="grain-size">Texture scale</label><output data-output="grainSize">215px</output></div>
+                        <input id="grain-size" type="range" min="40" max="400" step="5" value="215" data-property="grainSize">
+                    </div>
+                    <div>
+                        <div class="row"><label for="grain-contrast">Contrast</label><output data-output="grainContrast">105%</output></div>
+                        <input id="grain-contrast" type="range" min="50" max="220" step="5" value="105" data-property="grainContrast">
+                    </div>
+                    <div class="row">
+                        <label for="grain-blend">Blend mode</label>
+                        <select id="grain-blend" data-property="grainBlend">
+                            <option value="normal">Normal</option>
+                            <option value="soft-light" selected>Soft light</option>
+                            <option value="overlay">Overlay</option>
+                            <option value="multiply">Multiply</option>
+                            <option value="screen">Screen</option>
+                        </select>
+                    </div>
+                </div>
                 <div class="actions">
                     <button class="action primary" type="button" data-copy>Copy values</button>
                     <button class="action" type="button" data-reset>Reset</button>
@@ -376,11 +410,11 @@
     function updateOutput(property) {
         const output = shadow.querySelector(`[data-output="${property}"]`);
         if (!output) return;
-        const suffix = ['opacity', 'majorOpacity'].includes(property)
+        const suffix = ['opacity', 'majorOpacity', 'grainOpacity', 'grainContrast'].includes(property)
             ? '%'
             : ['rotation', 'angleStep'].includes(property)
                 ? '°'
-                : property === 'majorEvery' ? '' : 'px';
+                : ['majorEvery', 'grainEnabled', 'grainBlend'].includes(property) ? '' : 'px';
         output.textContent = `${state[property]}${suffix}`;
     }
 
@@ -508,6 +542,10 @@
         ROOT.style.setProperty('--bg-grid-offset-y', `${state.offsetY}px`);
         ROOT.style.setProperty('--bg-grid-blur', `${state.blur}px`);
         ROOT.style.setProperty('--bg-grid-blend', state.blend);
+        ROOT.style.setProperty('--bg-grain-opacity', String(state.grainEnabled ? state.grainOpacity / 100 : 0));
+        ROOT.style.setProperty('--bg-grain-size', `${state.grainSize}px`);
+        ROOT.style.setProperty('--bg-grain-contrast', `${state.grainContrast}%`);
+        ROOT.style.setProperty('--bg-grain-blend', state.grainBlend);
         cuttingControls.hidden = state.pattern !== 'cutting-mat';
         renderCuttingMat();
     }

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#000000">
+    <meta name="theme-color" content="#06281B">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="description"
@@ -47,7 +47,7 @@
         html {
             height: 100%;
             overflow: hidden;
-            background-color: #000;
+            background-color: #06281B;
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             /* Prevent text/element selection site-wide */
             user-select: none;
@@ -56,10 +56,29 @@
             -ms-user-select: none;
         }
 
+        @property --active-bg-color {
+            syntax: '<color>';
+            inherits: true;
+            initial-value: #06281B;
+        }
+
         :root {
+            --active-bg-color: #06281B;
             --play-halo-size: 72px;
             --play-halo-darkness: 0.66;
             --play-halo-blur: 30px;
+            --resume-font-size: 11.5px;
+            --resume-font-weight: 500;
+            --resume-letter-spacing: 0.2px;
+            --resume-icon-gap: 6px;
+            --resume-padding-x: 16px;
+            --landing-actions-gap: 8px;
+            --landing-action-height: 48px;
+            --bg-grain-opacity: 0.37;
+            --bg-grain-size: 215px;
+            --bg-grain-contrast: 105%;
+            --bg-grain-blend: soft-light;
+            transition: --active-bg-color 0.6s ease-in-out;
         }
 
         /* Background layer that transitions colors */
@@ -69,10 +88,24 @@
             left: 0;
             width: 100%;
             height: 100%;
+            background-color: #06281B;
             transition: background-color 0.6s ease-in-out;
             z-index: 0;
             will-change: background-color;
             contain: strict;
+        }
+
+        .bg-grain {
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+            pointer-events: none;
+            opacity: var(--bg-grain-opacity);
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23grain)' opacity='.9'/%3E%3C/svg%3E");
+            background-size: var(--bg-grain-size) var(--bg-grain-size);
+            background-repeat: repeat;
+            filter: contrast(var(--bg-grain-contrast));
+            mix-blend-mode: var(--bg-grain-blend);
         }
 
         /* The scroll container */
@@ -115,9 +148,9 @@
         /* Video frame container - 9:16 aspect ratio (phone-like) */
         .video-frame {
             position: relative;
-            width: min(calc(94vh * 9 / 16), 95vw);
+            width: min(calc(92vh * 9 / 16), 95vw);
             aspect-ratio: 9/16;
-            border-radius: 12px;
+            border-radius: 8px;
             overflow: hidden;
             /* Responsive shadow */
             box-shadow: 0 clamp(15px, 3vh, 25px) clamp(40px, 8vh, 80px) rgba(0, 0, 0, 0.4);
@@ -131,7 +164,7 @@
         .video-nav-arrows {
             position: fixed;
             /* Position just to the right of video frame */
-            left: calc(50% + min(calc(94vh * 9 / 16), 95vw) / 2 + 24px);
+            left: calc(50% + min(calc(92vh * 9 / 16), 95vw) / 2 + 24px);
             top: 50%;
             transform: translateY(-50%);
             display: flex;
@@ -143,7 +176,7 @@
 
         /* Adjust arrow position for landscape videos */
         .video-nav-arrows.landscape {
-            left: calc(50% + min(calc(90vh * 16 / 9), calc(100vw - 152px)) / 2 + 24px);
+            left: calc(50% + min(calc(92vh * 16 / 9), calc(100vw - 152px)) / 2 + 24px);
         }
 
         .fullscreen-btn .fullscreen-exit-icon {
@@ -174,6 +207,7 @@
         }
 
         body.desktop-fullscreen-mode .bg-layer::after,
+        body.desktop-fullscreen-mode .bg-grain,
         body.desktop-fullscreen-mode .bg-grid-cutting-mat {
             display: none !important;
         }
@@ -287,35 +321,70 @@
             width: 48px;
             height: 48px;
             border-radius: 50%;
-            border: 1.5px solid rgba(255, 255, 255, 0.3);
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(219, 239, 228, 0.2);
+            background:
+                radial-gradient(circle at 30% 18%, rgba(255, 255, 255, 0.13), transparent 52%),
+                linear-gradient(
+                    180deg,
+                    color-mix(in srgb, var(--active-bg-color) 58%, #52615c) 0%,
+                    color-mix(in srgb, var(--active-bg-color) 76%, #07100d) 100%
+                );
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s ease;
-            opacity: 0.7;
-            margin-bottom: 12px;
-            overflow: hidden;
+            transition:
+                background-color 0.22s ease,
+                border-color 0.22s ease,
+                transform 0.22s ease,
+                box-shadow 0.22s ease,
+                opacity 0.22s ease;
+            box-shadow:
+                inset 0 0 0 1px rgba(255, 255, 255, 0.035),
+                0 6px 14px rgba(0, 0, 0, 0.26),
+                0 14px 28px rgba(0, 0, 0, 0.13);
+            opacity: 0.94;
+            margin-bottom: 10px;
+            overflow: visible;
         }
 
         @media (hover: hover) {
             .nav-arrow-btn:hover {
-                background: rgba(255, 255, 255, 0.2);
-                border-color: rgba(255, 255, 255, 0.5);
+                background:
+                    radial-gradient(circle at 30% 18%, rgba(255, 255, 255, 0.17), transparent 54%),
+                    linear-gradient(
+                        180deg,
+                        color-mix(in srgb, var(--active-bg-color) 50%, #718078) 0%,
+                        color-mix(in srgb, var(--active-bg-color) 68%, #102019) 100%
+                    );
+                border-color: rgba(222, 245, 232, 0.25);
                 opacity: 1;
-                transform: scale(1.05);
+                transform: translateY(-2px);
+                box-shadow:
+                    inset 0 0 0 1px rgba(255, 255, 255, 0.055),
+                    0 8px 17px rgba(0, 0, 0, 0.28),
+                    0 17px 32px rgba(0, 0, 0, 0.16);
             }
+        }
+
+        .nav-arrow-btn:active {
+            transform: translateY(2px) scale(0.97);
+            box-shadow:
+                inset 0 3px 9px rgba(0, 0, 0, 0.28),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.025),
+                0 3px 7px rgba(0, 0, 0, 0.2);
+            transition-duration: 0.08s;
         }
 
         .nav-arrow-btn svg {
             width: 22px;
             height: 22px;
+            overflow: visible;
             fill: none;
-            stroke: white;
-            stroke-width: 2;
+            stroke: rgba(226, 239, 232, 0.86);
+            stroke-width: 1.8;
             stroke-linecap: round;
             stroke-linejoin: round;
         }
@@ -352,7 +421,8 @@
         }
 
         .nav-arrow-btn.like-btn.has-likes {
-            height: 68px;
+            height: 70px;
+            border-radius: 24px;
         }
 
         .nav-arrow-btn.like-btn svg {
@@ -380,6 +450,10 @@
         /* Make the entire like button fully opaque when liked, overriding default button opacity */
         .nav-arrow-btn.like-btn.liked {
             opacity: 1;
+            background:
+                radial-gradient(ellipse at 35% 0%, rgba(255, 255, 255, 0.12), transparent 58%),
+                linear-gradient(180deg, #3e2832 0%, #241720 100%);
+            border-color: rgba(255, 173, 200, 0.22);
         }
 
         .nav-arrow-btn.like-btn.liked svg path {
@@ -433,8 +507,8 @@
 
         .like-count {
             font-size: 12px;
-            color: white;
-            font-weight: 500;
+            color: rgba(242, 247, 244, 0.92);
+            font-weight: 650;
             text-align: center;
             opacity: 0;
             line-height: 1;
@@ -486,8 +560,8 @@
 
         .video-section.landscape-mode .video-frame {
             aspect-ratio: 16/9;
-            width: min(calc(90vh * 16 / 9), calc(100vw - 152px));
-            border-radius: 12px;
+            width: min(calc(92vh * 16 / 9), calc(100vw - 152px));
+            border-radius: 8px;
             margin-right: 0;
             margin-bottom: 0;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
@@ -1776,60 +1850,107 @@
 
         .landing-locations {
             display: flex;
-            gap: 12px;
+            gap: 8px;
             flex-wrap: wrap;
         }
 
         .location-tag {
-            display: flex;
+            display: inline-flex;
             align-items: center;
-            gap: 6px;
-            background: rgba(0, 0, 0, 0.38);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
+            gap: 7px;
+            background: rgba(255, 255, 255, 0.07);
             border: none;
-            padding: 8px 14px;
-            border-radius: 20px;
-            color: rgba(255, 255, 255, 0.9);
-            font-size: clamp(12px, 1.2vw, 14px);
-            font-weight: 500;
+            padding: 7px 10px;
+            border-radius: 9px;
+            color: rgba(255, 255, 255, 0.72);
+            font-size: clamp(11px, 1vw, 13px);
+            font-weight: 550;
+            line-height: 1;
+            letter-spacing: 0.01em;
         }
 
         .location-tag svg {
-            width: 14px;
-            height: 14px;
-            opacity: 0.8;
+            width: 13px;
+            height: 13px;
+            opacity: 0.72;
         }
 
         .landing-actions {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: var(--landing-actions-gap);
             margin-top: 14px;
         }
 
         .landing-action {
-            height: 42px;
+            height: var(--landing-action-height);
+            position: relative;
+            overflow: hidden;
             border: 1px solid rgba(255, 255, 255, 0.14);
-            background: rgba(255, 255, 255, 0.1);
-            color: rgba(255, 255, 255, 0.92);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border-radius: 999px;
+            background:
+                linear-gradient(
+                    180deg,
+                    #322720 0%,
+                    #211813 100%
+                );
+            color: rgba(255, 255, 255, 0.82);
+            border-radius: 12px;
+            clip-path: none;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             text-decoration: none;
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.17),
+                inset 0 -5px 10px rgba(0, 0, 0, 0.2),
+                0 3px 5px rgba(0, 0, 0, 0.2),
+                0 10px 22px rgba(0, 0, 0, 0.28);
             transition:
                 background-color 0.25s ease,
-                border-color 0.25s ease,
-                transform 0.25s ease;
+                color 0.25s ease,
+                transform 0.25s ease,
+                box-shadow 0.25s ease;
+        }
+
+        .landing-action::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            opacity: 1;
+            background:
+                radial-gradient(ellipse at 35% 0%, rgba(255, 255, 255, 0.13), transparent 58%),
+                linear-gradient(110deg, rgba(255, 255, 255, 0.035), transparent 42%);
+        }
+
+        .landing-action > * {
+            position: relative;
+            z-index: 1;
         }
 
         .landing-action:hover {
-            background: rgba(255, 255, 255, 0.18);
-            border-color: rgba(255, 255, 255, 0.28);
+            background:
+                linear-gradient(
+                    180deg,
+                    #f7f1e8 0%,
+                    #eee5d8 100%
+                );
+            color: #24150e;
             transform: translateY(-2px);
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.22),
+                inset 0 -5px 10px rgba(0, 0, 0, 0.18),
+                0 4px 6px rgba(0, 0, 0, 0.2),
+                0 14px 26px rgba(0, 0, 0, 0.32);
+        }
+
+        .landing-action:active {
+            transform: translateY(2px) scale(0.985);
+            box-shadow:
+                inset 0 3px 8px rgba(0, 0, 0, 0.32),
+                inset 0 1px 0 rgba(255, 255, 255, 0.06),
+                0 3px 8px rgba(0, 0, 0, 0.2);
+            transition-duration: 0.08s;
         }
 
         .landing-action:focus-visible {
@@ -1838,32 +1959,98 @@
         }
 
         .landing-resume-action {
-            gap: 8px;
-            padding: 0 16px;
-            font-size: 13px;
-            font-weight: 650;
+            flex: 0 0 auto;
+            gap: var(--resume-icon-gap);
+            padding: 0 var(--resume-padding-x);
+            font-size: var(--resume-font-size);
+            font-weight: var(--resume-font-weight);
+            letter-spacing: var(--resume-letter-spacing);
+            white-space: nowrap;
+            background:
+                linear-gradient(
+                    180deg,
+                    #21483a 0%,
+                    #102b21 100%
+                );
+            color: #d9e8df;
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.17),
+                inset 0 -5px 10px rgba(0, 0, 0, 0.2),
+                0 3px 5px rgba(0, 0, 0, 0.2),
+                0 10px 22px rgba(0, 0, 0, 0.28);
+        }
+
+        .landing-resume-action:hover {
+            background: linear-gradient(180deg, #2b5a49 0%, #16382b 100%);
+            color: #f0faf4;
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.22),
+                inset 0 -5px 10px rgba(0, 0, 0, 0.18),
+                0 4px 6px rgba(0, 0, 0, 0.2),
+                0 14px 26px rgba(0, 0, 0, 0.32);
+        }
+
+        .landing-resume-action:active {
+            background: linear-gradient(180deg, #10281f, #1b4033);
+            box-shadow:
+                inset 0 3px 8px rgba(0, 0, 0, 0.32),
+                0 3px 8px rgba(0, 0, 0, 0.2);
         }
 
         .landing-social-action {
-            width: 42px;
-            flex: 0 0 42px;
+            width: var(--landing-action-height);
+            flex: 0 0 var(--landing-action-height);
+        }
+
+        .landing-social-action:nth-child(2) {
+            background: linear-gradient(180deg, #293c43 0%, #19292f 100%);
+            color: #bfd0d5;
+        }
+
+        .landing-social-action:nth-child(2):hover {
+            background: linear-gradient(180deg, #344b53 0%, #20343b 100%);
+            color: #e0edf0;
+        }
+
+        .landing-social-action:nth-child(3) {
+            background: linear-gradient(180deg, #302c29 0%, #1d1a18 100%);
+            color: #d8cfc5;
+        }
+
+        .landing-social-action:nth-child(3):hover {
+            background: linear-gradient(180deg, #3c3733 0%, #272321 100%);
+            color: #fffaf2;
+        }
+
+        .landing-social-action:nth-child(4) {
+            background: linear-gradient(180deg, #452d27 0%, #2b1b18 100%);
+            color: #d8bdb2;
+        }
+
+        .landing-social-action:nth-child(4):hover {
+            background: linear-gradient(180deg, #573a32 0%, #35221e 100%);
+            color: #f4dcd2;
         }
 
         .landing-action svg {
-            width: 17px;
-            height: 17px;
+            width: 19px;
+            height: 19px;
         }
 
         .landing-action.is-placeholder {
-            opacity: 0.72;
+            opacity: 0.86;
+        }
+
+        .landing-resume-action.is-placeholder {
+            opacity: 1;
         }
 
         /* Landing Video Frame - Center */
         .landing-video-frame {
             position: relative;
-            width: min(calc(94vh * 9 / 16), 95vw);
+            width: min(calc(92vh * 9 / 16), 95vw);
             aspect-ratio: 9/16;
-            border-radius: 12px;
+            border-radius: 8px;
             overflow: hidden;
             box-shadow: 0 clamp(15px, 3vh, 25px) clamp(40px, 8vh, 80px) rgba(0, 0, 0, 0.5);
             z-index: 5;
@@ -1932,6 +2119,59 @@
         .landing-video-frame .play-overlay-btn:hover {
             background: rgba(255, 255, 255, 0.42);
             transform: translate(-50%, -50%) scale(1.05);
+        }
+
+        /* Shared tactile play control */
+        .video-frame .play-overlay-btn,
+        .landing-video-frame .play-overlay-btn {
+            width: 58px;
+            height: 58px;
+            background:
+                radial-gradient(circle at 31% 14%, rgba(255, 255, 255, 0.82), transparent 54%),
+                linear-gradient(180deg, rgba(238, 244, 240, 0.82), rgba(190, 203, 196, 0.74));
+            border: 1px solid rgba(255, 255, 255, 0.62);
+            backdrop-filter: blur(18px) saturate(0.7);
+            -webkit-backdrop-filter: blur(18px) saturate(0.7);
+            box-shadow:
+                inset 0 0 0 1px rgba(255, 255, 255, 0.24),
+                0 7px 16px rgba(0, 0, 0, 0.34),
+                0 16px 34px rgba(0, 0, 0, 0.2);
+            transition:
+                opacity 0.3s ease,
+                transform 0.22s ease,
+                background-color 0.22s ease,
+                border-color 0.22s ease,
+                box-shadow 0.22s ease;
+        }
+
+        .video-frame .play-overlay-btn:hover,
+        .landing-video-frame .play-overlay-btn:hover {
+            background:
+                radial-gradient(circle at 31% 14%, rgba(255, 255, 255, 0.96), transparent 56%),
+                linear-gradient(180deg, rgba(250, 253, 251, 0.9), rgba(207, 219, 212, 0.84));
+            border-color: rgba(255, 255, 255, 0.8);
+            transform: translate(-50%, -50%) scale(1.06);
+            box-shadow:
+                inset 0 0 0 1px rgba(255, 255, 255, 0.05),
+                0 9px 20px rgba(0, 0, 0, 0.36),
+                0 20px 38px rgba(0, 0, 0, 0.22);
+        }
+
+        .video-frame .play-overlay-btn:active,
+        .landing-video-frame .play-overlay-btn:active {
+            transform: translate(-50%, -50%) scale(0.96);
+            box-shadow:
+                inset 0 3px 9px rgba(0, 0, 0, 0.34),
+                0 4px 10px rgba(0, 0, 0, 0.28);
+            transition-duration: 0.08s;
+        }
+
+        .play-overlay-btn > svg:not(.play-with-sound-ring) {
+            width: 24px;
+            height: 24px;
+            margin-left: 2px;
+            color: rgba(255, 255, 255, 0.96);
+            filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.34));
         }
 
         /* Floating Items */
@@ -2279,7 +2519,7 @@
                 right: auto !important;
                 transform: translateX(-50%) !important;
                 width: auto !important;
-                max-width: min(calc(min(calc(94vh * 9 / 16), 95vw) - 32px), 80vw) !important;
+                max-width: min(calc(min(calc(92vh * 9 / 16), 95vw) - 32px), 80vw) !important;
                 z-index: 200 !important;
                 opacity: 0 !important;
                 visibility: hidden !important;
@@ -2977,7 +3217,9 @@
 
 <body class="experience-awaiting-start">
     <!-- Background that transitions with each video -->
-    <div class="bg-layer" id="bgLayer"></div>
+    <div class="bg-layer" id="bgLayer">
+        <div class="bg-grain" aria-hidden="true"></div>
+    </div>
 
     <!-- Main Container -->
     <div class="main-scroll-container" id="mainScroll">
@@ -3227,6 +3469,20 @@
         const gridBtn = document.getElementById('gridBtn');
         const controlBar = document.querySelector('.control-bar');
 
+        function setBackgroundColor(color) {
+            if (!color || !bgLayer) return;
+            bgLayer.style.backgroundColor = color;
+            document.documentElement.style.setProperty('--active-bg-color', color);
+        }
+
+        // Keep experiment-controller color changes synchronized with adaptive controls.
+        if (bgLayer) {
+            new MutationObserver(() => {
+                const color = bgLayer.style.backgroundColor;
+                if (color) document.documentElement.style.setProperty('--active-bg-color', color);
+            }).observe(bgLayer, { attributes: true, attributeFilter: ['style'] });
+        }
+
         // --- Lightweight Analytics ---
         const _analyticsQueue = [];
         const _videoWatchTimers = {};
@@ -3395,7 +3651,7 @@
                                     <path d="m7 10 5 5 5-5" />
                                     <path d="M5 21h14" />
                                 </svg>
-                                <span>Resume</span>
+                                <span>Download Resume</span>
                             </a>
                             <a class="landing-action landing-social-action" href="https://www.linkedin.com/in/vibhoresinghal"
                                target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" title="LinkedIn">
@@ -3517,7 +3773,7 @@
             }
 
             // Initialize background with landing color
-            bgLayer.style.backgroundColor = landing.bgColor || '#2d1b4e';
+            setBackgroundColor(landing.bgColor || '#2d1b4e');
 
             // Initialize Observer for single container
             initObserver();
@@ -3607,7 +3863,7 @@
                         // Update background color based on the current section
                         // But skip updates if we are in the middle of a "warp" transition
                         const bgColor = entry.target.getAttribute('data-bg-color');
-                        if (bgColor && !isWarping) bgLayer.style.backgroundColor = bgColor;
+                        if (bgColor && !isWarping) setBackgroundColor(bgColor);
 
                         // Update arrow positioning for landscape/portrait
                         const navArrows = document.getElementById('fixedNavArrows');
@@ -5079,7 +5335,7 @@
 
                 // Provide direct background transition
                 if (targetColor) {
-                    bgLayer.style.backgroundColor = targetColor;
+                    setBackgroundColor(targetColor);
                 }
 
                 // 1. Engage Warp: Blur, shrink, and fade to simulate speed/depth
@@ -5148,7 +5404,7 @@
                 isWarping = true; // Block observer updates during scroll
 
                 // Manually update BG since observer is blocked
-                if (targetColor) bgLayer.style.backgroundColor = targetColor;
+                if (targetColor) setBackgroundColor(targetColor);
 
                 const originalSnapType = container.style.scrollSnapType;
                 container.style.scrollSnapType = 'none';

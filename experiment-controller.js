@@ -17,6 +17,8 @@
         androidChrome: null
     };
     let currentPreviewMode = 'desktop';
+    const haloDefaults = { size: 72, darkness: 66, blur: 30 };
+    const haloState = { ...haloDefaults };
     const mobilePresets = {
         iosSafari: {
             label: 'iPhone 12 · Safari',
@@ -74,7 +76,7 @@
             }
 
             :root[data-reelfolio-exp-size] .video-section.landscape-mode .video-frame {
-                width: min(var(--reelfolio-exp-landscape-width), 95vw) !important;
+                width: min(var(--reelfolio-exp-landscape-width), calc(100vw - 152px)) !important;
                 height: auto !important;
                 aspect-ratio: 16 / 9 !important;
             }
@@ -815,6 +817,25 @@
                         <button class="mode-button" type="button" data-preview-mode="mobile">Mobile mockup</button>
                     </div>
 
+                    <div class="section">
+                        <span class="position-title">Play button halo</span>
+                        <div class="label-row">
+                            <label for="play-halo-size">Size</label>
+                            <span class="value" data-halo-value="size">72px</span>
+                        </div>
+                        <input id="play-halo-size" type="range" min="12" max="90" step="1" value="72" data-halo="size">
+                        <div class="label-row">
+                            <label for="play-halo-darkness">Darkness</label>
+                            <span class="value" data-halo-value="darkness">66%</span>
+                        </div>
+                        <input id="play-halo-darkness" type="range" min="0" max="90" step="1" value="66" data-halo="darkness">
+                        <div class="label-row">
+                            <label for="play-halo-blur">Blur</label>
+                            <span class="value" data-halo-value="blur">30px</span>
+                        </div>
+                        <input id="play-halo-blur" type="range" min="0" max="30" step="1" value="30" data-halo="blur">
+                    </div>
+
                     <div class="section" data-desktop-controls>
                         <div class="label-row">
                             <span>Active video</span>
@@ -847,7 +868,7 @@
                     <div class="section" data-desktop-controls>
                         <label class="toggle-row">
                             <span>Hide top navbar</span>
-                            <input type="checkbox" data-hide-navbar>
+                            <input type="checkbox" data-hide-navbar checked>
                         </label>
                         <label class="toggle-row">
                             <span>Hide pause / mute controls</span>
@@ -1049,6 +1070,7 @@
         const controlsToggle = shadow.querySelector('[data-hide-controls]');
         const positionInputs = [...shadow.querySelectorAll('[data-position]')];
         const previewModeButtons = [...shadow.querySelectorAll('[data-preview-mode]')];
+        const haloInputs = [...shadow.querySelectorAll('[data-halo]')];
         const desktopControlSections = [...shadow.querySelectorAll('[data-desktop-controls]')];
         const mobileControlSections = [...shadow.querySelectorAll('[data-mobile-controls]')];
         const previewBackdrop = shadow.querySelector('[data-preview-backdrop]');
@@ -1337,6 +1359,7 @@
             }
 
             applyMobileState();
+            applyHaloState();
         }
 
         function applyMobileStateToRoot(targetRoot, state, enabled) {
@@ -1375,6 +1398,19 @@
             requestAnimationFrame(updateMobileMeasurements);
         }
 
+        function applyHaloStateToRoot(targetRoot) {
+            targetRoot.style.setProperty('--play-halo-size', `${haloState.size}px`);
+            targetRoot.style.setProperty('--play-halo-darkness', String(haloState.darkness / 100));
+            targetRoot.style.setProperty('--play-halo-blur', `${haloState.blur}px`);
+        }
+
+        function applyHaloState() {
+            applyHaloStateToRoot(ROOT);
+            Object.values(previewDocuments).forEach(previewDocument => {
+                if (previewDocument) applyHaloStateToRoot(previewDocument.documentElement);
+            });
+        }
+
         function setPreviewMode(mode) {
             const isMobile = mode === 'mobile';
             const showMockup = isMobile && window.innerWidth > 600;
@@ -1401,6 +1437,16 @@
 
         previewModeButtons.forEach(button => {
             button.addEventListener('click', () => setPreviewMode(button.dataset.previewMode));
+        });
+
+        haloInputs.forEach(input => {
+            input.addEventListener('input', () => {
+                const property = input.dataset.halo;
+                haloState[property] = Number(input.value);
+                const suffix = property === 'darkness' ? '%' : 'px';
+                shadow.querySelector(`[data-halo-value="${property}"]`).textContent = `${input.value}${suffix}`;
+                applyHaloState();
+            });
         });
 
         Object.entries(mobilePreviewFrames).forEach(([presetId, frame]) => {
@@ -1628,6 +1674,11 @@
 
         shadow.querySelector('[data-copy]').addEventListener('click', async () => {
             const payload = {
+                playButtonHalo: {
+                    sizePx: haloState.size,
+                    darknessPercent: haloState.darkness,
+                    blurPx: haloState.blur
+                },
                 frameHeightVh: Number(sizeInput.value),
                 cornerRadiusPx: Number(radiusInput.value),
                 hideTopNavbar: navbarToggle.checked,
@@ -1703,6 +1754,14 @@
             ROOT.style.removeProperty('--reelfolio-exp-portrait-width');
             ROOT.style.removeProperty('--reelfolio-exp-landscape-width');
             ROOT.style.removeProperty('--reelfolio-exp-radius');
+            Object.assign(haloState, haloDefaults);
+            haloInputs.forEach(input => {
+                const property = input.dataset.halo;
+                input.value = String(haloState[property]);
+                const suffix = property === 'darkness' ? '%' : 'px';
+                shadow.querySelector(`[data-halo-value="${property}"]`).textContent = `${haloState[property]}${suffix}`;
+            });
+            applyHaloState();
             ['navbar', 'controls', 'arrows'].forEach(target => {
                 ROOT.style.removeProperty(`--reelfolio-exp-${target}-x`);
                 ROOT.style.removeProperty(`--reelfolio-exp-${target}-y`);
@@ -1716,7 +1775,7 @@
             colorOverrides.clear();
             sizeWasChanged = false;
             radiusWasChanged = false;
-            navbarToggle.checked = false;
+            navbarToggle.checked = true;
             controlsToggle.checked = false;
             positionInputs.forEach(input => {
                 input.value = '0';
@@ -1761,6 +1820,7 @@
         }, { passive: true });
 
         syncMobilePresetUI();
+        applyHaloState();
         syncForCurrentSection();
     }
 

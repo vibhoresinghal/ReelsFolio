@@ -56,6 +56,12 @@
             -ms-user-select: none;
         }
 
+        :root {
+            --play-halo-size: 72px;
+            --play-halo-darkness: 0.66;
+            --play-halo-blur: 30px;
+        }
+
         /* Background layer that transitions colors */
         .bg-layer {
             position: fixed;
@@ -109,17 +115,9 @@
         /* Video frame container - 9:16 aspect ratio (phone-like) */
         .video-frame {
             position: relative;
-            /* 
-             * Width calculation that maintains 9:16 ratio within viewport:
-             * - min 280px on very small screens
-             * - max 380px on large screens  
-             * - 50vw for horizontal responsiveness
-             * - calc(80vh * 9 / 16) ensures height won't exceed 80% of viewport
-             */
-            width: min(clamp(280px, 50vw, 380px), calc(80vh * 9 / 16));
+            width: min(calc(94vh * 9 / 16), 95vw);
             aspect-ratio: 9/16;
-            /* Responsive border radius */
-            border-radius: clamp(16px, 3vw, 24px);
+            border-radius: 12px;
             overflow: hidden;
             /* Responsive shadow */
             box-shadow: 0 clamp(15px, 3vh, 25px) clamp(40px, 8vh, 80px) rgba(0, 0, 0, 0.4);
@@ -133,7 +131,7 @@
         .video-nav-arrows {
             position: fixed;
             /* Position just to the right of video frame */
-            left: calc(50% + min(clamp(280px, 50vw, 380px), calc(80vh * 9 / 16)) / 2 + 24px);
+            left: calc(50% + min(calc(94vh * 9 / 16), 95vw) / 2 + 24px);
             top: 50%;
             transform: translateY(-50%);
             display: flex;
@@ -145,7 +143,7 @@
 
         /* Adjust arrow position for landscape videos */
         .video-nav-arrows.landscape {
-            left: calc(50% + min(85vw, calc(65vh * 16 / 9)) / 2 + 24px);
+            left: calc(50% + min(calc(90vh * 16 / 9), calc(100vw - 152px)) / 2 + 24px);
         }
 
         .fullscreen-btn .fullscreen-exit-icon {
@@ -480,12 +478,10 @@
 
         .video-section.landscape-mode .video-frame {
             aspect-ratio: 16/9;
-            /* Constrain height to leave vertical space for text below */
-            width: min(85vw, calc(65vh * 16 / 9));
+            width: min(calc(90vh * 16 / 9), calc(100vw - 152px));
             border-radius: 12px;
             margin-right: 0;
-            margin-bottom: 5vh;
-            /* Push up slightly to give even more room at bottom */
+            margin-bottom: 0;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
         }
 
@@ -553,7 +549,7 @@
             transform: translate(-50%, -50%);
             width: 60px;
             height: 60px;
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.32);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.3);
@@ -568,6 +564,7 @@
             transition: all 0.3s ease;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
             color: white;
+            isolation: isolate;
         }
 
         /* Only show button when paused */
@@ -577,7 +574,7 @@
         }
 
         .video-frame .play-overlay-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.42);
             transform: translate(-50%, -50%) scale(1.05);
         }
 
@@ -609,8 +606,18 @@
         body.experience-awaiting-start .play-overlay-btn::before {
             content: '';
             position: absolute;
-            inset: -30px;
+            inset: calc(-1 * var(--play-halo-size));
             border-radius: 50%;
+            background: radial-gradient(
+                circle,
+                rgb(0 0 0 / var(--play-halo-darkness)) 0%,
+                rgb(0 0 0 / calc(var(--play-halo-darkness) * 0.65)) 42%,
+                rgb(0 0 0 / calc(var(--play-halo-darkness) * 0.23)) 62%,
+                transparent 76%
+            );
+            filter: blur(var(--play-halo-blur));
+            z-index: -1;
+            pointer-events: none;
         }
 
         body.experience-awaiting-start .video-frame .play-overlay-btn {
@@ -642,47 +649,6 @@
             .play-overlay-btn .play-with-sound-ring {
                 animation: none;
             }
-        }
-
-        /* Mute indicator — shown on the active video frame when muted */
-        .mute-indicator {
-            position: absolute;
-            top: 16px;
-            right: 16px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            background: rgba(0, 0, 0, 0.55);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 20px;
-            padding: 6px 12px 6px 8px;
-            color: white;
-            font-size: 12px;
-            font-weight: 500;
-            z-index: 110;
-            pointer-events: none;
-            opacity: 0;
-            transform: scale(0.9);
-            transition: opacity 0.3s ease, transform 0.3s ease;
-        }
-
-        .mute-indicator.visible {
-            opacity: 1;
-            transform: scale(1);
-            animation: muteHintPulse 2s ease-in-out infinite;
-        }
-
-        .mute-indicator svg {
-            width: 16px;
-            height: 16px;
-            flex-shrink: 0;
-        }
-
-        @keyframes muteHintPulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.6; }
         }
 
         /* ========== VIDEO SEEKBAR ========== */
@@ -1097,16 +1063,38 @@
         /* Control bar container - responsive positioning */
         .control-bar {
             position: fixed;
-            bottom: clamp(12px, 3vh, 20px);
-            left: 50%;
-            transform: translateX(-50%);
+            top: 20px;
+            right: 20px;
+            bottom: auto;
+            left: auto;
+            transform: none;
             display: flex;
             align-items: center;
-            gap: clamp(8px, 2vw, 12px);
+            gap: 0;
             z-index: 1000;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
-            opacity: 1;
-            visibility: visible;
+            transition:
+                opacity 0.3s ease,
+                visibility 0s linear 0.3s,
+                transform 0.3s ease;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transform: translateY(-4px);
+        }
+
+        @media (min-width: 1025px) and (hover: hover) {
+            body.video-hover-active:not(.experience-awaiting-start) .control-bar,
+            .control-bar:hover,
+            .control-bar:focus-within {
+                opacity: 1;
+                visibility: visible;
+                pointer-events: auto;
+                transform: translateY(0);
+                transition:
+                    opacity 0.3s ease,
+                    visibility 0s,
+                    transform 0.3s ease;
+            }
         }
 
         .control-bar.hidden {
@@ -1121,14 +1109,17 @@
             -webkit-backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.3);
             color: white;
-            padding: clamp(10px, 2vh, 14px) clamp(18px, 4vw, 28px);
-            border-radius: 50px;
+            width: 44px;
+            height: 44px;
+            padding: 0;
+            border-radius: 50%;
             font-size: clamp(12px, 2vw, 15px);
             font-family: inherit;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: clamp(6px, 1.5vw, 10px);
+            justify-content: center;
+            gap: 0;
             transition: all 0.3s ease;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
         }
@@ -1139,8 +1130,12 @@
         }
 
         .unmute-btn svg {
-            width: clamp(16px, 3vw, 20px);
-            height: clamp(16px, 3vw, 20px);
+            width: 20px;
+            height: 20px;
+        }
+
+        #soundBtnText {
+            display: none;
         }
 
         /* Unmute button pulse animation - draws attention until user unmutes */
@@ -1204,7 +1199,7 @@
             border-radius: 50%;
             color: white;
             cursor: pointer;
-            display: flex;
+            display: none;
             align-items: center;
             justify-content: center;
             transition: all 0.3s ease;
@@ -1636,6 +1631,14 @@
             transition: opacity 0.3s ease, visibility 0.3s ease;
         }
 
+        @media (min-width: 601px) {
+            .navbar-wrapper {
+                opacity: 0;
+                visibility: hidden;
+                pointer-events: none;
+            }
+        }
+
         /* Landing position state - navbar moves down to between skills and grid */
         .tab-nav.global-tabs.landing-position {
             /* Position handled by JS for perfect sync with scroll */
@@ -1773,10 +1776,10 @@
             display: flex;
             align-items: center;
             gap: 6px;
-            background: rgba(255, 255, 255, 0.12);
+            background: rgba(0, 0, 0, 0.38);
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: none;
             padding: 8px 14px;
             border-radius: 20px;
             color: rgba(255, 255, 255, 0.9);
@@ -1850,9 +1853,9 @@
         /* Landing Video Frame - Center */
         .landing-video-frame {
             position: relative;
-            width: min(clamp(280px, 50vw, 380px), calc(80vh * 9 / 16));
+            width: min(calc(94vh * 9 / 16), 95vw);
             aspect-ratio: 9/16;
-            border-radius: clamp(16px, 3vw, 24px);
+            border-radius: 12px;
             overflow: hidden;
             box-shadow: 0 clamp(15px, 3vh, 25px) clamp(40px, 8vh, 80px) rgba(0, 0, 0, 0.5);
             z-index: 5;
@@ -1894,7 +1897,7 @@
             transform: translate(-50%, -50%);
             width: 60px;
             height: 60px;
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.32);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.3);
@@ -1909,6 +1912,7 @@
             transition: all 0.3s ease;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
             color: white;
+            isolation: isolate;
         }
 
         /* Hide button when playing */
@@ -1918,7 +1922,7 @@
         }
 
         .landing-video-frame .play-overlay-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.42);
             transform: translate(-50%, -50%) scale(1.05);
         }
 
@@ -2267,7 +2271,7 @@
                 right: auto !important;
                 transform: translateX(-50%) !important;
                 width: auto !important;
-                max-width: min(calc(min(clamp(280px, 50vw, 380px), calc(80vh * 9 / 16)) - 32px), 80vw) !important;
+                max-width: min(calc(min(calc(94vh * 9 / 16), 95vw) - 32px), 80vw) !important;
                 z-index: 200 !important;
                 opacity: 0 !important;
                 visibility: hidden !important;
@@ -3061,7 +3065,7 @@
         </button>
 
         <!-- Sound Toggle Button -->
-        <button class="unmute-btn" id="soundBtn" onclick="toggleSound()">
+        <button class="unmute-btn" id="soundBtn" onclick="toggleSound()" aria-label="Unmute video" title="Unmute">
             <svg id="mutedIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                 <path
                     d="M13.5 4.06c0-1.336-1.616-2.005-2.56-1.06l-4.5 4.5H4.508c-1.141 0-2.318 0-2.402.933H2.03c-.01 0-.01.015-.01.033v6.088c0 .018 0 .033.01.033h.076c.084.933 1.261.933 2.402.933h1.932l4.5 4.5c.945.945 2.56.276 2.56-1.06V4.06zM17.78 9.22a.75.75 0 10-1.06 1.06L18.44 12l-1.72 1.72a.75.75 0 101.06 1.06l1.72-1.72 1.72 1.72a.75.75 0 101.06-1.06L20.56 12l1.72-1.72a.75.75 0 10-1.06-1.06l-1.72 1.72-1.72-1.72z" />
@@ -3289,9 +3293,35 @@
                 initLikeButton(); // Initialize like button state
                 initSoundHint(); // Show 'Tap for sound' hint on first visit
                 initMobileFirstReelNudge();
+                initDesktopMuteHover();
             } catch (error) {
                 console.error('Failed to load videos:', error);
             }
+        }
+
+        function initDesktopMuteHover() {
+            let hideTimer = null;
+            const soundControl = document.querySelector('.control-bar');
+            const frames = document.querySelectorAll('.video-frame, .landing-video-frame');
+            if (!soundControl || !frames.length) return;
+
+            const show = () => {
+                clearTimeout(hideTimer);
+                document.body.classList.add('video-hover-active');
+            };
+            const hideSoon = () => {
+                clearTimeout(hideTimer);
+                hideTimer = setTimeout(() => {
+                    document.body.classList.remove('video-hover-active');
+                }, 650);
+            };
+
+            frames.forEach(frame => {
+                frame.addEventListener('mouseenter', show);
+                frame.addEventListener('mouseleave', hideSoon);
+            });
+            soundControl.addEventListener('mouseenter', show);
+            soundControl.addEventListener('mouseleave', hideSoon);
         }
 
         // Helper function to get comment icon SVG by type
@@ -3357,7 +3387,7 @@
                                     <path d="m7 10 5 5 5-5" />
                                     <path d="M5 21h14" />
                                 </svg>
-                                <span>Résumé</span>
+                                <span>Resume</span>
                             </a>
                             <a class="landing-action landing-social-action" href="https://www.linkedin.com/in/vibhoresinghal"
                                target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" title="LinkedIn">
@@ -3382,10 +3412,6 @@
                     </div>
                     <div class="landing-video-frame" data-tap-video="landing-video">
                         <video id="landing-video" src="${landing.profileVideo || ''}" muted playsinline loop preload="auto"></video>
-                        <div class="mute-indicator" id="muteHint">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 4.06c0-1.336-1.616-2.005-2.56-1.06l-4.5 4.5H4.508c-1.141 0-2.318 0-2.402.933H2.03c-.01 0-.01.015-.01.033v6.088c0 .018 0 .033.01.033h.076c.084.933 1.261.933 2.402.933h1.932l4.5 4.5c.945.945 2.56.276 2.56-1.06V4.06zM17.78 9.22a.75.75 0 10-1.06 1.06L18.44 12l-1.72 1.72a.75.75 0 101.06 1.06l1.72-1.72 1.72 1.72a.75.75 0 101.06-1.06L20.56 12l1.72-1.72a.75.75 0 10-1.06-1.06l-1.72 1.72-1.72-1.72z" /></svg>
-                            <span>Tap for sound</span>
-                        </div>
                         <div class="play-overlay-btn" id="btn-landing-video">
                             <svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" /></svg>
                             <svg class="play-with-sound-ring" viewBox="0 0 120 120" aria-hidden="true">
@@ -3434,10 +3460,6 @@
                                 
                                 <div class="video-frame" data-tap-video="${video.id}">
                                     <video id="${video.id}" ${isFirstVideo ? `src="${video.src}"` : ''} data-src="${video.src}" muted playsinline loop preload="${preloadStrategy}"></video>
-                                    <div class="mute-indicator" data-mute-hint="${video.id}">
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 4.06c0-1.336-1.616-2.005-2.56-1.06l-4.5 4.5H4.508c-1.141 0-2.318 0-2.402.933H2.03c-.01 0-.01.015-.01.033v6.088c0 .018 0 .033.01.033h.076c.084.933 1.261.933 2.402.933h1.932l4.5 4.5c.945.945 2.56.276 2.56-1.06V4.06zM17.78 9.22a.75.75 0 10-1.06 1.06L18.44 12l-1.72 1.72a.75.75 0 101.06 1.06l1.72-1.72 1.72 1.72a.75.75 0 101.06-1.06L20.56 12l1.72-1.72a.75.75 0 10-1.06-1.06l-1.72 1.72-1.72-1.72z" /></svg>
-                                        <span>Tap for sound</span>
-                                    </div>
                                     <div class="play-overlay-btn" id="btn-${video.id}">
                                         <svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" /></svg>
                                         <svg class="play-with-sound-ring" viewBox="0 0 120 120" aria-hidden="true">
@@ -3582,7 +3604,9 @@
                         // Update arrow positioning for landscape/portrait
                         const navArrows = document.getElementById('fixedNavArrows');
                         if (navArrows) {
-                            if (entry.target.classList.contains('landscape-mode')) {
+                            const isLandscapeVideo = entry.target.classList.contains('landscape-mode');
+                            document.body.classList.toggle('landscape-video-active', isLandscapeVideo);
+                            if (isLandscapeVideo) {
                                 navArrows.classList.add('landscape');
                             } else {
                                 navArrows.classList.remove('landscape');
@@ -3593,7 +3617,6 @@
                         const isVideo = entry.target.classList.contains('video-section');
                         const logoBtn = document.getElementById('logoBtn');
                         const navbarWrapper = document.getElementById('navbarWrapper');
-
                         if (navbarWrapper) {
                             navbarWrapper.classList.remove('hidden');
                         }
@@ -4309,15 +4332,24 @@
             const mutedIcon = document.getElementById('mutedIcon');
             const unmutedIcon = document.getElementById('unmutedIcon');
             const btnText = document.getElementById('soundBtnText');
+            const soundBtn = document.getElementById('soundBtn');
 
             if (isMuted) {
                 mutedIcon.style.display = 'block';
                 unmutedIcon.style.display = 'none';
                 btnText.textContent = 'Unmute';
+                if (soundBtn) {
+                    soundBtn.setAttribute('aria-label', 'Unmute video');
+                    soundBtn.title = 'Unmute';
+                }
             } else {
                 mutedIcon.style.display = 'none';
                 unmutedIcon.style.display = 'block';
                 btnText.textContent = 'Mute';
+                if (soundBtn) {
+                    soundBtn.setAttribute('aria-label', 'Mute video');
+                    soundBtn.title = 'Mute';
+                }
             }
             syncMutePulse();
         }
@@ -5436,7 +5468,7 @@
             document.addEventListener('click', (e) => {
                 const frame = e.target.closest('[data-tap-video]');
                 if (!frame) return;
-                if (e.target.closest('.video-seekbar')) return;
+                if (e.target.closest('.video-seekbar, .control-bar')) return;
 
                 const videoId = frame.getAttribute('data-tap-video');
 
@@ -5991,6 +6023,13 @@
         // Initialize
         initApp();
 
+    </script>
+    <script>
+        if (new URLSearchParams(window.location.search).has('controls')) {
+            const experimentController = document.createElement('script');
+            experimentController.src = 'experiment-controller.js';
+            document.body.appendChild(experimentController);
+        }
     </script>
 </body>
 

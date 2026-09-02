@@ -169,6 +169,13 @@
             opacity: 0 !important;
             visibility: hidden !important;
             pointer-events: none !important;
+            transition: none !important;
+            animation: none !important;
+        }
+
+        body.desktop-fullscreen-mode .bg-layer::after,
+        body.desktop-fullscreen-mode .bg-grid-cutting-mat {
+            display: none !important;
         }
 
         body.desktop-fullscreen-mode .video-container,
@@ -226,6 +233,7 @@
 
         body.desktop-fullscreen-mode .video-nav-arrows .nav-arrow-btn:not(.fullscreen-btn) {
             display: none !important;
+            transition: none !important;
         }
 
         body.desktop-fullscreen-mode .fullscreen-btn .fullscreen-enter-icon {
@@ -3965,8 +3973,38 @@
             return document.getElementById(visibleId === 'landing' ? 'landing-video' : visibleId);
         }
 
-        function startPlaybackForFullscreen() {
-            const video = getActiveVideoForFullscreen();
+        let fullscreenVideoId = null;
+
+        function alignSectionForVideo(videoId) {
+            if (!videoId) return;
+
+            const container = document.getElementById('mainScrollContainer');
+            const section = videoId === 'landing-video'
+                ? document.getElementById('section-landing')
+                : document.querySelector(`.video-section[data-video-id="${CSS.escape(videoId)}"]`);
+            if (!container || !section) return;
+
+            clearTimeout(playVideoDebounceTimer);
+            requestAnimationFrame(() => {
+                const previousBehavior = container.style.scrollBehavior;
+                const previousSnapType = container.style.scrollSnapType;
+                container.style.scrollBehavior = 'auto';
+                container.style.scrollSnapType = 'none';
+                container.scrollTop = section.offsetTop;
+
+                requestAnimationFrame(() => {
+                    container.style.scrollBehavior = previousBehavior;
+                    container.style.scrollSnapType = previousSnapType;
+                    startPlaybackForFullscreen(videoId);
+                    updateNavArrows();
+                });
+            });
+        }
+
+        function startPlaybackForFullscreen(videoId = null) {
+            const video = videoId
+                ? document.getElementById(videoId)
+                : getActiveVideoForFullscreen();
             if (!video) return;
 
             if (!hasStartedExperience) {
@@ -3993,10 +4031,16 @@
                 if (document.fullscreenElement) {
                     await document.exitFullscreen();
                 } else {
-                    startPlaybackForFullscreen();
+                    const activeVideo = getActiveVideoForFullscreen();
+                    if (!activeVideo) return;
+                    fullscreenVideoId = activeVideo.id;
+                    document.body.classList.add('desktop-fullscreen-mode');
+                    startPlaybackForFullscreen(fullscreenVideoId);
                     await document.documentElement.requestFullscreen();
                 }
             } catch (error) {
+                document.body.classList.remove('desktop-fullscreen-mode');
+                fullscreenVideoId = null;
                 console.warn('Fullscreen mode could not be changed:', error);
             }
         }
@@ -4013,7 +4057,13 @@
                 button.title = isFullscreen ? 'Exit fullscreen' : 'Fullscreen video';
             }
 
-            if (isFullscreen) startPlaybackForFullscreen();
+            if (isFullscreen) {
+                startPlaybackForFullscreen(fullscreenVideoId);
+                alignSectionForVideo(fullscreenVideoId);
+            } else {
+                alignSectionForVideo(fullscreenVideoId);
+                fullscreenVideoId = null;
+            }
         }
 
         document.addEventListener('fullscreenchange', syncDesktopFullscreenMode);
@@ -4375,20 +4425,33 @@
         let likeDebounceTimer = null;
 
         function getCurrentVideoId() {
-            // Get the currently visible video's ID
             const container = document.getElementById('mainScrollContainer');
             if (!container) return 'landing';
 
-            const sectionHeight = getSectionHeight();
-            const currentIndex = Math.round(container.scrollTop / sectionHeight);
             const sections = container.querySelectorAll('.landing-section, .video-section');
+            if (!sections.length) return 'landing';
 
-            if (sections[currentIndex]) {
-                return sections[currentIndex].getAttribute('data-video-id') ||
-                    sections[currentIndex].id ||
-                    'landing';
-            }
-            return 'landing';
+            // Use the section physically closest to the viewport center. This
+            // remains accurate when frame sizing, browser chrome, or fullscreen
+            // changes make scrollTop / viewport-height calculations drift.
+            const containerRect = container.getBoundingClientRect();
+            const viewportCenter = containerRect.top + container.clientHeight / 2;
+            let closestSection = sections[0];
+            let closestDistance = Infinity;
+
+            sections.forEach(section => {
+                const rect = section.getBoundingClientRect();
+                const sectionCenter = rect.top + rect.height / 2;
+                const distance = Math.abs(sectionCenter - viewportCenter);
+                if (distance < closestDistance) {
+                    closestDistance = distance;
+                    closestSection = section;
+                }
+            });
+
+            return closestSection.getAttribute('data-video-id') ||
+                closestSection.id ||
+                'landing';
         }
 
         function toggleLike() {

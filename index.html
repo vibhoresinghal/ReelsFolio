@@ -211,6 +211,12 @@
             display: none !important;
         }
 
+        body.desktop-fullscreen-mode .play-overlay-btn.paused,
+        body.desktop-fullscreen-mode .landing-video-frame .play-overlay-btn:not(.playing) {
+            display: flex !important;
+            z-index: 14000;
+        }
+
         body.desktop-fullscreen-mode .video-nav-arrows {
             display: flex !important;
             left: auto !important;
@@ -592,7 +598,8 @@
             overflow: visible;
             pointer-events: none;
             transform: translate(-50%, -50%);
-            animation: rotatePlayWithSound 10s linear infinite;
+            animation: rotatePlayWithSound 28s linear infinite;
+            will-change: transform;
         }
 
         body.experience-awaiting-start .play-overlay-btn .play-with-sound-ring {
@@ -3741,6 +3748,27 @@
             return document.getElementById(visibleId === 'landing' ? 'landing-video' : visibleId);
         }
 
+        function startPlaybackForFullscreen() {
+            const video = getActiveVideoForFullscreen();
+            if (!video) return;
+
+            if (!hasStartedExperience) {
+                startExperienceWithSound(video.id);
+                return;
+            }
+
+            currentVideoId = video.id;
+            isPlaying = true;
+            userPaused[video.id] = false;
+            video.muted = isMuted;
+            video.play().catch(error => console.log('Fullscreen playback blocked:', error));
+
+            const pauseIcon = document.getElementById('pauseIcon');
+            const playIcon = document.getElementById('playIcon');
+            if (pauseIcon) pauseIcon.style.display = 'block';
+            if (playIcon) playIcon.style.display = 'none';
+        }
+
         async function toggleDesktopFullscreen() {
             if (window.innerWidth <= 600 || !document.fullscreenEnabled) return;
 
@@ -3748,6 +3776,7 @@
                 if (document.fullscreenElement) {
                     await document.exitFullscreen();
                 } else {
+                    startPlaybackForFullscreen();
                     await document.documentElement.requestFullscreen();
                 }
             } catch (error) {
@@ -3767,23 +3796,7 @@
                 button.title = isFullscreen ? 'Exit fullscreen' : 'Fullscreen video';
             }
 
-            if (!isFullscreen) return;
-            // Entering fullscreen before the experience starts should not
-            // implicitly start playback; the center play control remains active.
-            if (!hasStartedExperience) return;
-
-            const video = getActiveVideoForFullscreen();
-            if (!video) return;
-            currentVideoId = video.id;
-            isPlaying = true;
-            userPaused[video.id] = false;
-            video.muted = isMuted;
-            video.play().catch(error => console.log('Fullscreen playback blocked:', error));
-
-            const pauseIcon = document.getElementById('pauseIcon');
-            const playIcon = document.getElementById('playIcon');
-            if (pauseIcon) pauseIcon.style.display = 'block';
-            if (playIcon) playIcon.style.display = 'none';
+            if (isFullscreen) startPlaybackForFullscreen();
         }
 
         document.addEventListener('fullscreenchange', syncDesktopFullscreenMode);

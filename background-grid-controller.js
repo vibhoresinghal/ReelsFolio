@@ -33,17 +33,35 @@
         grainContrast: 105,
         grainBlend: 'soft-light',
         lightEnabled: true,
+        lightPattern: 'window-foliage',
         lightColor: '#ffe0b7',
-        lightIntensity: 34,
+        lightIntensity: 46,
         lightAngle: 112,
-        lightSlatWidth: 72,
-        lightGap: 34,
-        lightSoftness: 18,
-        lightX: 32,
-        lightY: 4,
-        lightSpreadX: 72,
-        lightSpreadY: 88,
-        lightBlend: 'screen'
+        lightSlatWidth: 165,
+        lightGap: 50,
+        lightSoftness: 14,
+        lightX: 43,
+        lightY: -37,
+        lightSpreadX: 63,
+        lightSpreadY: 168,
+        lightBlend: 'soft-light',
+        foliageStyle: 'broad',
+        foliageScale: 400,
+        foliageDensity: 100,
+        foliageMotion: true,
+        foliageMotionAmount: 33,
+        foliageMotionRotation: 3.9,
+        foliageMotionSpeed: 8,
+        windowRotation: -20,
+        windowFrameWidth: 39,
+        windowShadowOpacity: 77,
+        windowX: 0,
+        windowY: 0,
+        windowScale: 100,
+        leftLeafX: 48,
+        leftLeafY: -18,
+        rightLeafX: 31,
+        rightLeafY: 37
     };
     const state = { ...defaults };
 
@@ -260,6 +278,7 @@
                 background: rgba(255,255,255,0.035);
             }
             .subsection[hidden] { display: none; }
+            .subsection [hidden] { display: none !important; }
             .subsection-title { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.9); }
             .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
             .action {
@@ -391,56 +410,145 @@
                     </div>
                 </div>
                 <div class="subsection">
-                    <span class="subsection-title">Blinds light shader</span>
+                    <span class="subsection-title">Sunlight shader</span>
                     <label class="toggle">
                         <span class="label">Enable light</span>
                         <input type="checkbox" checked data-property="lightEnabled">
                     </label>
                     <div class="row">
+                        <label for="light-pattern">Light pattern</label>
+                        <select id="light-pattern" data-property="lightPattern">
+                            <option value="blinds">Blinds</option>
+                            <option value="foliage" selected>Foliage</option>
+                            <option value="window-foliage">Window + plant</option>
+                        </select>
+                    </div>
+                    <div class="row">
                         <label for="light-color">Light color</label>
                         <input id="light-color" type="color" value="#ffe0b7" data-property="lightColor">
                     </div>
                     <div>
-                        <div class="row"><label for="light-intensity">Intensity</label><output data-output="lightIntensity">34%</output></div>
-                        <input id="light-intensity" type="range" min="0" max="100" step="1" value="34" data-property="lightIntensity">
+                        <div class="row"><label for="light-intensity">Intensity</label><output data-output="lightIntensity">47%</output></div>
+                        <input id="light-intensity" type="range" min="0" max="100" step="1" value="47" data-property="lightIntensity">
                     </div>
-                    <div>
+                    <div data-blinds-control>
                         <div class="row"><label for="light-angle">Angle</label><output data-output="lightAngle">112°</output></div>
                         <input id="light-angle" type="range" min="0" max="180" step="1" value="112" data-property="lightAngle">
                     </div>
-                    <div>
-                        <div class="row"><label for="light-slat-width">Beam width</label><output data-output="lightSlatWidth">72px</output></div>
-                        <input id="light-slat-width" type="range" min="8" max="240" step="1" value="72" data-property="lightSlatWidth">
+                    <div data-blinds-control>
+                        <div class="row"><label for="light-slat-width">Beam width</label><output data-output="lightSlatWidth">165px</output></div>
+                        <input id="light-slat-width" type="range" min="8" max="240" step="1" value="165" data-property="lightSlatWidth">
+                    </div>
+                    <div data-blinds-control>
+                        <div class="row"><label for="light-gap">Blind gap</label><output data-output="lightGap">50px</output></div>
+                        <input id="light-gap" type="range" min="2" max="180" step="1" value="50" data-property="lightGap">
+                    </div>
+                    <div data-foliage-control data-foliage-style-control hidden>
+                        <div class="row">
+                            <label for="foliage-style">Leaf shape</label>
+                            <select id="foliage-style" data-property="foliageStyle">
+                                <option value="organic" selected>Organic canopy</option>
+                                <option value="fine">Fine leaves</option>
+                                <option value="broad">Broad leaves</option>
+                                <option value="palm">Palm fronds</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div data-foliage-control hidden>
+                        <div class="row"><label for="foliage-scale">Leaf scale</label><output data-output="foliageScale">380px</output></div>
+                        <input id="foliage-scale" type="range" min="80" max="520" step="5" value="380" data-property="foliageScale">
+                    </div>
+                    <div data-foliage-control hidden>
+                        <div class="row"><label for="foliage-density">Leaf density</label><output data-output="foliageDensity">100%</output></div>
+                        <input id="foliage-density" type="range" min="0" max="100" step="1" value="100" data-property="foliageDensity">
+                    </div>
+                    <label class="toggle" data-foliage-control hidden>
+                        <span class="label">Animate breeze</span>
+                        <input type="checkbox" checked data-property="foliageMotion">
+                    </label>
+                    <div data-foliage-control hidden>
+                        <div class="row"><label for="foliage-motion-amount">Breeze amount</label><output data-output="foliageMotionAmount">14px</output></div>
+                        <input id="foliage-motion-amount" type="range" min="0" max="50" step="1" value="14" data-property="foliageMotionAmount">
+                    </div>
+                    <div data-foliage-control hidden>
+                        <div class="row"><label for="foliage-motion-rotation">Leaf sway</label><output data-output="foliageMotionRotation">0.8°</output></div>
+                        <input id="foliage-motion-rotation" type="range" min="0" max="4" step="0.1" value="0.8" data-property="foliageMotionRotation">
+                    </div>
+                    <div data-foliage-control hidden>
+                        <div class="row"><label for="foliage-motion-speed">Breeze duration</label><output data-output="foliageMotionSpeed">12s</output></div>
+                        <input id="foliage-motion-speed" type="range" min="3" max="30" step="1" value="12" data-property="foliageMotionSpeed">
+                    </div>
+                    <div data-window-control hidden>
+                        <span class="subsection-title">Window placement</span>
+                    </div>
+                    <div data-window-control hidden>
+                        <div class="row"><label for="window-x">Horizontal position</label><output data-output="windowX">0px</output></div>
+                        <input id="window-x" type="range" min="-500" max="500" step="5" value="0" data-property="windowX">
+                    </div>
+                    <div data-window-control hidden>
+                        <div class="row"><label for="window-y">Vertical position</label><output data-output="windowY">0px</output></div>
+                        <input id="window-y" type="range" min="-400" max="400" step="5" value="0" data-property="windowY">
+                    </div>
+                    <div data-window-control hidden>
+                        <div class="row"><label for="window-scale">Window scale</label><output data-output="windowScale">100%</output></div>
+                        <input id="window-scale" type="range" min="50" max="160" step="1" value="100" data-property="windowScale">
+                    </div>
+                    <div data-window-control hidden>
+                        <div class="row"><label for="window-rotation">Window rotation</label><output data-output="windowRotation">7°</output></div>
+                        <input id="window-rotation" type="range" min="-20" max="20" step="1" value="7" data-property="windowRotation">
+                    </div>
+                    <div data-window-control hidden>
+                        <div class="row"><label for="window-frame-width">Frame width</label><output data-output="windowFrameWidth">12px</output></div>
+                        <input id="window-frame-width" type="range" min="2" max="40" step="1" value="12" data-property="windowFrameWidth">
+                    </div>
+                    <div data-window-control hidden>
+                        <div class="row"><label for="window-shadow-opacity">Shadow strength</label><output data-output="windowShadowOpacity">62%</output></div>
+                        <input id="window-shadow-opacity" type="range" min="0" max="100" step="1" value="62" data-property="windowShadowOpacity">
+                    </div>
+                    <div data-window-control hidden>
+                        <span class="subsection-title">Plant placement</span>
+                    </div>
+                    <div data-window-control hidden>
+                        <div class="row"><label for="left-leaf-x">Left leaves X</label><output data-output="leftLeafX">2%</output></div>
+                        <input id="left-leaf-x" type="range" min="-40" max="100" step="1" value="2" data-property="leftLeafX">
+                    </div>
+                    <div data-window-control hidden>
+                        <div class="row"><label for="left-leaf-y">Left leaves Y</label><output data-output="leftLeafY">-12%</output></div>
+                        <input id="left-leaf-y" type="range" min="-60" max="80" step="1" value="-12" data-property="leftLeafY">
+                    </div>
+                    <div data-window-control hidden>
+                        <div class="row"><label for="right-leaf-x">Right leaves X</label><output data-output="rightLeafX">68%</output></div>
+                        <input id="right-leaf-x" type="range" min="-20" max="120" step="1" value="68" data-property="rightLeafX">
+                    </div>
+                    <div data-window-control hidden>
+                        <div class="row"><label for="right-leaf-y">Right leaves Y</label><output data-output="rightLeafY">-5%</output></div>
+                        <input id="right-leaf-y" type="range" min="-60" max="80" step="1" value="-5" data-property="rightLeafY">
                     </div>
                     <div>
-                        <div class="row"><label for="light-gap">Blind gap</label><output data-output="lightGap">34px</output></div>
-                        <input id="light-gap" type="range" min="2" max="180" step="1" value="34" data-property="lightGap">
+                        <div class="row"><label for="light-softness">Softness</label><output data-output="lightSoftness">14px</output></div>
+                        <input id="light-softness" type="range" min="0" max="60" step="1" value="14" data-property="lightSoftness">
                     </div>
                     <div>
-                        <div class="row"><label for="light-softness">Softness</label><output data-output="lightSoftness">18px</output></div>
-                        <input id="light-softness" type="range" min="0" max="60" step="1" value="18" data-property="lightSoftness">
+                        <div class="row"><label for="light-x">Horizontal origin</label><output data-output="lightX">90%</output></div>
+                        <input id="light-x" type="range" min="-20" max="120" step="1" value="90" data-property="lightX">
                     </div>
                     <div>
-                        <div class="row"><label for="light-x">Horizontal origin</label><output data-output="lightX">32%</output></div>
-                        <input id="light-x" type="range" min="-20" max="120" step="1" value="32" data-property="lightX">
+                        <div class="row"><label for="light-y">Vertical origin</label><output data-output="lightY">37%</output></div>
+                        <input id="light-y" type="range" min="-40" max="120" step="1" value="37" data-property="lightY">
                     </div>
                     <div>
-                        <div class="row"><label for="light-y">Vertical origin</label><output data-output="lightY">4%</output></div>
-                        <input id="light-y" type="range" min="-40" max="120" step="1" value="4" data-property="lightY">
+                        <div class="row"><label for="light-spread-x">Horizontal spread</label><output data-output="lightSpreadX">79%</output></div>
+                        <input id="light-spread-x" type="range" min="10" max="150" step="1" value="79" data-property="lightSpreadX">
                     </div>
                     <div>
-                        <div class="row"><label for="light-spread-x">Horizontal spread</label><output data-output="lightSpreadX">72%</output></div>
-                        <input id="light-spread-x" type="range" min="10" max="150" step="1" value="72" data-property="lightSpreadX">
-                    </div>
-                    <div>
-                        <div class="row"><label for="light-spread-y">Vertical spread</label><output data-output="lightSpreadY">88%</output></div>
-                        <input id="light-spread-y" type="range" min="10" max="180" step="1" value="88" data-property="lightSpreadY">
+                        <div class="row"><label for="light-spread-y">Vertical spread</label><output data-output="lightSpreadY">82%</output></div>
+                        <input id="light-spread-y" type="range" min="10" max="180" step="1" value="82" data-property="lightSpreadY">
                     </div>
                     <div class="row">
                         <label for="light-blend">Blend mode</label>
                         <select id="light-blend" data-property="lightBlend">
-                            <option value="screen" selected>Screen</option>
-                            <option value="soft-light">Soft light</option>
+                            <option value="screen">Screen</option>
+                            <option value="soft-light" selected>Soft light</option>
                             <option value="overlay">Overlay</option>
                             <option value="color-dodge">Color dodge</option>
                             <option value="normal">Normal</option>
@@ -460,6 +568,10 @@
     const status = shadow.querySelector('.status');
     const inputs = [...shadow.querySelectorAll('[data-property]')];
     const cuttingControls = shadow.querySelector('[data-cutting-controls]');
+    const blindsControls = [...shadow.querySelectorAll('[data-blinds-control]')];
+    const foliageControls = [...shadow.querySelectorAll('[data-foliage-control]')];
+    const foliageStyleControls = [...shadow.querySelectorAll('[data-foliage-style-control]')];
+    const windowControls = [...shadow.querySelectorAll('[data-window-control]')];
 
     function hexToRgbChannels(hex) {
         const value = hex.replace('#', '');
@@ -481,12 +593,23 @@
         if (!output) return;
         const suffix = [
             'opacity', 'majorOpacity', 'grainOpacity', 'grainContrast',
-            'lightIntensity', 'lightX', 'lightY', 'lightSpreadX', 'lightSpreadY'
+            'lightIntensity', 'lightX', 'lightY', 'lightSpreadX', 'lightSpreadY',
+            'foliageDensity', 'windowShadowOpacity', 'windowScale',
+            'leftLeafX', 'leftLeafY', 'rightLeafX', 'rightLeafY'
         ].includes(property)
             ? '%'
-            : ['rotation', 'angleStep', 'lightAngle'].includes(property)
+            : [
+                'rotation', 'angleStep', 'lightAngle', 'foliageMotionRotation',
+                'windowRotation'
+            ].includes(property)
                 ? '°'
-                : ['majorEvery', 'grainEnabled', 'grainBlend', 'lightEnabled', 'lightColor', 'lightBlend'].includes(property) ? '' : 'px';
+                : property === 'foliageMotionSpeed'
+                    ? 's'
+                : [
+                    'majorEvery', 'grainEnabled', 'grainBlend', 'lightEnabled',
+                    'lightPattern', 'lightColor', 'lightBlend', 'foliageStyle',
+                    'foliageMotion'
+                ].includes(property) ? '' : 'px';
         output.textContent = `${state[property]}${suffix}`;
     }
 
@@ -604,7 +727,10 @@
 
     function applyState() {
         ROOT.dataset.bgGridPattern = state.pattern;
+        ROOT.dataset.bgLightPattern = state.lightPattern;
+        ROOT.dataset.bgFoliageStyle = state.foliageStyle;
         ROOT.toggleAttribute('data-bg-grid-fade', state.fade);
+        ROOT.toggleAttribute('data-bg-foliage-motion', state.foliageMotion);
         ROOT.style.setProperty('--bg-grid-rgb', hexToRgbChannels(state.color));
         ROOT.style.setProperty('--bg-grid-spacing', `${state.spacing}px`);
         ROOT.style.setProperty('--bg-grid-thickness', `${state.thickness}px`);
@@ -629,7 +755,27 @@
         ROOT.style.setProperty('--bg-light-spread-x', `${state.lightSpreadX}%`);
         ROOT.style.setProperty('--bg-light-spread-y', `${state.lightSpreadY}%`);
         ROOT.style.setProperty('--bg-light-blend', state.lightBlend);
+        ROOT.style.setProperty('--bg-light-foliage-scale', `${state.foliageScale}px`);
+        ROOT.style.setProperty('--bg-light-foliage-density', String(state.foliageDensity / 100));
+        ROOT.style.setProperty('--bg-light-motion-amount', `${state.foliageMotionAmount}px`);
+        ROOT.style.setProperty('--bg-light-motion-rotation', `${state.foliageMotionRotation}deg`);
+        ROOT.style.setProperty('--bg-light-motion-speed', `${state.foliageMotionSpeed}s`);
+        ROOT.style.setProperty('--bg-window-rotation', `${state.windowRotation}deg`);
+        ROOT.style.setProperty('--bg-window-frame-width', `${state.windowFrameWidth}px`);
+        ROOT.style.setProperty('--bg-window-shadow-opacity', String(state.windowShadowOpacity / 100));
+        ROOT.style.setProperty('--bg-window-x', `${state.windowX}px`);
+        ROOT.style.setProperty('--bg-window-y', `${state.windowY}px`);
+        ROOT.style.setProperty('--bg-window-scale', String(state.windowScale / 100));
+        ROOT.style.setProperty('--bg-window-left-leaf-x', `${state.leftLeafX}%`);
+        ROOT.style.setProperty('--bg-window-left-leaf-y', `${state.leftLeafY}%`);
+        ROOT.style.setProperty('--bg-window-right-leaf-x', `${state.rightLeafX}%`);
+        ROOT.style.setProperty('--bg-window-right-leaf-y', `${state.rightLeafY}%`);
         cuttingControls.hidden = state.pattern !== 'cutting-mat';
+        blindsControls.forEach(control => { control.hidden = state.lightPattern !== 'blinds'; });
+        const hasPlant = state.lightPattern === 'foliage' || state.lightPattern === 'window-foliage';
+        foliageControls.forEach(control => { control.hidden = !hasPlant; });
+        foliageStyleControls.forEach(control => { control.hidden = state.lightPattern !== 'foliage'; });
+        windowControls.forEach(control => { control.hidden = state.lightPattern !== 'window-foliage'; });
         renderCuttingMat();
     }
 

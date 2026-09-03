@@ -87,17 +87,32 @@
             --bg-grain-size: 215px;
             --bg-grain-contrast: 105%;
             --bg-grain-blend: soft-light;
-            --bg-light-opacity: 0.34;
+            --bg-light-opacity: 0.46;
             --bg-light-rgb: 255 224 183;
             --bg-light-angle: 112deg;
-            --bg-light-slat-width: 72px;
-            --bg-light-gap: 34px;
-            --bg-light-softness: 18px;
-            --bg-light-x: 32%;
-            --bg-light-y: 4%;
-            --bg-light-spread-x: 72%;
-            --bg-light-spread-y: 88%;
-            --bg-light-blend: screen;
+            --bg-light-slat-width: 165px;
+            --bg-light-gap: 50px;
+            --bg-light-softness: 14px;
+            --bg-light-x: 43%;
+            --bg-light-y: -37%;
+            --bg-light-spread-x: 63%;
+            --bg-light-spread-y: 168%;
+            --bg-light-blend: soft-light;
+            --bg-light-foliage-scale: 400px;
+            --bg-light-foliage-density: 1;
+            --bg-light-motion-amount: 33px;
+            --bg-light-motion-rotation: 3.9deg;
+            --bg-light-motion-speed: 8s;
+            --bg-window-rotation: -20deg;
+            --bg-window-frame-width: 39px;
+            --bg-window-shadow-opacity: 0.77;
+            --bg-window-x: 0px;
+            --bg-window-y: 0px;
+            --bg-window-scale: 1;
+            --bg-window-left-leaf-x: 48%;
+            --bg-window-left-leaf-y: -18%;
+            --bg-window-right-leaf-x: 31%;
+            --bg-window-right-leaf-y: 37%;
             transition: --active-bg-color 0.6s ease-in-out;
         }
 
@@ -145,13 +160,6 @@
             z-index: 2;
             pointer-events: none;
             opacity: var(--bg-light-opacity);
-            background: repeating-linear-gradient(
-                var(--bg-light-angle),
-                rgb(var(--bg-light-rgb)) 0,
-                rgb(var(--bg-light-rgb)) var(--bg-light-slat-width),
-                transparent var(--bg-light-slat-width),
-                transparent calc(var(--bg-light-slat-width) + var(--bg-light-gap))
-            );
             filter: blur(var(--bg-light-softness));
             mix-blend-mode: var(--bg-light-blend);
             mask-image: radial-gradient(
@@ -168,7 +176,219 @@
                 rgba(0, 0, 0, 0.42) 68%,
                 transparent 100%
             );
-            will-change: opacity, filter, background-image;
+            will-change: opacity, filter;
+        }
+
+        .bg-light-texture {
+            position: absolute;
+            inset: -12%;
+            pointer-events: none;
+            will-change: transform;
+        }
+
+        :root[data-bg-light-pattern="blinds"] .bg-light-texture {
+            background: repeating-linear-gradient(
+                var(--bg-light-angle),
+                rgb(var(--bg-light-rgb)) 0,
+                rgb(var(--bg-light-rgb)) var(--bg-light-slat-width),
+                transparent var(--bg-light-slat-width),
+                transparent calc(var(--bg-light-slat-width) + var(--bg-light-gap))
+            );
+        }
+
+        :root[data-bg-light-pattern="foliage"] .bg-light-texture {
+            background-image:
+                radial-gradient(ellipse 20% 8% at 14% 19%, rgb(var(--bg-light-rgb)) 0 58%, transparent 73%),
+                radial-gradient(ellipse 9% 23% at 61% 14%, rgb(var(--bg-light-rgb)) 0 56%, transparent 72%),
+                radial-gradient(ellipse 24% 10% at 83% 67%, rgb(var(--bg-light-rgb)) 0 54%, transparent 71%),
+                radial-gradient(ellipse 10% 19% at 32% 82%, rgb(var(--bg-light-rgb)) 0 57%, transparent 74%),
+                radial-gradient(ellipse 15% 6% at 72% 39%, rgb(var(--bg-light-rgb) / var(--bg-light-foliage-density)) 0 52%, transparent 72%),
+                radial-gradient(ellipse 7% 17% at 43% 48%, rgb(var(--bg-light-rgb) / var(--bg-light-foliage-density)) 0 54%, transparent 73%),
+                radial-gradient(ellipse 18% 7% at 7% 72%, rgb(var(--bg-light-rgb) / var(--bg-light-foliage-density)) 0 53%, transparent 71%),
+                radial-gradient(ellipse 6% 14% at 92% 22%, rgb(var(--bg-light-rgb) / var(--bg-light-foliage-density)) 0 55%, transparent 74%);
+            background-repeat: repeat;
+            background-size:
+                var(--bg-light-foliage-scale) var(--bg-light-foliage-scale),
+                calc(var(--bg-light-foliage-scale) * 1.13) calc(var(--bg-light-foliage-scale) * 0.91),
+                calc(var(--bg-light-foliage-scale) * 0.87) calc(var(--bg-light-foliage-scale) * 1.19),
+                calc(var(--bg-light-foliage-scale) * 1.28) calc(var(--bg-light-foliage-scale) * 1.06),
+                calc(var(--bg-light-foliage-scale) * 0.72) calc(var(--bg-light-foliage-scale) * 0.84),
+                calc(var(--bg-light-foliage-scale) * 0.94) calc(var(--bg-light-foliage-scale) * 0.68),
+                calc(var(--bg-light-foliage-scale) * 0.63) calc(var(--bg-light-foliage-scale) * 1.08),
+                calc(var(--bg-light-foliage-scale) * 1.07) calc(var(--bg-light-foliage-scale) * 0.76);
+            background-position:
+                0 0, 37px -29px, -51px 41px, 73px 18px,
+                -24px 62px, 49px 87px, 91px -43px, -68px -72px;
+        }
+
+        :root[data-bg-light-pattern="foliage"][data-bg-foliage-style="fine"] .bg-light-texture {
+            background-image:
+                radial-gradient(ellipse 11% 4% at 8% 13%, rgb(var(--bg-light-rgb)) 0 54%, transparent 72%),
+                radial-gradient(ellipse 4% 12% at 28% 38%, rgb(var(--bg-light-rgb)) 0 53%, transparent 71%),
+                radial-gradient(ellipse 13% 4% at 56% 9%, rgb(var(--bg-light-rgb)) 0 56%, transparent 73%),
+                radial-gradient(ellipse 5% 14% at 79% 44%, rgb(var(--bg-light-rgb)) 0 52%, transparent 70%),
+                radial-gradient(ellipse 12% 5% at 91% 82%, rgb(var(--bg-light-rgb)) 0 54%, transparent 72%),
+                radial-gradient(ellipse 4% 10% at 44% 74%, rgb(var(--bg-light-rgb) / var(--bg-light-foliage-density)) 0 55%, transparent 73%),
+                radial-gradient(ellipse 10% 4% at 17% 88%, rgb(var(--bg-light-rgb) / var(--bg-light-foliage-density)) 0 53%, transparent 71%),
+                radial-gradient(ellipse 4% 11% at 68% 62%, rgb(var(--bg-light-rgb) / var(--bg-light-foliage-density)) 0 54%, transparent 72%);
+        }
+
+        :root[data-bg-light-pattern="foliage"][data-bg-foliage-style="broad"] .bg-light-texture {
+            background-image:
+                radial-gradient(ellipse 30% 12% at 9% 26%, rgb(var(--bg-light-rgb)) 0 59%, transparent 74%),
+                radial-gradient(ellipse 14% 34% at 49% 12%, rgb(var(--bg-light-rgb)) 0 57%, transparent 72%),
+                radial-gradient(ellipse 36% 14% at 87% 55%, rgb(var(--bg-light-rgb)) 0 58%, transparent 73%),
+                radial-gradient(ellipse 15% 30% at 29% 91%, rgb(var(--bg-light-rgb)) 0 56%, transparent 72%),
+                radial-gradient(ellipse 27% 11% at 64% 72%, rgb(var(--bg-light-rgb) / var(--bg-light-foliage-density)) 0 57%, transparent 74%);
+        }
+
+        :root[data-bg-light-pattern="foliage"][data-bg-foliage-style="palm"] .bg-light-texture {
+            background-image:
+                repeating-conic-gradient(
+                    from 204deg at 8% 12%,
+                    transparent 0deg 5deg,
+                    rgb(var(--bg-light-rgb)) 6deg 10deg,
+                    transparent 11deg 17deg
+                ),
+                repeating-conic-gradient(
+                    from 24deg at 91% 72%,
+                    transparent 0deg 7deg,
+                    rgb(var(--bg-light-rgb) / var(--bg-light-foliage-density)) 8deg 13deg,
+                    transparent 14deg 21deg
+                );
+            background-size:
+                calc(var(--bg-light-foliage-scale) * 1.4) calc(var(--bg-light-foliage-scale) * 1.4),
+                calc(var(--bg-light-foliage-scale) * 1.8) calc(var(--bg-light-foliage-scale) * 1.8);
+            background-position: 0 0, 43px -71px;
+        }
+
+        :root[data-bg-light-pattern="window-foliage"] .bg-light-texture {
+            inset: 3% -8% 1% 12%;
+            overflow: hidden;
+            background:
+                linear-gradient(
+                    90deg,
+                    transparent calc(36% - var(--bg-window-frame-width)),
+                    rgb(38 29 18 / var(--bg-window-shadow-opacity)) calc(36% - var(--bg-window-frame-width)),
+                    rgb(38 29 18 / var(--bg-window-shadow-opacity)) calc(36% + var(--bg-window-frame-width)),
+                    transparent calc(36% + var(--bg-window-frame-width))
+                ),
+                linear-gradient(
+                    0deg,
+                    transparent calc(52% - var(--bg-window-frame-width)),
+                    rgb(38 29 18 / var(--bg-window-shadow-opacity)) calc(52% - var(--bg-window-frame-width)),
+                    rgb(38 29 18 / var(--bg-window-shadow-opacity)) calc(52% + var(--bg-window-frame-width)),
+                    transparent calc(52% + var(--bg-window-frame-width))
+                ),
+                rgb(var(--bg-light-rgb));
+            clip-path: polygon(4% 0, 92% 9%, 100% 93%, 0 100%);
+            transform:
+                translate3d(var(--bg-window-x), var(--bg-window-y), 0)
+                rotate(var(--bg-window-rotation))
+                skewY(1.5deg)
+                scale(var(--bg-window-scale));
+            transform-origin: 50% 50%;
+        }
+
+        :root[data-bg-light-pattern="window-foliage"] .bg-light-texture::before,
+        :root[data-bg-light-pattern="window-foliage"] .bg-light-texture::after {
+            content: '';
+            position: absolute;
+            width: calc(var(--bg-light-foliage-scale) * 1.4);
+            height: calc(var(--bg-light-foliage-scale) * 1.25);
+            background-image:
+                radial-gradient(ellipse 17% 7% at 20% 31%, rgb(31 27 20 / var(--bg-window-shadow-opacity)) 0 62%, transparent 72%),
+                radial-gradient(ellipse 8% 20% at 34% 19%, rgb(31 27 20 / var(--bg-window-shadow-opacity)) 0 61%, transparent 72%),
+                radial-gradient(ellipse 19% 8% at 47% 34%, rgb(31 27 20 / var(--bg-window-shadow-opacity)) 0 63%, transparent 73%),
+                radial-gradient(ellipse 8% 18% at 62% 18%, rgb(31 27 20 / var(--bg-window-shadow-opacity)) 0 60%, transparent 72%),
+                radial-gradient(ellipse 20% 8% at 76% 42%, rgb(31 27 20 / var(--bg-window-shadow-opacity)) 0 62%, transparent 73%),
+                radial-gradient(ellipse 9% 19% at 83% 24%, rgb(31 27 20 / var(--bg-window-shadow-opacity)) 0 60%, transparent 72%),
+                radial-gradient(ellipse 17% 7% at 28% 56%, rgb(31 27 20 / var(--bg-light-foliage-density)) 0 61%, transparent 73%),
+                radial-gradient(ellipse 7% 18% at 51% 53%, rgb(31 27 20 / var(--bg-light-foliage-density)) 0 60%, transparent 72%),
+                radial-gradient(ellipse 18% 7% at 69% 64%, rgb(31 27 20 / var(--bg-light-foliage-density)) 0 62%, transparent 73%),
+                linear-gradient(68deg, transparent 47.8%, rgb(35 29 20 / var(--bg-window-shadow-opacity)) 48.5% 49.4%, transparent 50.1%),
+                linear-gradient(79deg, transparent 45.8%, rgb(35 29 20 / var(--bg-window-shadow-opacity)) 46.5% 47.2%, transparent 47.9%);
+            background-repeat: no-repeat;
+            transform-origin: 14% 100%;
+            will-change: transform;
+        }
+
+        :root[data-bg-light-pattern="window-foliage"] .bg-light-texture::after {
+            left: var(--bg-window-left-leaf-x);
+            bottom: var(--bg-window-left-leaf-y);
+        }
+
+        :root[data-bg-light-pattern="window-foliage"] .bg-light-texture::before {
+            left: var(--bg-window-right-leaf-x);
+            bottom: var(--bg-window-right-leaf-y);
+            opacity: 0.9;
+            transform-origin: 86% 100%;
+        }
+
+        :root[data-bg-light-pattern="foliage"][data-bg-foliage-motion] .bg-light-texture {
+            animation: foliage-sway var(--bg-light-motion-speed) cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite alternate;
+        }
+
+        :root[data-bg-light-pattern="window-foliage"][data-bg-foliage-motion] .bg-light-texture::after {
+            animation: window-plant-sway var(--bg-light-motion-speed) cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite alternate;
+        }
+
+        :root[data-bg-light-pattern="window-foliage"][data-bg-foliage-motion] .bg-light-texture::before {
+            animation: window-plant-sway-right calc(var(--bg-light-motion-speed) * 1.17) cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite alternate-reverse;
+        }
+
+        @keyframes foliage-sway {
+            0% {
+                transform: translate3d(calc(var(--bg-light-motion-amount) * -0.45), calc(var(--bg-light-motion-amount) * 0.12), 0)
+                    rotate(calc(var(--bg-light-motion-rotation) * -1));
+            }
+            48% {
+                transform: translate3d(calc(var(--bg-light-motion-amount) * 0.16), calc(var(--bg-light-motion-amount) * -0.3), 0)
+                    rotate(calc(var(--bg-light-motion-rotation) * 0.28));
+            }
+            100% {
+                transform: translate3d(calc(var(--bg-light-motion-amount) * 0.5), calc(var(--bg-light-motion-amount) * 0.18), 0)
+                    rotate(var(--bg-light-motion-rotation));
+            }
+        }
+
+        @keyframes window-plant-sway {
+            0% {
+                transform: translate3d(calc(var(--bg-light-motion-amount) * -0.3), 0, 0)
+                    rotate(calc(var(--bg-light-motion-rotation) * -0.55));
+            }
+            52% {
+                transform: translate3d(calc(var(--bg-light-motion-amount) * 0.12), calc(var(--bg-light-motion-amount) * -0.16), 0)
+                    rotate(calc(var(--bg-light-motion-rotation) * 0.22));
+            }
+            100% {
+                transform: translate3d(calc(var(--bg-light-motion-amount) * 0.38), 0, 0)
+                    rotate(calc(var(--bg-light-motion-rotation) * 0.62));
+            }
+        }
+
+        @keyframes window-plant-sway-right {
+            0% {
+                transform: translate3d(calc(var(--bg-light-motion-amount) * 0.26), 0, 0)
+                    rotate(calc(var(--bg-light-motion-rotation) * 0.46)) scaleX(-1);
+            }
+            52% {
+                transform: translate3d(calc(var(--bg-light-motion-amount) * -0.1), calc(var(--bg-light-motion-amount) * -0.12), 0)
+                    rotate(calc(var(--bg-light-motion-rotation) * -0.18)) scaleX(-1);
+            }
+            100% {
+                transform: translate3d(calc(var(--bg-light-motion-amount) * -0.34), 0, 0)
+                    rotate(calc(var(--bg-light-motion-rotation) * -0.54)) scaleX(-1);
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            :root[data-bg-foliage-motion] .bg-light-texture {
+                animation: none !important;
+            }
+            :root[data-bg-foliage-motion] .bg-light-texture::after {
+                animation: none !important;
+            }
         }
 
         /* The scroll container */
@@ -1070,30 +1290,55 @@
 
         /* Project Link Button */
         .content-link {
+            position: relative;
+            isolation: isolate;
+            overflow: hidden;
             display: inline-flex;
             align-items: center;
             gap: 10px;
-            background: rgba(0, 0, 0, 0.35);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.12);
+            background:
+                linear-gradient(
+                    180deg,
+                    color-mix(in srgb, var(--active-bg-color) 78%, #080605) 0%,
+                    color-mix(in srgb, var(--active-bg-color) 52%, #1a1410) 100%
+                );
+            border: 1px solid rgba(0, 0, 0, 0.28);
             padding: 14px 22px;
-            border-radius: 14px;
-            color: rgba(255, 255, 255, 0.85);
+            border-radius: 999px;
+            color: rgba(255, 255, 255, 0.78);
             font-size: clamp(14px, 1.5vw, 16px);
             font-weight: 500;
             text-decoration: none;
             margin-top: clamp(16px, 3vh, 24px);
-            transition: all 0.3s ease;
+            box-shadow:
+                inset 0 4px 8px rgba(0, 0, 0, 0.42),
+                inset 0 1px 0 rgba(0, 0, 0, 0.35),
+                inset 0 -1px 0 rgba(255, 255, 255, 0.08);
+            transition:
+                color 0.25s ease,
+                box-shadow 0.25s ease,
+                background 0.25s ease;
             cursor: pointer;
             pointer-events: auto;
         }
 
+        .content-link::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            z-index: -1;
+            pointer-events: none;
+            background:
+                radial-gradient(ellipse at 50% 100%, rgba(255, 255, 255, 0.05), transparent 52%),
+                linear-gradient(180deg, rgba(0, 0, 0, 0.18), transparent 46%);
+        }
+
         .content-link:hover {
-            background: rgba(0, 0, 0, 0.5);
-            border-color: rgba(255, 255, 255, 0.25);
-            color: white;
-            transform: translateY(-2px);
+            color: rgba(255, 255, 255, 0.94);
+            box-shadow:
+                inset 0 5px 10px rgba(0, 0, 0, 0.5),
+                inset 0 1px 0 rgba(0, 0, 0, 0.4),
+                inset 0 -1px 0 rgba(255, 255, 255, 0.1);
         }
 
         .content-link svg {
@@ -1127,20 +1372,43 @@
         }
 
         .comment-pill {
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+            background:
+                linear-gradient(
+                    180deg,
+                    color-mix(in srgb, var(--active-bg-color) 78%, #080605) 0%,
+                    color-mix(in srgb, var(--active-bg-color) 52%, #1a1410) 100%
+                );
+            border: 1px solid rgba(0, 0, 0, 0.28);
             padding: 12px 16px;
             border-radius: 20px;
             display: flex;
             align-items: center;
             gap: 12px;
             max-width: 280px;
-            color: white;
+            color: rgba(255, 255, 255, 0.78);
             font-size: 13px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            box-shadow:
+                inset 0 4px 8px rgba(0, 0, 0, 0.42),
+                inset 0 1px 0 rgba(0, 0, 0, 0.35),
+                inset 0 -1px 0 rgba(255, 255, 255, 0.08);
             animation: subtleFloat 5s ease-in-out infinite;
+        }
+
+        .comment-pill::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background:
+                radial-gradient(ellipse at 50% 100%, rgba(255, 255, 255, 0.05), transparent 52%),
+                linear-gradient(180deg, rgba(0, 0, 0, 0.18), transparent 46%);
+        }
+
+        .comment-pill > * {
+            position: relative;
+            z-index: 1;
         }
 
         /* Stagger animation for multiple comments */
@@ -1183,12 +1451,15 @@
             width: 32px;
             height: 32px;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.12);
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
             font-size: 16px;
+            box-shadow:
+                inset 0 2px 4px rgba(0, 0, 0, 0.38),
+                inset 0 -1px 0 rgba(255, 255, 255, 0.08);
         }
 
         @keyframes float-floater {
@@ -3347,7 +3618,9 @@
 <body class="experience-awaiting-start">
     <!-- Background that transitions with each video -->
     <div class="bg-layer" id="bgLayer">
-        <div class="bg-light-shader" aria-hidden="true"></div>
+        <div class="bg-light-shader" aria-hidden="true">
+            <div class="bg-light-texture"></div>
+        </div>
         <div class="bg-grain" aria-hidden="true"></div>
     </div>
 

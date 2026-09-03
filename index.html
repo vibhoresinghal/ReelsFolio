@@ -2501,7 +2501,14 @@
         }
 
         .landing-action:active {
-            transform: translate(1px, 2px) scale(0.985);
+            background:
+                radial-gradient(circle at 72% 18%, rgba(255, 224, 183, 0.06), transparent 50%),
+                linear-gradient(
+                    180deg,
+                    color-mix(in srgb, var(--active-bg-color) 62%, #1c1814) 0%,
+                    color-mix(in srgb, var(--active-bg-color) 88%, #030201) 100%
+                );
+            transform: translate(1px, 2px) scale(0.97);
             box-shadow:
                 inset 0 3px 8px rgba(0, 0, 0, 0.32),
                 inset 0 1px 0 rgba(255, 255, 255, 0.06),
@@ -2510,13 +2517,23 @@
             transition-duration: 0.08s;
         }
 
+        .landing-action:active::before {
+            opacity: 0.28;
+        }
+
+        .landing-action:active::after {
+            opacity: 0;
+        }
+
         .landing-action:focus-visible {
             outline: 2px solid rgba(255, 255, 255, 0.9);
             outline-offset: 3px;
         }
 
         .landing-resume-action {
-            --landing-glow: 92 196 132;
+            --landing-glow: 118 196 148;
+            --landing-light-x: 35%;
+            --landing-light-y: 12%;
             flex: 0 0 auto;
             gap: var(--resume-icon-gap);
             padding: 0 var(--resume-padding-x);
@@ -2524,26 +2541,50 @@
             font-weight: var(--resume-font-weight);
             letter-spacing: var(--resume-letter-spacing);
             white-space: nowrap;
+            border-radius: 999px;
             background:
                 linear-gradient(
                     180deg,
-                    var(--landing-resume-from) 0%,
-                    var(--landing-resume-to) 100%
+                    color-mix(in srgb, var(--active-bg-color) 36%, #3a322c) 0%,
+                    color-mix(in srgb, var(--active-bg-color) 70%, #100c0a) 100%
                 );
-            color: #d9e8df;
+            color: rgba(255, 255, 255, 0.86);
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.17),
+                inset 0 -5px 10px rgba(0, 0, 0, 0.2),
+                0 3px 5px rgba(0, 0, 0, 0.2),
+                0 10px 22px rgba(0, 0, 0, 0.28);
+        }
+
+        .landing-resume-action::before {
+            background:
+                radial-gradient(ellipse at 35% 0%, rgba(150, 220, 170, 0.16), transparent 58%),
+                linear-gradient(110deg, rgba(180, 230, 190, 0.05), transparent 42%);
         }
 
         .landing-resume-action:hover {
-            color: #e8f4ec;
+            color: rgba(255, 255, 255, 0.96);
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.22),
+                inset 0 -5px 10px rgba(0, 0, 0, 0.18),
+                0 4px 6px rgba(0, 0, 0, 0.2),
+                0 14px 26px rgba(0, 0, 0, 0.32);
         }
 
         .landing-resume-action:active {
-            background: linear-gradient(180deg, var(--landing-resume-to), var(--landing-resume-from));
+            background:
+                radial-gradient(circle at 72% 18%, rgba(255, 224, 183, 0.06), transparent 50%),
+                linear-gradient(
+                    180deg,
+                    color-mix(in srgb, var(--active-bg-color) 62%, #1c1814) 0%,
+                    color-mix(in srgb, var(--active-bg-color) 88%, #030201) 100%
+                );
         }
 
         .landing-social-action {
             width: var(--landing-action-height);
             flex: 0 0 var(--landing-action-height);
+            border-radius: 50%;
         }
 
         .landing-linkedin-action {

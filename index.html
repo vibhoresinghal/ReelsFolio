@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#06281B">
+    <meta name="theme-color" content="#0D210F">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="description"
@@ -47,7 +47,7 @@
         html {
             height: 100%;
             overflow: hidden;
-            background-color: #06281B;
+            background-color: #0D210F;
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             /* Prevent text/element selection site-wide */
             user-select: none;
@@ -59,11 +59,11 @@
         @property --active-bg-color {
             syntax: '<color>';
             inherits: true;
-            initial-value: #06281B;
+            initial-value: #0D210F;
         }
 
         :root {
-            --active-bg-color: #06281B;
+            --active-bg-color: #0D210F;
             --play-halo-size: 72px;
             --play-halo-darkness: 0.66;
             --play-halo-blur: 30px;
@@ -105,7 +105,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: #06281B;
+            background-color: #0D210F;
             transition: background-color 0.6s ease-in-out;
             z-index: 0;
             will-change: background-color;
@@ -702,7 +702,7 @@
             display: block;
         }
 
-        body.experience-awaiting-start .play-overlay-btn::before {
+        .play-overlay-btn::before {
             content: '';
             position: absolute;
             inset: calc(-1 * var(--play-halo-size));

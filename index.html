@@ -28,7 +28,7 @@
         href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>👋</text></svg>">
 
     <!-- Font with display swap for better performance -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Momo+Trust+Display&display=swap"
         rel="stylesheet">
     <!-- GSAP for animations -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
@@ -74,11 +74,23 @@
             --resume-padding-x: 16px;
             --landing-actions-gap: 8px;
             --landing-action-height: 48px;
+            --project-title-font-size: 56px;
             --bg-grain-opacity: 0.37;
             --bg-grain-size: 215px;
             --bg-grain-contrast: 105%;
             --bg-grain-blend: soft-light;
             transition: --active-bg-color 0.6s ease-in-out;
+        }
+
+        :where(
+            .landing-name,
+            .content-title,
+            .floating-modal-title,
+            .info-panel-title
+        ) {
+            font-family: 'Momo Trust Display', 'Inter', sans-serif;
+            font-style: normal;
+            font-weight: 400;
         }
 
         /* Background layer that transitions colors */
@@ -972,10 +984,18 @@
 
         .content-title {
             color: white;
-            font-size: clamp(36px, 4.5vw, 56px);
-            font-weight: 800;
-            letter-spacing: -0.02em;
-            line-height: 1.1;
+            font-size: min(var(--project-title-font-size), 8vw);
+            font-weight: 400;
+            letter-spacing: -0.07em;
+            line-height: 0.8333;
+        }
+
+        .content-title-important {
+            color: #fff;
+        }
+
+        .content-title-supporting {
+            color: rgba(255, 255, 255, 0.46);
         }
 
         /* Project Link Button */
@@ -1840,11 +1860,12 @@
         }
 
         .landing-name {
+            font-family: 'Momo Trust Display', 'Inter', sans-serif;
             color: white;
             font-size: clamp(32px, 4vw, 52px);
-            font-weight: 800;
-            letter-spacing: -0.02em;
-            line-height: 1.1;
+            font-weight: 400;
+            letter-spacing: -0.07em;
+            line-height: 0.88;
             margin: 0 0 clamp(12px, 2vh, 20px) 0;
         }
 
@@ -3607,6 +3628,38 @@
             return icons[type] || '';
         }
 
+        const TITLE_IMPORTANT_PARTS = {
+            'Acquisition on PayZapp': 'Acquisition',
+            'Growth & Retention on PayZapp': 'Growth & Retention',
+            'Unicorn Design System': 'Unicorn',
+            'A Weekend in Sakleshpur': 'Sakleshpur',
+            'Delhi in a lapse': 'Delhi'
+        };
+
+        function escapeTitleText(text) {
+            return String(text)
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
+        }
+
+        function formatProjectTitle(title) {
+            const value = String(title || '');
+            const importantPart = TITLE_IMPORTANT_PARTS[value] || value;
+            const start = value.indexOf(importantPart);
+            if (start < 0) return escapeTitleText(value);
+
+            const before = value.slice(0, start);
+            const after = value.slice(start + importantPart.length);
+            return [
+                before ? `<span class="content-title-supporting">${escapeTitleText(before)}</span>` : '',
+                `<span class="content-title-important">${escapeTitleText(importantPart)}</span>`,
+                after ? `<span class="content-title-supporting">${escapeTitleText(after)}</span>` : ''
+            ].join('');
+        }
+
         // Render the entire app structure - SINGLE PAGE SCROLL
         function renderApp() {
             if (!videosData || !videosData.tabs) return;
@@ -3718,7 +3771,7 @@
                             <div class="video-content-wrapper">
                                 <div class="content-info-left">
                                     ${video.description ? `<p class="content-desc">${video.description}</p>` : ''}
-                                    ${video.title ? `<h2 class="content-title">${video.title}</h2>` : ''}
+                                    ${video.title ? `<h2 class="content-title">${formatProjectTitle(video.title)}</h2>` : ''}
                                     ${video.link ? `<a class="content-link" href="${video.link.url}" target="_blank" rel="noopener noreferrer"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M19.902 4.098a3.75 3.75 0 00-5.304 0l-4.5 4.5a3.75 3.75 0 001.035 6.037.75.75 0 01-.646 1.353 5.25 5.25 0 01-1.449-8.45l4.5-4.5a5.25 5.25 0 117.424 7.424l-1.757 1.757a.75.75 0 11-1.06-1.06l1.757-1.757a3.75 3.75 0 000-5.304zm-7.389 4.267a.75.75 0 011-.353 5.25 5.25 0 011.449 8.45l-4.5 4.5a5.25 5.25 0 11-7.424-7.424l1.757-1.757a.75.75 0 111.06 1.06l-1.757 1.757a3.75 3.75 0 105.304 5.304l4.5-4.5a3.75 3.75 0 00-1.035-6.037.75.75 0 01-.354-1z" clip-rule="evenodd" /></svg>${video.link.text}</a>` : ''}
                                 </div>
                                 
@@ -6101,7 +6154,7 @@
             function populateContent(videoData) {
                 if (!videoData) { contentEl.innerHTML = ''; return; }
                 let html = '<div class="info-panel-header">';
-                if (videoData.title) html += `<h2 class="info-panel-title">${videoData.title}</h2>`;
+                if (videoData.title) html += `<h2 class="info-panel-title">${formatProjectTitle(videoData.title)}</h2>`;
                 if (videoData.description) html += `<p class="info-panel-desc">${videoData.description}</p>`;
                 if (videoData.link) html += `<a class="info-panel-link" href="${videoData.link.url}" target="_blank" rel="noopener noreferrer"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M19.902 4.098a3.75 3.75 0 00-5.304 0l-4.5 4.5a3.75 3.75 0 001.035 6.037.75.75 0 01-.646 1.353 5.25 5.25 0 01-1.449-8.45l4.5-4.5a5.25 5.25 0 117.424 7.424l-1.757 1.757a.75.75 0 11-1.06-1.06l1.757-1.757a3.75 3.75 0 000-5.304zm-7.389 4.267a.75.75 0 011-.353 5.25 5.25 0 011.449 8.45l-4.5 4.5a5.25 5.25 0 11-7.424-7.424l1.757-1.757a.75.75 0 111.06 1.06l-1.757 1.757a3.75 3.75 0 105.304 5.304l4.5-4.5a3.75 3.75 0 00-1.035-6.037.75.75 0 01-.354-1z" clip-rule="evenodd" /></svg>${videoData.link.text}</a>`;
                 html += '</div>';

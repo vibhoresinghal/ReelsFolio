@@ -29,6 +29,8 @@
         height: 48
     };
     const resumeButtonState = { ...resumeButtonDefaults };
+    const titleDefaults = { fontSize: 56 };
+    const titleState = { ...titleDefaults };
     const mobilePresets = {
         iosSafari: {
             label: 'iPhone 12 · Safari',
@@ -886,6 +888,15 @@
                     </div>
 
                     <div class="section" data-desktop-controls>
+                        <span class="position-title">Project title typography</span>
+                        <div class="label-row">
+                            <label for="project-title-size">Font size</label>
+                            <span class="value" data-title-value="fontSize">56px</span>
+                        </div>
+                        <input id="project-title-size" type="range" min="36" max="72" step="1" value="56" data-title="fontSize">
+                    </div>
+
+                    <div class="section" data-desktop-controls>
                         <div class="label-row">
                             <span>Active video</span>
                             <span class="video-name" data-active-video></span>
@@ -1121,6 +1132,7 @@
         const previewModeButtons = [...shadow.querySelectorAll('[data-preview-mode]')];
         const haloInputs = [...shadow.querySelectorAll('[data-halo]')];
         const resumeButtonInputs = [...shadow.querySelectorAll('[data-resume-button]')];
+        const titleInputs = [...shadow.querySelectorAll('[data-title]')];
         const desktopControlSections = [...shadow.querySelectorAll('[data-desktop-controls]')];
         const mobileControlSections = [...shadow.querySelectorAll('[data-mobile-controls]')];
         const previewBackdrop = shadow.querySelector('[data-preview-backdrop]');
@@ -1471,6 +1483,10 @@
             ROOT.style.setProperty('--landing-action-height', `${resumeButtonState.height}px`);
         }
 
+        function applyTitleState() {
+            ROOT.style.setProperty('--project-title-font-size', `${titleState.fontSize}px`);
+        }
+
         function setPreviewMode(mode) {
             const isMobile = mode === 'mobile';
             const showMockup = isMobile && window.innerWidth > 600;
@@ -1517,6 +1533,15 @@
                 shadow.querySelector(`[data-resume-button-value="${property}"]`).textContent =
                     `${input.value}${unitless ? '' : 'px'}`;
                 applyResumeButtonState();
+            });
+        });
+
+        titleInputs.forEach(input => {
+            input.addEventListener('input', () => {
+                const property = input.dataset.title;
+                titleState[property] = Number(input.value);
+                shadow.querySelector(`[data-title-value="${property}"]`).textContent = `${input.value}px`;
+                applyTitleState();
             });
         });
 
@@ -1759,6 +1784,9 @@
                     horizontalPaddingPx: resumeButtonState.paddingX,
                     heightPx: resumeButtonState.height
                 },
+                titleTypography: {
+                    fontSizePx: titleState.fontSize
+                },
                 frameHeightVh: Number(sizeInput.value),
                 cornerRadiusPx: Number(radiusInput.value),
                 hideTopNavbar: navbarToggle.checked,
@@ -1851,6 +1879,13 @@
                     `${resumeButtonState[property]}${unitless ? '' : 'px'}`;
             });
             applyResumeButtonState();
+            Object.assign(titleState, titleDefaults);
+            titleInputs.forEach(input => {
+                const property = input.dataset.title;
+                input.value = String(titleState[property]);
+                shadow.querySelector(`[data-title-value="${property}"]`).textContent = `${titleState[property]}px`;
+            });
+            applyTitleState();
             ['navbar', 'controls', 'arrows'].forEach(target => {
                 ROOT.style.removeProperty(`--reelfolio-exp-${target}-x`);
                 ROOT.style.removeProperty(`--reelfolio-exp-${target}-y`);
@@ -1911,6 +1946,7 @@
         syncMobilePresetUI();
         applyHaloState();
         applyResumeButtonState();
+        applyTitleState();
         syncForCurrentSection();
     }
 

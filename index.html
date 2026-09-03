@@ -2288,14 +2288,16 @@
         .landing-action {
             height: var(--landing-action-height);
             position: relative;
+            isolation: isolate;
             overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.14);
+            border: 0;
             background:
                 linear-gradient(
                     180deg,
                     #322720 0%,
                     #211813 100%
                 );
+            background-clip: padding-box;
             color: rgba(255, 255, 255, 0.82);
             border-radius: 12px;
             clip-path: none;
@@ -2304,10 +2306,11 @@
             justify-content: center;
             text-decoration: none;
             box-shadow:
-                inset 0 1px 0 rgba(255, 255, 255, 0.17),
+                inset 0 1px 0 rgba(255, 255, 255, 0.16),
                 inset 0 -5px 10px rgba(0, 0, 0, 0.2),
-                0 3px 5px rgba(0, 0, 0, 0.2),
-                0 10px 22px rgba(0, 0, 0, 0.28);
+                0 0 0 1px rgba(0, 0, 0, 0.28),
+                -10px 14px 22px rgba(0, 0, 0, 0.34),
+                -4px 6px 10px rgba(0, 0, 0, 0.22);
             transition:
                 background-color 0.25s ease,
                 color 0.25s ease,
@@ -2319,11 +2322,12 @@
             content: '';
             position: absolute;
             inset: 0;
+            z-index: 0;
             pointer-events: none;
             opacity: 1;
             background:
-                radial-gradient(ellipse at 35% 0%, rgba(255, 255, 255, 0.13), transparent 58%),
-                linear-gradient(110deg, rgba(255, 255, 255, 0.035), transparent 42%);
+                radial-gradient(ellipse at 72% 12%, rgba(255, 224, 183, 0.16), transparent 58%),
+                linear-gradient(110deg, rgba(255, 255, 255, 0.04), transparent 42%);
         }
 
         .landing-action > * {
@@ -2332,27 +2336,23 @@
         }
 
         .landing-action:hover {
-            background:
-                linear-gradient(
-                    180deg,
-                    #f7f1e8 0%,
-                    #eee5d8 100%
-                );
-            color: #24150e;
-            transform: translateY(-2px);
+            color: rgba(255, 255, 255, 0.96);
+            transform: translate(-1px, -2px);
             box-shadow:
-                inset 0 1px 0 rgba(255, 255, 255, 0.22),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2),
                 inset 0 -5px 10px rgba(0, 0, 0, 0.18),
-                0 4px 6px rgba(0, 0, 0, 0.2),
-                0 14px 26px rgba(0, 0, 0, 0.32);
+                0 0 0 1px rgba(0, 0, 0, 0.28),
+                -12px 16px 26px rgba(0, 0, 0, 0.36),
+                -5px 8px 12px rgba(0, 0, 0, 0.24);
         }
 
         .landing-action:active {
-            transform: translateY(2px) scale(0.985);
+            transform: translate(1px, 2px) scale(0.985);
             box-shadow:
                 inset 0 3px 8px rgba(0, 0, 0, 0.32),
                 inset 0 1px 0 rgba(255, 255, 255, 0.06),
-                0 3px 8px rgba(0, 0, 0, 0.2);
+                0 0 0 1px rgba(0, 0, 0, 0.28),
+                -3px 4px 8px rgba(0, 0, 0, 0.22);
             transition-duration: 0.08s;
         }
 
@@ -2376,28 +2376,15 @@
                     #102b21 100%
                 );
             color: #d9e8df;
-            box-shadow:
-                inset 0 1px 0 rgba(255, 255, 255, 0.17),
-                inset 0 -5px 10px rgba(0, 0, 0, 0.2),
-                0 3px 5px rgba(0, 0, 0, 0.2),
-                0 10px 22px rgba(0, 0, 0, 0.28);
         }
 
         .landing-resume-action:hover {
             background: linear-gradient(180deg, #2b5a49 0%, #16382b 100%);
             color: #f0faf4;
-            box-shadow:
-                inset 0 1px 0 rgba(255, 255, 255, 0.22),
-                inset 0 -5px 10px rgba(0, 0, 0, 0.18),
-                0 4px 6px rgba(0, 0, 0, 0.2),
-                0 14px 26px rgba(0, 0, 0, 0.32);
         }
 
         .landing-resume-action:active {
             background: linear-gradient(180deg, #10281f, #1b4033);
-            box-shadow:
-                inset 0 3px 8px rgba(0, 0, 0, 0.32),
-                0 3px 8px rgba(0, 0, 0, 0.2);
         }
 
         .landing-social-action {

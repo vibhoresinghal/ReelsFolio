@@ -87,6 +87,17 @@
             --bg-grain-size: 215px;
             --bg-grain-contrast: 105%;
             --bg-grain-blend: soft-light;
+            --bg-light-opacity: 0.34;
+            --bg-light-rgb: 255 224 183;
+            --bg-light-angle: 112deg;
+            --bg-light-slat-width: 72px;
+            --bg-light-gap: 34px;
+            --bg-light-softness: 18px;
+            --bg-light-x: 32%;
+            --bg-light-y: 4%;
+            --bg-light-spread-x: 72%;
+            --bg-light-spread-y: 88%;
+            --bg-light-blend: screen;
             transition: --active-bg-color 0.6s ease-in-out;
         }
 
@@ -118,7 +129,7 @@
         .bg-grain {
             position: absolute;
             inset: 0;
-            z-index: 2;
+            z-index: 3;
             pointer-events: none;
             opacity: var(--bg-grain-opacity);
             background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23grain)' opacity='.9'/%3E%3C/svg%3E");
@@ -126,6 +137,38 @@
             background-repeat: repeat;
             filter: contrast(var(--bg-grain-contrast));
             mix-blend-mode: var(--bg-grain-blend);
+        }
+
+        .bg-light-shader {
+            position: absolute;
+            inset: calc(-1 * var(--bg-light-softness));
+            z-index: 2;
+            pointer-events: none;
+            opacity: var(--bg-light-opacity);
+            background: repeating-linear-gradient(
+                var(--bg-light-angle),
+                rgb(var(--bg-light-rgb)) 0,
+                rgb(var(--bg-light-rgb)) var(--bg-light-slat-width),
+                transparent var(--bg-light-slat-width),
+                transparent calc(var(--bg-light-slat-width) + var(--bg-light-gap))
+            );
+            filter: blur(var(--bg-light-softness));
+            mix-blend-mode: var(--bg-light-blend);
+            mask-image: radial-gradient(
+                ellipse var(--bg-light-spread-x) var(--bg-light-spread-y) at var(--bg-light-x) var(--bg-light-y),
+                black 0%,
+                rgba(0, 0, 0, 0.92) 36%,
+                rgba(0, 0, 0, 0.42) 68%,
+                transparent 100%
+            );
+            -webkit-mask-image: radial-gradient(
+                ellipse var(--bg-light-spread-x) var(--bg-light-spread-y) at var(--bg-light-x) var(--bg-light-y),
+                black 0%,
+                rgba(0, 0, 0, 0.92) 36%,
+                rgba(0, 0, 0, 0.42) 68%,
+                transparent 100%
+            );
+            will-change: opacity, filter, background-image;
         }
 
         /* The scroll container */
@@ -228,6 +271,7 @@
 
         body.desktop-fullscreen-mode .bg-layer::after,
         body.desktop-fullscreen-mode .bg-grain,
+        body.desktop-fullscreen-mode .bg-light-shader,
         body.desktop-fullscreen-mode .bg-grid-cutting-mat {
             display: none !important;
         }
@@ -3303,6 +3347,7 @@
 <body class="experience-awaiting-start">
     <!-- Background that transitions with each video -->
     <div class="bg-layer" id="bgLayer">
+        <div class="bg-light-shader" aria-hidden="true"></div>
         <div class="bg-grain" aria-hidden="true"></div>
     </div>
 

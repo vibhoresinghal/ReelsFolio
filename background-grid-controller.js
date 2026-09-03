@@ -31,7 +31,19 @@
         grainOpacity: 37,
         grainSize: 215,
         grainContrast: 105,
-        grainBlend: 'soft-light'
+        grainBlend: 'soft-light',
+        lightEnabled: true,
+        lightColor: '#ffe0b7',
+        lightIntensity: 34,
+        lightAngle: 112,
+        lightSlatWidth: 72,
+        lightGap: 34,
+        lightSoftness: 18,
+        lightX: 32,
+        lightY: 4,
+        lightSpreadX: 72,
+        lightSpreadY: 88,
+        lightBlend: 'screen'
     };
     const state = { ...defaults };
 
@@ -378,6 +390,63 @@
                         </select>
                     </div>
                 </div>
+                <div class="subsection">
+                    <span class="subsection-title">Blinds light shader</span>
+                    <label class="toggle">
+                        <span class="label">Enable light</span>
+                        <input type="checkbox" checked data-property="lightEnabled">
+                    </label>
+                    <div class="row">
+                        <label for="light-color">Light color</label>
+                        <input id="light-color" type="color" value="#ffe0b7" data-property="lightColor">
+                    </div>
+                    <div>
+                        <div class="row"><label for="light-intensity">Intensity</label><output data-output="lightIntensity">34%</output></div>
+                        <input id="light-intensity" type="range" min="0" max="100" step="1" value="34" data-property="lightIntensity">
+                    </div>
+                    <div>
+                        <div class="row"><label for="light-angle">Angle</label><output data-output="lightAngle">112°</output></div>
+                        <input id="light-angle" type="range" min="0" max="180" step="1" value="112" data-property="lightAngle">
+                    </div>
+                    <div>
+                        <div class="row"><label for="light-slat-width">Beam width</label><output data-output="lightSlatWidth">72px</output></div>
+                        <input id="light-slat-width" type="range" min="8" max="240" step="1" value="72" data-property="lightSlatWidth">
+                    </div>
+                    <div>
+                        <div class="row"><label for="light-gap">Blind gap</label><output data-output="lightGap">34px</output></div>
+                        <input id="light-gap" type="range" min="2" max="180" step="1" value="34" data-property="lightGap">
+                    </div>
+                    <div>
+                        <div class="row"><label for="light-softness">Softness</label><output data-output="lightSoftness">18px</output></div>
+                        <input id="light-softness" type="range" min="0" max="60" step="1" value="18" data-property="lightSoftness">
+                    </div>
+                    <div>
+                        <div class="row"><label for="light-x">Horizontal origin</label><output data-output="lightX">32%</output></div>
+                        <input id="light-x" type="range" min="-20" max="120" step="1" value="32" data-property="lightX">
+                    </div>
+                    <div>
+                        <div class="row"><label for="light-y">Vertical origin</label><output data-output="lightY">4%</output></div>
+                        <input id="light-y" type="range" min="-40" max="120" step="1" value="4" data-property="lightY">
+                    </div>
+                    <div>
+                        <div class="row"><label for="light-spread-x">Horizontal spread</label><output data-output="lightSpreadX">72%</output></div>
+                        <input id="light-spread-x" type="range" min="10" max="150" step="1" value="72" data-property="lightSpreadX">
+                    </div>
+                    <div>
+                        <div class="row"><label for="light-spread-y">Vertical spread</label><output data-output="lightSpreadY">88%</output></div>
+                        <input id="light-spread-y" type="range" min="10" max="180" step="1" value="88" data-property="lightSpreadY">
+                    </div>
+                    <div class="row">
+                        <label for="light-blend">Blend mode</label>
+                        <select id="light-blend" data-property="lightBlend">
+                            <option value="screen" selected>Screen</option>
+                            <option value="soft-light">Soft light</option>
+                            <option value="overlay">Overlay</option>
+                            <option value="color-dodge">Color dodge</option>
+                            <option value="normal">Normal</option>
+                        </select>
+                    </div>
+                </div>
                 <div class="actions">
                     <button class="action primary" type="button" data-copy>Copy values</button>
                     <button class="action" type="button" data-reset>Reset</button>
@@ -410,11 +479,14 @@
     function updateOutput(property) {
         const output = shadow.querySelector(`[data-output="${property}"]`);
         if (!output) return;
-        const suffix = ['opacity', 'majorOpacity', 'grainOpacity', 'grainContrast'].includes(property)
+        const suffix = [
+            'opacity', 'majorOpacity', 'grainOpacity', 'grainContrast',
+            'lightIntensity', 'lightX', 'lightY', 'lightSpreadX', 'lightSpreadY'
+        ].includes(property)
             ? '%'
-            : ['rotation', 'angleStep'].includes(property)
+            : ['rotation', 'angleStep', 'lightAngle'].includes(property)
                 ? '°'
-                : ['majorEvery', 'grainEnabled', 'grainBlend'].includes(property) ? '' : 'px';
+                : ['majorEvery', 'grainEnabled', 'grainBlend', 'lightEnabled', 'lightColor', 'lightBlend'].includes(property) ? '' : 'px';
         output.textContent = `${state[property]}${suffix}`;
     }
 
@@ -546,6 +618,17 @@
         ROOT.style.setProperty('--bg-grain-size', `${state.grainSize}px`);
         ROOT.style.setProperty('--bg-grain-contrast', `${state.grainContrast}%`);
         ROOT.style.setProperty('--bg-grain-blend', state.grainBlend);
+        ROOT.style.setProperty('--bg-light-opacity', String(state.lightEnabled ? state.lightIntensity / 100 : 0));
+        ROOT.style.setProperty('--bg-light-rgb', hexToRgbChannels(state.lightColor));
+        ROOT.style.setProperty('--bg-light-angle', `${state.lightAngle}deg`);
+        ROOT.style.setProperty('--bg-light-slat-width', `${state.lightSlatWidth}px`);
+        ROOT.style.setProperty('--bg-light-gap', `${state.lightGap}px`);
+        ROOT.style.setProperty('--bg-light-softness', `${state.lightSoftness}px`);
+        ROOT.style.setProperty('--bg-light-x', `${state.lightX}%`);
+        ROOT.style.setProperty('--bg-light-y', `${state.lightY}%`);
+        ROOT.style.setProperty('--bg-light-spread-x', `${state.lightSpreadX}%`);
+        ROOT.style.setProperty('--bg-light-spread-y', `${state.lightSpreadY}%`);
+        ROOT.style.setProperty('--bg-light-blend', state.lightBlend);
         cuttingControls.hidden = state.pattern !== 'cutting-mat';
         renderCuttingMat();
     }

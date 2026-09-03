@@ -4185,7 +4185,7 @@
                 fcpMs: fcp ? Math.round(fcp.startTime) : null,
                 loadMs: nav && nav.loadEventEnd ? Math.round(nav.loadEventEnd) : null,
                 referrer: document.referrer || '',
-                landingPath: location.pathname + location.search,
+                landingPath: location.origin + location.pathname + location.search,
                 uaHint: /iPad|Tablet/i.test(ua) ? 'tablet' : /Mobi|iPhone|Android/i.test(ua) ? 'phone' : 'desktop',
             };
         }

@@ -300,7 +300,7 @@ async function handleEvent(request, env, headers) {
             ts,
             ts,
             cleanText(sessionMeta.referrer, 400),
-            cleanText(sessionMeta.landingPath, 200) || '/',
+            cleanText(sessionMeta.landingPath, 400) || '/',
             parsed.device,
             parsed.os,
             parsed.browser,
@@ -334,7 +334,7 @@ async function handleEvent(request, env, headers) {
             `).bind(
                 ts,
                 cleanText(sessionMeta.referrer, 400),
-                cleanText(sessionMeta.landingPath, 200),
+                cleanText(sessionMeta.landingPath, 400),
                 cleanText(sessionMeta.viewport, 24),
                 cleanText(sessionMeta.connection, 24),
                 cleanText(sessionMeta.language, 24),
@@ -373,18 +373,69 @@ function sinceFromRange(range) {
     return now - 7 * 24 * 60 * 60 * 1000;
 }
 
-async function handleOverview(url, env, headers) {
-    const since = sinceFromRange(url.searchParams.get('range') || '7d');
+function periodBounds(range) {
+    const now = Date.now();
+    const since = sinceFromRange(range);
+    const span = since === 0 ? 30 * 24 * 60 * 60 * 1000 : now - since;
+    const prevUntil = since === 0 ? now - span : since;
+    const prevSince = prevUntil - span;
+    return { now, since, prevSince, prevUntil };
+}
 
+function changePct(current, previous) {
+    if (!previous) return null;
+    return Math.round(((current - previous) / previous) * 100);
+}
+
+function hostOf(value) {
+    if (!value) return '';
+    try { return new URL(value, 'https://reelsfolio.local').hostname.replace(/^www\./, '').toLowerCase(); }
+    catch { return String(value).toLowerCase(); }
+}
+
+function campaignFromPath(path) {
+    if (!path || !String(path).includes('?')) return '';
+    try {
+        const query = new URLSearchParams(String(path).split('?')[1]);
+        return (query.get('utm_source') || query.get('src') || query.get('from') || '').trim();
+    } catch {
+        return '';
+    }
+}
+
+function arrivalBucket(referrer, landingPath) {
+    const campaign = campaignFromPath(landingPath).toLowerCase();
+    if (campaign.includes('linkedin')) return 'LinkedIn';
+    if (campaign.includes('twitter') || campaign === 'x') return 'Twitter';
+    if (campaign) return campaign;
+    const referrerHost = hostOf(referrer);
+    if (referrerHost.includes('linkedin')) return 'LinkedIn';
+    if (referrerHost.includes('twitter') || referrerHost === 'x.com' || referrerHost === 't.co') return 'Twitter';
+    if (referrerHost === 'localhost' || referrerHost === '127.0.0.1') return 'Local';
+    if (referrerHost) return referrerHost;
+    const landHost = hostOf(landingPath);
+    if (landHost === 'localhost' || landHost === '127.0.0.1') return 'Local';
+    return 'Direct';
+}
+
+async function handleOverview(url, env, headers) {
+    const range = url.searchParams.get('range') || '7d';
+    const { since, prevSince, prevUntil } = periodBounds(range);
     const visitorKey = "COALESCE(NULLIF(visitor_id, ''), id)";
+
     const [
         visits,
         people,
-        devices,
-        browsers,
+        prevPeople,
         clips,
         watch,
+        prevWatch,
         outbound,
+        prevOutbound,
+        avgSession,
+        prevAvg,
+        daily,
+        referrers,
         load,
     ] = await env.ANALYTICS.batch([
         env.ANALYTICS.prepare('SELECT COUNT(*) AS n FROM sessions WHERE started_at >= ?').bind(since),
@@ -394,13 +445,11 @@ async function handleOverview(url, env, headers) {
             )
         `).bind(since),
         env.ANALYTICS.prepare(`
-            SELECT device, COUNT(DISTINCT ${visitorKey}) AS n FROM sessions
-            WHERE started_at >= ? GROUP BY device ORDER BY n DESC
-        `).bind(since),
-        env.ANALYTICS.prepare(`
-            SELECT browser, COUNT(*) AS n FROM sessions
-            WHERE started_at >= ? GROUP BY browser ORDER BY n DESC
-        `).bind(since),
+            SELECT COUNT(*) AS n FROM (
+                SELECT ${visitorKey} AS vid FROM sessions
+                WHERE started_at >= ? AND started_at < ? GROUP BY vid
+            )
+        `).bind(prevSince, prevUntil),
         env.ANALYTICS.prepare(`
             SELECT json_extract(payload, '$.videoId') AS videoId, COUNT(*) AS n
             FROM events
@@ -419,6 +468,11 @@ async function handleOverview(url, env, headers) {
             LIMIT 8
         `).bind(since),
         env.ANALYTICS.prepare(`
+            SELECT SUM(json_extract(payload, '$.seconds')) AS seconds
+            FROM events
+            WHERE action = 'video_heartbeat' AND ts >= ? AND ts < ?
+        `).bind(prevSince, prevUntil),
+        env.ANALYTICS.prepare(`
             SELECT json_extract(payload, '$.label') AS label, COUNT(*) AS n
             FROM events
             WHERE action = 'outbound_click' AND ts >= ?
@@ -427,27 +481,82 @@ async function handleOverview(url, env, headers) {
             LIMIT 8
         `).bind(since),
         env.ANALYTICS.prepare(`
-            SELECT
-                AVG(ttfb_ms) AS ttfb,
-                AVG(fcp_ms) AS fcp,
-                AVG(load_ms) AS load
+            SELECT json_extract(payload, '$.label') AS label, COUNT(*) AS n
+            FROM events
+            WHERE action = 'outbound_click' AND ts >= ? AND ts < ?
+            GROUP BY label
+        `).bind(prevSince, prevUntil),
+        env.ANALYTICS.prepare(`
+            SELECT AVG(
+                CASE WHEN ended_at > started_at THEN ended_at ELSE started_at END - started_at
+            ) AS ms
+            FROM sessions WHERE started_at >= ?
+        `).bind(since),
+        env.ANALYTICS.prepare(`
+            SELECT AVG(
+                CASE WHEN ended_at > started_at THEN ended_at ELSE started_at END - started_at
+            ) AS ms
+            FROM sessions WHERE started_at >= ? AND started_at < ?
+        `).bind(prevSince, prevUntil),
+        env.ANALYTICS.prepare(`
+            SELECT strftime('%Y-%m-%d', started_at / 1000, 'unixepoch') AS day,
+                   COUNT(DISTINCT ${visitorKey}) AS n
+            FROM sessions
+            WHERE started_at >= ?
+            GROUP BY day
+            ORDER BY day
+        `).bind(since),
+        env.ANALYTICS.prepare(`
+            SELECT referrer, landing_path, COUNT(*) AS n
+            FROM sessions
+            WHERE started_at >= ?
+            GROUP BY referrer, landing_path
+        `).bind(since),
+        env.ANALYTICS.prepare(`
+            SELECT AVG(load_ms) AS load
             FROM sessions
             WHERE started_at >= ? AND load_ms IS NOT NULL
         `).bind(since),
     ]);
 
+    const watchRows = watch.results || [];
+    const watchSeconds = watchRows.reduce((sum, row) => sum + (Number(row.seconds) || 0), 0);
+    const prevWatchSeconds = Number(prevWatch.results[0]?.seconds) || 0;
+    const outboundRows = outbound.results || [];
+    const linkedin = outboundRows.find((row) => String(row.label || '').toLowerCase() === 'linkedin')?.n || 0;
+    const prevLinkedin = (prevOutbound.results || []).find((row) => String(row.label || '').toLowerCase() === 'linkedin')?.n || 0;
+    const avgMs = Number(avgSession.results[0]?.ms) || 0;
+    const prevAvgMs = Number(prevAvg.results[0]?.ms) || 0;
+    const visitorCount = people.results[0]?.n || 0;
+    const prevVisitorCount = prevPeople.results[0]?.n || 0;
+
+    const sources = {};
+    for (const row of referrers.results || []) {
+        const bucket = arrivalBucket(row.referrer, row.landing_path);
+        sources[bucket] = (sources[bucket] || 0) + (row.n || 0);
+    }
+
     return json({
-        range: url.searchParams.get('range') || '7d',
+        range,
         visits: visits.results[0]?.n || 0,
-        visitors: people.results[0]?.n || 0,
-        devices: devices.results || [],
-        browsers: browsers.results || [],
+        visitors: visitorCount,
+        watchSeconds,
+        avgSessionMs: Math.round(avgMs),
+        linkedin,
+        deltas: {
+            visitors: changePct(visitorCount, prevVisitorCount),
+            watch: changePct(watchSeconds, prevWatchSeconds),
+            avgSession: changePct(avgMs, prevAvgMs),
+            linkedin: changePct(linkedin, prevLinkedin),
+        },
+        daily: daily.results || [],
         clips: clips.results || [],
-        watch: watch.results || [],
-        outbound: outbound.results || [],
+        watch: watchRows,
+        sources: Object.entries(sources)
+            .map(([label, n]) => ({ label, n }))
+            .sort((a, b) => b.n - a.n),
+        outbound: outboundRows,
         load: {
-            ttfb: load.results[0]?.ttfb ? Math.round(load.results[0].ttfb) : null,
-            fcp: load.results[0]?.fcp ? Math.round(load.results[0].fcp) : null,
             load: load.results[0]?.load ? Math.round(load.results[0].load) : null,
         },
     }, 200, headers);
@@ -607,6 +716,7 @@ async function handleSessionList(url, env, headers) {
             s.browser,
             s.viewport,
             s.referrer,
+            s.landing_path,
             s.visitor_id,
             s.ttfb_ms,
             s.fcp_ms,
@@ -636,11 +746,37 @@ async function handleSessionList(url, env, headers) {
     })));
 
     return json({
-        sessions,
+        sessions: await attachPaths(env.ANALYTICS, sessions),
         total: count?.n || 0,
         limit,
         offset,
     }, 200, headers);
+}
+
+async function attachPaths(db, sessions) {
+    if (!sessions.length) return sessions;
+    const ids = sessions.map((session) => session.id);
+    const placeholders = ids.map(() => '?').join(',');
+    const rows = await db.prepare(`
+        SELECT session_id, json_extract(payload, '$.videoId') AS videoId, MIN(ts) AS first_ts
+        FROM events
+        WHERE session_id IN (${placeholders})
+          AND action IN ('video_view', 'video_heartbeat')
+          AND json_extract(payload, '$.videoId') IS NOT NULL
+        GROUP BY session_id, videoId
+        ORDER BY session_id, first_ts
+    `).bind(...ids).all();
+
+    const byId = new Map();
+    for (const row of rows.results || []) {
+        if (!byId.has(row.session_id)) byId.set(row.session_id, []);
+        byId.get(row.session_id).push(row.videoId);
+    }
+
+    return sessions.map((session) => ({
+        ...session,
+        path: byId.get(session.id) || [],
+    }));
 }
 
 function visitorKeyOf(row) {

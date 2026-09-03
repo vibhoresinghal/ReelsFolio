@@ -74,7 +74,12 @@
             --resume-padding-x: 16px;
             --landing-actions-gap: 8px;
             --landing-action-height: 48px;
-            --project-title-font-size: 56px;
+            --project-title-font-size: 48px;
+            --project-title-font-weight: 400;
+            --project-title-letter-spacing: -1.6px;
+            --project-title-line-height: 100%;
+            --project-title-important-opacity: 1;
+            --project-title-supporting-opacity: 0.24;
             --bg-grain-opacity: 0.37;
             --bg-grain-size: 215px;
             --bg-grain-contrast: 105%;
@@ -983,19 +988,19 @@
         }
 
         .content-title {
-            color: white;
+            color: rgb(255 255 255 / var(--project-title-important-opacity));
             font-size: min(var(--project-title-font-size), 8vw);
-            font-weight: 400;
-            letter-spacing: -0.07em;
-            line-height: 0.8333;
+            font-weight: var(--project-title-font-weight);
+            letter-spacing: var(--project-title-letter-spacing);
+            line-height: var(--project-title-line-height);
         }
 
         .content-title-important {
-            color: #fff;
+            color: rgb(255 255 255 / var(--project-title-important-opacity));
         }
 
         .content-title-supporting {
-            color: rgba(255, 255, 255, 0.46);
+            color: rgb(255 255 255 / var(--project-title-supporting-opacity));
         }
 
         /* Project Link Button */
@@ -1844,9 +1849,11 @@
         /* Landing Profile Info - Left Side */
         .landing-profile-info {
             position: absolute;
-            left: clamp(40px, 8vw, 120px);
-            bottom: clamp(80px, 15vh, 150px);
-            max-width: clamp(280px, 25vw, 400px);
+            left: calc(50% - min(650px, 48vw));
+            top: 50%;
+            transform: translateY(-50%);
+            width: clamp(250px, 25vw, 350px);
+            max-width: none;
             z-index: 10;
             text-align: left;
         }
@@ -1860,12 +1867,11 @@
         }
 
         .landing-name {
-            font-family: 'Momo Trust Display', 'Inter', sans-serif;
-            color: white;
-            font-size: clamp(32px, 4vw, 52px);
-            font-weight: 400;
-            letter-spacing: -0.07em;
-            line-height: 0.88;
+            color: rgb(255 255 255 / var(--project-title-important-opacity));
+            font-size: min(var(--project-title-font-size), 8vw);
+            font-weight: var(--project-title-font-weight);
+            letter-spacing: var(--project-title-letter-spacing);
+            line-height: var(--project-title-line-height);
             margin: 0 0 clamp(12px, 2vh, 20px) 0;
         }
 
@@ -2840,7 +2846,10 @@
             .landing-profile-info {
                 left: 16px;
                 right: 16px;
+                top: auto;
+                transform: none;
                 bottom: 24px;
+                width: auto;
                 max-width: none;
                 z-index: 10;
                 text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
@@ -3629,6 +3638,7 @@
         }
 
         const TITLE_IMPORTANT_PARTS = {
+            'Vibhore Singhal': 'Vibhore',
             'Acquisition on PayZapp': 'Acquisition',
             'Growth & Retention on PayZapp': 'Growth & Retention',
             'Unicorn Design System': 'Unicorn',
@@ -3692,7 +3702,7 @@
                 <div class="landing-section active" id="section-landing" data-video-id="landing" data-bg-color="${landing.bgColor || '#2d1b4e'}">
                     <div class="landing-profile-info">
                         <p class="landing-bio">${landing.bio || ''}</p>
-                        <h1 class="landing-name">${landing.name || 'Vibhore Singhal'}</h1>
+                        <h1 class="landing-name">${formatProjectTitle(landing.name || 'Vibhore Singhal')}</h1>
                         <div class="landing-locations">
                             ${generateLocationTagsHTML(landing.locations)}
                         </div>

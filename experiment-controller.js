@@ -29,7 +29,14 @@
         height: 48
     };
     const resumeButtonState = { ...resumeButtonDefaults };
-    const titleDefaults = { fontSize: 56 };
+    const titleDefaults = {
+        fontSize: 48,
+        fontWeight: 400,
+        letterSpacing: -1.6,
+        lineHeight: 100,
+        importantOpacity: 100,
+        supportingOpacity: 24
+    };
     const titleState = { ...titleDefaults };
     const mobilePresets = {
         iosSafari: {
@@ -891,9 +898,34 @@
                         <span class="position-title">Project title typography</span>
                         <div class="label-row">
                             <label for="project-title-size">Font size</label>
-                            <span class="value" data-title-value="fontSize">56px</span>
+                            <span class="value" data-title-value="fontSize">48px</span>
                         </div>
-                        <input id="project-title-size" type="range" min="36" max="72" step="1" value="56" data-title="fontSize">
+                        <input id="project-title-size" type="range" min="36" max="72" step="1" value="48" data-title="fontSize">
+                        <div class="label-row">
+                            <label for="project-title-weight">Font weight</label>
+                            <span class="value" data-title-value="fontWeight">400</span>
+                        </div>
+                        <input id="project-title-weight" type="range" min="100" max="900" step="100" value="400" data-title="fontWeight">
+                        <div class="label-row">
+                            <label for="project-title-tracking">Letter spacing</label>
+                            <span class="value" data-title-value="letterSpacing">-1.6px</span>
+                        </div>
+                        <input id="project-title-tracking" type="range" min="-8" max="2" step="0.1" value="-1.6" data-title="letterSpacing">
+                        <div class="label-row">
+                            <label for="project-title-leading">Line height</label>
+                            <span class="value" data-title-value="lineHeight">100%</span>
+                        </div>
+                        <input id="project-title-leading" type="range" min="65" max="120" step="0.5" value="100" data-title="lineHeight">
+                        <div class="label-row">
+                            <label for="project-title-important-opacity">Important opacity</label>
+                            <span class="value" data-title-value="importantOpacity">100%</span>
+                        </div>
+                        <input id="project-title-important-opacity" type="range" min="20" max="100" step="1" value="100" data-title="importantOpacity">
+                        <div class="label-row">
+                            <label for="project-title-supporting-opacity">Supporting opacity</label>
+                            <span class="value" data-title-value="supportingOpacity">24%</span>
+                        </div>
+                        <input id="project-title-supporting-opacity" type="range" min="10" max="100" step="1" value="24" data-title="supportingOpacity">
                     </div>
 
                     <div class="section" data-desktop-controls>
@@ -1485,6 +1517,11 @@
 
         function applyTitleState() {
             ROOT.style.setProperty('--project-title-font-size', `${titleState.fontSize}px`);
+            ROOT.style.setProperty('--project-title-font-weight', String(titleState.fontWeight));
+            ROOT.style.setProperty('--project-title-letter-spacing', `${titleState.letterSpacing}px`);
+            ROOT.style.setProperty('--project-title-line-height', `${titleState.lineHeight}%`);
+            ROOT.style.setProperty('--project-title-important-opacity', String(titleState.importantOpacity / 100));
+            ROOT.style.setProperty('--project-title-supporting-opacity', String(titleState.supportingOpacity / 100));
         }
 
         function setPreviewMode(mode) {
@@ -1540,7 +1577,12 @@
             input.addEventListener('input', () => {
                 const property = input.dataset.title;
                 titleState[property] = Number(input.value);
-                shadow.querySelector(`[data-title-value="${property}"]`).textContent = `${input.value}px`;
+                const suffix = ['fontWeight'].includes(property)
+                    ? ''
+                    : ['lineHeight', 'importantOpacity', 'supportingOpacity'].includes(property)
+                        ? '%'
+                        : 'px';
+                shadow.querySelector(`[data-title-value="${property}"]`).textContent = `${input.value}${suffix}`;
                 applyTitleState();
             });
         });
@@ -1785,7 +1827,12 @@
                     heightPx: resumeButtonState.height
                 },
                 titleTypography: {
-                    fontSizePx: titleState.fontSize
+                    fontSizePx: titleState.fontSize,
+                    fontWeight: titleState.fontWeight,
+                    letterSpacingPx: titleState.letterSpacing,
+                    lineHeightPercent: titleState.lineHeight,
+                    importantOpacityPercent: titleState.importantOpacity,
+                    supportingOpacityPercent: titleState.supportingOpacity
                 },
                 frameHeightVh: Number(sizeInput.value),
                 cornerRadiusPx: Number(radiusInput.value),
@@ -1883,7 +1930,13 @@
             titleInputs.forEach(input => {
                 const property = input.dataset.title;
                 input.value = String(titleState[property]);
-                shadow.querySelector(`[data-title-value="${property}"]`).textContent = `${titleState[property]}px`;
+                const suffix = ['fontWeight'].includes(property)
+                    ? ''
+                    : ['lineHeight', 'importantOpacity', 'supportingOpacity'].includes(property)
+                        ? '%'
+                        : 'px';
+                shadow.querySelector(`[data-title-value="${property}"]`).textContent =
+                    `${titleState[property]}${suffix}`;
             });
             applyTitleState();
             ['navbar', 'controls', 'arrows'].forEach(target => {

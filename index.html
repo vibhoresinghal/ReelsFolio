@@ -2582,6 +2582,18 @@
                 margin-bottom: 4px;
             }
 
+            .landing-name,
+            .content-title,
+            .info-panel-title,
+            .content-title-important,
+            .content-title-supporting {
+                font-family: 'Inter', sans-serif !important;
+                font-weight: 700 !important;
+                letter-spacing: -0.02em !important;
+                line-height: 1.2 !important;
+                color: #fff !important;
+            }
+
             .content-desc {
                 font-size: 13px !important;
                 line-height: 1.4;
@@ -2859,6 +2871,21 @@
 
             .landing-name {
                 font-size: 28px !important;
+                font-family: 'Inter', sans-serif !important;
+                font-weight: 700 !important;
+                letter-spacing: -0.02em !important;
+                line-height: 1.2 !important;
+                color: #fff !important;
+            }
+
+            .content-title,
+            .info-panel-title,
+            .content-title-important,
+            .content-title-supporting {
+                font-family: 'Inter', sans-serif !important;
+                font-weight: 700 !important;
+                letter-spacing: -0.02em !important;
+                color: #fff !important;
             }
 
             .landing-bio {
@@ -3212,11 +3239,11 @@
                     transform 0.4s cubic-bezier(0.22, 1, 0.36, 1) !important;
             }
 
-            body.mobile-immersive-mode.mobile-controls-visible .play-overlay-btn > svg:not(.play-with-sound-ring) {
+            body.mobile-immersive-mode .play-overlay-btn > svg:not(.play-with-sound-ring) {
                 display: none;
             }
 
-            body.mobile-immersive-mode.mobile-controls-visible .play-overlay-btn::after {
+            body.mobile-immersive-mode .play-overlay-btn::after {
                 content: '';
                 width: 18px;
                 height: 22px;
@@ -5848,9 +5875,18 @@
             const DOUBLE_TAP_DELAY = 280;
 
             document.addEventListener('click', (e) => {
+                if (e.target.closest('.video-seekbar, .control-bar, .nav-arrow-btn, .info-panel')) return;
+
                 const frame = e.target.closest('[data-tap-video]');
+                const controlsVisible = document.body.classList.contains('mobile-controls-visible');
+                const isMobile = window.innerWidth <= 600;
+
+                if (isMobile && controlsVisible && !e.target.closest('.play-overlay-btn')) {
+                    hideMobilePlaybackControls();
+                    if (!frame) return;
+                }
+
                 if (!frame) return;
-                if (e.target.closest('.video-seekbar, .control-bar')) return;
 
                 const videoId = frame.getAttribute('data-tap-video');
 
@@ -5872,10 +5908,10 @@
 
                 const now = Date.now();
                 const video = document.getElementById(videoId);
-                const isMobilePlaying = window.innerWidth <= 600 &&
+                const isMobilePlaying = isMobile &&
                     video && !video.paused && !video.ended;
 
-                if (isMobilePlaying) showMobilePlaybackControls();
+                if (isMobilePlaying && !controlsVisible) showMobilePlaybackControls();
 
                 if (lastTapVideoId === videoId && (now - lastTapTime) < DOUBLE_TAP_DELAY) {
                     clearTimeout(tapTimer);

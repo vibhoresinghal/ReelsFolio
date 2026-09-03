@@ -1336,6 +1336,10 @@
 
         /* Project Link Button */
         .content-link {
+            --landing-light-x: 35%;
+            --landing-light-y: 12%;
+            --landing-light-strength: 0;
+            --landing-glow: 232 186 130;
             position: relative;
             isolation: isolate;
             overflow: hidden;
@@ -1362,10 +1366,8 @@
                 0 3px 5px rgba(0, 0, 0, 0.2),
                 0 10px 22px rgba(0, 0, 0, 0.28);
             transition:
-                color 0.25s ease,
-                transform 0.25s ease,
-                box-shadow 0.25s ease,
-                background 0.25s ease;
+                color 0.5s ease,
+                box-shadow 0.5s ease;
             cursor: pointer;
             pointer-events: auto;
         }
@@ -1374,11 +1376,36 @@
             content: '';
             position: absolute;
             inset: 0;
-            z-index: -1;
+            z-index: 0;
             pointer-events: none;
             background:
-                radial-gradient(ellipse at 35% 0%, rgba(255, 255, 255, 0.13), transparent 58%),
+                radial-gradient(ellipse at 35% 0%, rgba(255, 224, 183, 0.14), transparent 58%),
                 linear-gradient(110deg, rgba(255, 255, 255, 0.035), transparent 42%);
+        }
+
+        .content-link::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            opacity: var(--landing-light-strength);
+            background: radial-gradient(
+                circle 5.6rem at var(--landing-light-x) var(--landing-light-y),
+                rgb(var(--landing-glow) / 0.78) 0%,
+                rgb(var(--landing-glow) / 0.28) 36%,
+                transparent 72%
+            );
+            filter: blur(12px);
+            mix-blend-mode: soft-light;
+        }
+
+        .content-link-inner {
+            position: relative;
+            z-index: 1;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .content-link:hover {
@@ -1403,6 +1430,7 @@
             width: 18px;
             height: 18px;
             opacity: 0.8;
+            transition: opacity 0.5s ease;
         }
 
         .content-link:hover svg {
@@ -4358,7 +4386,7 @@
                                 <div class="content-info-left">
                                     ${video.description ? `<p class="content-desc">${video.description}</p>` : ''}
                                     ${video.title ? `<h2 class="content-title">${formatProjectTitle(video.title)}</h2>` : ''}
-                                    ${video.link ? `<a class="content-link" href="${video.link.url}" target="_blank" rel="noopener noreferrer"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M19.902 4.098a3.75 3.75 0 00-5.304 0l-4.5 4.5a3.75 3.75 0 001.035 6.037.75.75 0 01-.646 1.353 5.25 5.25 0 01-1.449-8.45l4.5-4.5a5.25 5.25 0 117.424 7.424l-1.757 1.757a.75.75 0 11-1.06-1.06l1.757-1.757a3.75 3.75 0 000-5.304zm-7.389 4.267a.75.75 0 011-.353 5.25 5.25 0 011.449 8.45l-4.5 4.5a5.25 5.25 0 11-7.424-7.424l1.757-1.757a.75.75 0 111.06 1.06l-1.757 1.757a3.75 3.75 0 105.304 5.304l4.5-4.5a3.75 3.75 0 00-1.035-6.037.75.75 0 01-.354-1z" clip-rule="evenodd" /></svg>${video.link.text}</a>` : ''}
+                                    ${video.link ? `<a class="content-link" href="${video.link.url}" target="_blank" rel="noopener noreferrer"><span class="content-link-inner"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M19.902 4.098a3.75 3.75 0 00-5.304 0l-4.5 4.5a3.75 3.75 0 001.035 6.037.75.75 0 01-.646 1.353 5.25 5.25 0 01-1.449-8.45l4.5-4.5a5.25 5.25 0 117.424 7.424l-1.757 1.757a.75.75 0 11-1.06-1.06l1.757-1.757a3.75 3.75 0 000-5.304zm-7.389 4.267a.75.75 0 011-.353 5.25 5.25 0 011.449 8.45l-4.5 4.5a5.25 5.25 0 11-7.424-7.424l1.757-1.757a.75.75 0 111.06 1.06l-1.757 1.757a3.75 3.75 0 105.304 5.304l4.5-4.5a3.75 3.75 0 00-1.035-6.037.75.75 0 01-.354-1z" clip-rule="evenodd" /></svg>${video.link.text}</span></a>` : ''}
                                 </div>
                                 
                                 <div class="video-frame" data-tap-video="${video.id}">
@@ -4399,11 +4427,13 @@
             // Put all content in the single scroll container
             tabsContainer.innerHTML = `<div class="video-container" id="mainScrollContainer">${allSectionsHTML}</div>`;
 
-            document.querySelectorAll('.landing-action').forEach(button => {
-                let targetX = 72;
-                let targetY = 18;
-                let x = 72;
-                let y = 18;
+            document.querySelectorAll('.landing-action, .content-link').forEach(button => {
+                const restX = parseFloat(getComputedStyle(button).getPropertyValue('--landing-light-x')) || 72;
+                const restY = parseFloat(getComputedStyle(button).getPropertyValue('--landing-light-y')) || 18;
+                let targetX = restX;
+                let targetY = restY;
+                let x = restX;
+                let y = restY;
                 let strength = 0;
                 let targetStrength = 0;
                 let frame = 0;
@@ -4429,8 +4459,8 @@
                 });
                 button.addEventListener('pointerleave', () => {
                     targetStrength = 0;
-                    targetX = 72;
-                    targetY = 18;
+                    targetX = restX;
+                    targetY = restY;
                     start();
                 });
                 button.addEventListener('pointermove', event => {

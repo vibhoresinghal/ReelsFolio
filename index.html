@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0D210F">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -52,6 +52,7 @@
             overflow: hidden;
             background-color: #0D210F;
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            touch-action: manipulation;
             /* Prevent text/element selection site-wide */
             user-select: none;
             -webkit-user-select: none;
@@ -1299,23 +1300,25 @@
             background:
                 linear-gradient(
                     180deg,
-                    color-mix(in srgb, var(--active-bg-color) 78%, #080605) 0%,
-                    color-mix(in srgb, var(--active-bg-color) 52%, #1a1410) 100%
+                    color-mix(in srgb, var(--active-bg-color) 36%, #3a322c) 0%,
+                    color-mix(in srgb, var(--active-bg-color) 70%, #100c0a) 100%
                 );
             border: 1px solid rgba(0, 0, 0, 0.28);
             padding: 14px 22px;
             border-radius: 999px;
-            color: rgba(255, 255, 255, 0.78);
+            color: rgba(255, 255, 255, 0.86);
             font-size: clamp(14px, 1.5vw, 16px);
             font-weight: 500;
             text-decoration: none;
             margin-top: clamp(16px, 3vh, 24px);
             box-shadow:
-                inset 0 4px 8px rgba(0, 0, 0, 0.42),
-                inset 0 1px 0 rgba(0, 0, 0, 0.35),
-                inset 0 -1px 0 rgba(255, 255, 255, 0.08);
+                inset 0 1px 0 rgba(255, 255, 255, 0.17),
+                inset 0 -5px 10px rgba(0, 0, 0, 0.2),
+                0 3px 5px rgba(0, 0, 0, 0.2),
+                0 10px 22px rgba(0, 0, 0, 0.28);
             transition:
                 color 0.25s ease,
+                transform 0.25s ease,
                 box-shadow 0.25s ease,
                 background 0.25s ease;
             cursor: pointer;
@@ -1329,22 +1332,33 @@
             z-index: -1;
             pointer-events: none;
             background:
-                radial-gradient(ellipse at 50% 100%, rgba(255, 255, 255, 0.05), transparent 52%),
-                linear-gradient(180deg, rgba(0, 0, 0, 0.18), transparent 46%);
+                radial-gradient(ellipse at 35% 0%, rgba(255, 255, 255, 0.13), transparent 58%),
+                linear-gradient(110deg, rgba(255, 255, 255, 0.035), transparent 42%);
         }
 
         .content-link:hover {
-            color: rgba(255, 255, 255, 0.94);
+            color: rgba(255, 255, 255, 0.96);
+            transform: translateY(-2px);
             box-shadow:
-                inset 0 5px 10px rgba(0, 0, 0, 0.5),
-                inset 0 1px 0 rgba(0, 0, 0, 0.4),
-                inset 0 -1px 0 rgba(255, 255, 255, 0.1);
+                inset 0 1px 0 rgba(255, 255, 255, 0.22),
+                inset 0 -5px 10px rgba(0, 0, 0, 0.18),
+                0 4px 6px rgba(0, 0, 0, 0.2),
+                0 14px 26px rgba(0, 0, 0, 0.32);
+        }
+
+        .content-link:active {
+            transform: translateY(2px) scale(0.985);
+            box-shadow:
+                inset 0 3px 8px rgba(0, 0, 0, 0.32),
+                inset 0 1px 0 rgba(255, 255, 255, 0.06),
+                0 3px 8px rgba(0, 0, 0, 0.2);
+            transition-duration: 0.08s;
         }
 
         .content-link svg {
             width: 18px;
             height: 18px;
-            opacity: 0.75;
+            opacity: 0.8;
         }
 
         .content-link:hover svg {
@@ -3950,6 +3964,20 @@
         window.addEventListener('wheel', () => { if (isWarping) isWarping = false; }, { passive: true });
         window.addEventListener('touchstart', () => { if (isWarping) isWarping = false; }, { passive: true });
         window.addEventListener('keydown', () => { if (isWarping) isWarping = false; }, { passive: true });
+
+        function preventPageZoom(event) {
+            if (event.type === 'wheel' && (event.ctrlKey || event.metaKey)) {
+                event.preventDefault();
+                return;
+            }
+            if (event.type === 'keydown' && (event.ctrlKey || event.metaKey) && ['=', '+', '-', '0', '_'].includes(event.key)) {
+                event.preventDefault();
+            }
+        }
+        window.addEventListener('wheel', preventPageZoom, { passive: false });
+        window.addEventListener('keydown', preventPageZoom, { passive: false });
+        window.addEventListener('gesturestart', event => event.preventDefault());
+        window.addEventListener('gesturechange', event => event.preventDefault());
 
         let _mobileNavItems = null;
         function updateMobileNav(activeTabId) {

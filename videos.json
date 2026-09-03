@@ -1,6 +1,7 @@
 {
     "landingSection": {
         "profileVideo": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/Just%20A%20Start.mp4",
+        "thumbnail": "posters/landing.jpg",
         "bgColor": "#0D210F",
         "name": "Vibhore Singhal",
         "bio": "I like to make things. Currently a Sr. UX Designer @ Zeta",
@@ -95,7 +96,7 @@
                 {
                     "id": "t1v1",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/PZ_2.mp4",
-                    "thumbnail": "https://placehold.co/360x640/091426/FFF?text=Acquisition",
+                    "thumbnail": "posters/t1v1.jpg",
                     "bgColor": "#091426",
                     "title": "Acquisition on PayZapp",
                     "description": "Redesigned the core app experience. Simplified onboarding and navigation. Reworked key user journeys.",
@@ -104,7 +105,7 @@
                 {
                     "id": "t1v2",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
-                    "thumbnail": "https://placehold.co/360x640/16213e/FFF?text=Growth",
+                    "thumbnail": "posters/t1v2.jpg",
                     "bgColor": "#16213e",
                     "title": "Growth & Retention on PayZapp",
                     "description": "Designed growth and retention loops to keep people coming back after their first transaction.",
@@ -113,7 +114,7 @@
                 {
                     "id": "t1v3",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
-                    "thumbnail": "https://placehold.co/360x640/0f3460/FFF?text=Unicorn",
+                    "thumbnail": "posters/t1v3.jpg",
                     "bgColor": "#0f3460",
                     "title": "Unicorn Design System",
                     "description": "A shared design system used across Zeta products to keep interfaces consistent and faster to ship.",
@@ -122,7 +123,7 @@
                 {
                     "id": "t1v4",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
-                    "thumbnail": "https://placehold.co/360x640/533483/FFF?text=Neo",
+                    "thumbnail": "posters/t1v4.jpg",
                     "bgColor": "#533483",
                     "title": "Neo",
                     "description": "Product design for Neo, focused on a clearer, more confident everyday banking experience.",
@@ -137,7 +138,7 @@
                 {
                     "id": "t2v1",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/Huerex.mp4",
-                    "thumbnail": "https://placehold.co/360x640/1a1a2e/FFF?text=HueRex",
+                    "thumbnail": "posters/t2v1.jpg",
                     "bgColor": "#30130D",
                     "title": "HueRex",
                     "description": "Streamline your creative workflow by editing hue, saturation, and brightness across any selection instantly. Whether you need to shift every color at once, target specific hue groups, or organize visible swatches, this tool eliminates the manual hassle of updating individual elements.",
@@ -166,7 +167,7 @@
                 {
                     "id": "t4v1",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/Sakleshpur_handbrake.mp4",
-                    "thumbnail": "https://pub-145d32622a7e4d2586d93017e4e1221c.r2.dev/Sakleshpur.png",
+                    "thumbnail": "posters/t4v1.jpg",
                     "bgColor": "#08350b",
                     "title": "A Weekend in Sakleshpur",
                     "description": "this is the first video i made using my new camera FUJIFILM XS-20",
@@ -176,7 +177,7 @@
                 {
                     "id": "t4v2",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/Delhi%20in%20a%20lapse.mp4",
-                    "thumbnail": "https://pub-145d32622a7e4d2586d93017e4e1221c.r2.dev/Delhi.png",
+                    "thumbnail": "posters/t4v2.jpg",
                     "bgColor": "#213E47",
                     "title": "Delhi in a lapse",
                     "description": "My first video ever",
@@ -186,7 +187,7 @@
                 {
                     "id": "t4v3",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/Leh_2018_16-9.mp4",
-                    "thumbnail": "https://pub-145d32622a7e4d2586d93017e4e1221c.r2.dev/Ladakh.png",
+                    "thumbnail": "posters/t4v3.jpg",
                     "bgColor": "#2C435F",
                     "title": "Ladakh 2018",
                     "description": "That one college trip",
@@ -202,7 +203,7 @@
                 {
                     "id": "t3v1",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/heurex_vertical.mp4",
-                    "thumbnail": "https://placehold.co/360x640/08152B/FFF?text=Veronica",
+                    "thumbnail": "posters/t3v1.jpg",
                     "bgColor": "#08152B",
                     "title": "Veronica",
                     "description": "",

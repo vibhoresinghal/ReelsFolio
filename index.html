@@ -1021,13 +1021,13 @@
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 118px;
-            height: 118px;
+            width: 124px;
+            height: 124px;
             margin: 0;
             overflow: visible;
             pointer-events: none;
             transform: translate(-50%, -50%);
-            animation: rotatePlayWithSound 28s linear infinite;
+            animation: rotatePlayWithSound 36s linear infinite;
             will-change: transform;
         }
 
@@ -1042,10 +1042,9 @@
             border-radius: 50%;
             background: radial-gradient(
                 circle,
-                rgb(0 0 0 / var(--play-halo-darkness)) 0%,
-                rgb(0 0 0 / calc(var(--play-halo-darkness) * 0.65)) 42%,
-                rgb(0 0 0 / calc(var(--play-halo-darkness) * 0.23)) 62%,
-                transparent 76%
+                color-mix(in srgb, var(--active-bg-color) 42%, rgb(0 0 0 / var(--play-halo-darkness))) 0%,
+                rgb(5 14 10 / calc(var(--play-halo-darkness) * 0.5)) 46%,
+                transparent 74%
             );
             filter: blur(var(--play-halo-blur));
             z-index: -1;
@@ -1058,13 +1057,12 @@
         }
 
         .play-with-sound-ring text {
-            fill: white;
+            fill: rgba(255, 255, 255, 0.92);
             font-family: 'Inter', sans-serif;
-            font-size: 10px;
-            font-weight: 600;
-            letter-spacing: 1.8px;
+            font-size: 8.5px;
+            font-weight: 500;
+            letter-spacing: 2.4px;
             text-transform: uppercase;
-            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
         }
 
         @keyframes rotatePlayWithSound {
@@ -2642,57 +2640,65 @@
             transform: translate(-50%, -50%) scale(1.05);
         }
 
-        /* Shared tactile play control */
+        /* Shared tactile play control — same lighting as nav/fullscreen buttons */
         .video-frame .play-overlay-btn,
         .landing-video-frame .play-overlay-btn {
-            width: 58px;
-            height: 58px;
+            width: 56px;
+            height: 56px;
+            border: 0;
+            color: #f4efe6;
             background:
-                radial-gradient(circle at 31% 14%, rgba(255, 255, 255, 0.82), transparent 54%),
-                linear-gradient(180deg, rgba(238, 244, 240, 0.82), rgba(190, 203, 196, 0.74));
-            border: 1px solid rgba(255, 255, 255, 0.62);
-            backdrop-filter: blur(18px) saturate(0.7);
-            -webkit-backdrop-filter: blur(18px) saturate(0.7);
+                radial-gradient(circle at 72% 18%, rgba(255, 224, 183, 0.28), transparent 54%),
+                linear-gradient(180deg, #e4ddd0 0%, #6f675c 100%);
+            background-clip: padding-box;
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
             box-shadow:
-                inset 0 0 0 1px rgba(255, 255, 255, 0.24),
-                0 7px 16px rgba(0, 0, 0, 0.34),
-                0 16px 34px rgba(0, 0, 0, 0.2);
+                inset 0 1px 0 rgba(255, 255, 255, 0.42),
+                inset 0 -5px 10px rgba(0, 0, 0, 0.22),
+                0 0 0 1px rgba(0, 0, 0, 0.28),
+                -10px 14px 22px rgba(0, 0, 0, 0.34),
+                -4px 6px 10px rgba(0, 0, 0, 0.22);
             transition:
                 opacity 0.3s ease,
-                transform 0.22s ease,
-                background-color 0.22s ease,
-                border-color 0.22s ease,
+                background 0.22s ease,
                 box-shadow 0.22s ease;
         }
 
         .video-frame .play-overlay-btn:hover,
         .landing-video-frame .play-overlay-btn:hover {
             background:
-                radial-gradient(circle at 31% 14%, rgba(255, 255, 255, 0.96), transparent 56%),
-                linear-gradient(180deg, rgba(250, 253, 251, 0.9), rgba(207, 219, 212, 0.84));
-            border-color: rgba(255, 255, 255, 0.8);
-            transform: translate(-50%, -50%) scale(1.06);
+                radial-gradient(circle at 72% 18%, rgba(255, 224, 183, 0.34), transparent 56%),
+                linear-gradient(180deg, #eee8db 0%, #7a7266 100%);
+            transform: translate(-50%, -50%);
             box-shadow:
-                inset 0 0 0 1px rgba(255, 255, 255, 0.05),
-                0 9px 20px rgba(0, 0, 0, 0.36),
-                0 20px 38px rgba(0, 0, 0, 0.22);
+                inset 0 1px 0 rgba(255, 255, 255, 0.5),
+                inset 0 -5px 10px rgba(0, 0, 0, 0.18),
+                0 0 0 1px rgba(0, 0, 0, 0.28),
+                -12px 16px 26px rgba(0, 0, 0, 0.36),
+                -5px 8px 12px rgba(0, 0, 0, 0.24);
         }
 
         .video-frame .play-overlay-btn:active,
         .landing-video-frame .play-overlay-btn:active {
-            transform: translate(-50%, -50%) scale(0.96);
+            background:
+                radial-gradient(circle at 72% 18%, rgba(255, 224, 183, 0.1), transparent 50%),
+                linear-gradient(180deg, #b8b0a2 0%, #4d473e 100%);
+            transform: translate(-50%, -50%);
             box-shadow:
-                inset 0 3px 9px rgba(0, 0, 0, 0.34),
-                0 4px 10px rgba(0, 0, 0, 0.28);
+                inset 0 3px 8px rgba(0, 0, 0, 0.32),
+                inset 0 1px 0 rgba(255, 255, 255, 0.12),
+                0 0 0 1px rgba(0, 0, 0, 0.28),
+                -3px 4px 8px rgba(0, 0, 0, 0.22);
             transition-duration: 0.08s;
         }
 
         .play-overlay-btn > svg:not(.play-with-sound-ring) {
-            width: 24px;
-            height: 24px;
-            margin-left: 2px;
-            color: rgba(255, 255, 255, 0.96);
-            filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.34));
+            width: 22px;
+            height: 22px;
+            margin-left: 1px;
+            color: #f4efe6;
+            filter: none;
         }
 
         .play-overlay-btn .pause-overlay-icon {

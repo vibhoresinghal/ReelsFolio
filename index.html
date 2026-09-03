@@ -652,6 +652,7 @@
             object-position: center center;
             pointer-events: none;
             z-index: 2;
+            transition: opacity 0.4s ease, visibility 0s linear 0.4s;
         }
 
         .video-frame.has-decoded-frame .video-poster,
@@ -4109,6 +4110,26 @@
         }
 
 
+        function revealVideoOverPoster(video) {
+            const frame = video.closest('.video-frame, .landing-video-frame');
+            if (!frame || frame.classList.contains('has-decoded-frame')) return;
+
+            let hidden = false;
+            const hidePoster = () => {
+                if (hidden || video.paused || video.readyState < 2) return;
+                hidden = true;
+                requestAnimationFrame(() => frame.classList.add('has-decoded-frame'));
+                video.removeEventListener('playing', hidePoster);
+                video.removeEventListener('timeupdate', hidePoster);
+            };
+
+            if (typeof video.requestVideoFrameCallback === 'function') {
+                video.requestVideoFrameCallback(() => hidePoster());
+            }
+            video.addEventListener('playing', hidePoster);
+            video.addEventListener('timeupdate', hidePoster);
+        }
+
         function playVideo(videoId) {
             if (!hasStartedExperience) return;
 
@@ -4131,9 +4152,9 @@
             document.getElementById('pauseIcon').style.display = 'block';
             document.getElementById('playIcon').style.display = 'none';
 
-            video.currentTime = 0;
+            if (video.currentTime > 0.2) video.currentTime = 0;
             video.muted = isMuted;
-            video.closest('.video-frame, .landing-video-frame')?.classList.add('has-decoded-frame');
+            revealVideoOverPoster(video);
             video.play().catch(e => console.log('Autoplay blocked:', e));
 
             if (isMuted) showMuteIndicator(); else hideMuteIndicator();

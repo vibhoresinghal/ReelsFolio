@@ -2201,6 +2201,13 @@
             filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.34));
         }
 
+        .play-overlay-btn .pause-overlay-icon {
+            display: none;
+            width: 26px;
+            height: 26px;
+            margin-left: 0;
+        }
+
         /* Floating Items */
         .floating-item {
             position: absolute;
@@ -3239,21 +3246,12 @@
                     transform 0.4s cubic-bezier(0.22, 1, 0.36, 1) !important;
             }
 
-            body.mobile-immersive-mode .play-overlay-btn > svg:not(.play-with-sound-ring) {
+            body.mobile-immersive-mode .play-overlay-btn > svg.play-overlay-icon {
                 display: none;
             }
 
-            body.mobile-immersive-mode .play-overlay-btn::after {
-                content: '';
-                width: 18px;
-                height: 22px;
-                border-radius: 2px;
-                background: linear-gradient(
-                    to right,
-                    #fff 0 6px,
-                    transparent 6px 12px,
-                    #fff 12px 18px
-                );
+            body.mobile-immersive-mode .play-overlay-btn .pause-overlay-icon {
+                display: block;
             }
         }
 
@@ -3767,7 +3765,8 @@
                     <div class="landing-video-frame" data-tap-video="landing-video">
                         <video id="landing-video" src="${landing.profileVideo || ''}" muted playsinline loop preload="auto"></video>
                         <div class="play-overlay-btn" id="btn-landing-video">
-                            <svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" /></svg>
+                            <svg class="play-overlay-icon" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" /></svg>
+                            <svg class="pause-overlay-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6.2" y="4.6" width="4.2" height="14.8" rx="1.5"/><rect x="13.6" y="4.6" width="4.2" height="14.8" rx="1.5"/></svg>
                             <svg class="play-with-sound-ring" viewBox="0 0 120 120" aria-hidden="true">
                                 <defs><path id="play-sound-path-landing" d="M60,60 m-47,0 a47,47 0 1,1 94,0 a47,47 0 1,1 -94,0" /></defs>
                                 <text><textPath href="#play-sound-path-landing">PLAY WITH SOUND • PLAY WITH SOUND • </textPath></text>
@@ -3815,7 +3814,8 @@
                                 <div class="video-frame" data-tap-video="${video.id}">
                                     <video id="${video.id}" ${isFirstVideo ? `src="${video.src}"` : ''} data-src="${video.src}" muted playsinline loop preload="${preloadStrategy}"></video>
                                     <div class="play-overlay-btn" id="btn-${video.id}">
-                                        <svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" /></svg>
+                                        <svg class="play-overlay-icon" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" /></svg>
+                                        <svg class="pause-overlay-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6.2" y="4.6" width="4.2" height="14.8" rx="1.5"/><rect x="13.6" y="4.6" width="4.2" height="14.8" rx="1.5"/></svg>
                                         <svg class="play-with-sound-ring" viewBox="0 0 120 120" aria-hidden="true">
                                             <defs><path id="play-sound-path-${video.id}" d="M60,60 m-47,0 a47,47 0 1,1 94,0 a47,47 0 1,1 -94,0" /></defs>
                                             <text><textPath href="#play-sound-path-${video.id}">PLAY WITH SOUND • PLAY WITH SOUND • </textPath></text>

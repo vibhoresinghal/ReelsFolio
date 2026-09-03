@@ -6,3 +6,8 @@ compatibility_date = "2024-01-01"
 [[kv_namespaces]]
 binding = "LIKES"
 id = "995a218341454b0da182becde8ddd415"
+
+[[d1_databases]]
+binding = "ANALYTICS"
+database_name = "reelfolio-analytics"
+database_id = "4e5e1376-0429-486c-b1b5-3cdc106c0de8"

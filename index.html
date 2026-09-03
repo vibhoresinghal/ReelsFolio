@@ -4128,42 +4128,196 @@
             }).observe(bgLayer, { attributes: true, attributeFilter: ['style'] });
         }
 
-        // --- Lightweight Analytics ---
-        const _analyticsQueue = [];
-        const _videoWatchTimers = {};
-
+        // --- First-party analytics (session + events, no third-party cookies) ---
         const _analyticsWorkerUrl = 'https://reelsfolio-likes.vibhoresinghal.workers.dev';
+        const _watchState = {
+            videoId: null,
+            lastTick: 0,
+            accumulated: 0,
+            interval: null,
+            viewed: new Set(),
+        };
+
+        function getAnalyticsSessionId() {
+            try {
+                let id = sessionStorage.getItem('rf_sid');
+                if (!id) {
+                    id = (crypto.randomUUID && crypto.randomUUID())
+                        || `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+                    sessionStorage.setItem('rf_sid', id);
+                }
+                return id;
+            } catch (_) {
+                return `tmp-${Date.now()}`;
+            }
+        }
+
+        function getAnalyticsVisitorId() {
+            try {
+                let id = localStorage.getItem('rf_vid');
+                if (!id) {
+                    id = (crypto.randomUUID && crypto.randomUUID())
+                        || `v-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+                    localStorage.setItem('rf_vid', id);
+                }
+                return id;
+            } catch (_) {
+                return getAnalyticsSessionId();
+            }
+        }
+
+        function collectSessionSnapshot() {
+            const ua = navigator.userAgent || '';
+            const nav = performance.getEntriesByType
+                ? performance.getEntriesByType('navigation')[0]
+                : null;
+            const paints = performance.getEntriesByType
+                ? performance.getEntriesByType('paint')
+                : [];
+            const fcp = paints.find(entry => entry.name === 'first-contentful-paint');
+            return {
+                viewport: `${window.innerWidth}x${window.innerHeight}`,
+                connection: (navigator.connection && navigator.connection.effectiveType) || '',
+                language: navigator.language || '',
+                timezone: (Intl.DateTimeFormat().resolvedOptions().timeZone) || '',
+                reducedMotion: !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches),
+                ttfbMs: nav ? Math.round(nav.responseStart) : null,
+                fcpMs: fcp ? Math.round(fcp.startTime) : null,
+                loadMs: nav && nav.loadEventEnd ? Math.round(nav.loadEventEnd) : null,
+                referrer: document.referrer || '',
+                landingPath: location.pathname + location.search,
+                uaHint: /iPad|Tablet/i.test(ua) ? 'tablet' : /Mobi|iPhone|Android/i.test(ua) ? 'phone' : 'desktop',
+            };
+        }
 
         function trackEvent(action, data) {
-            const event = { action, ...data, ts: Date.now() };
-            _analyticsQueue.push(event);
-            // Fire beacon off the critical path so it never blocks INP
+            const event = {
+                sessionId: getAnalyticsSessionId(),
+                visitorId: getAnalyticsVisitorId(),
+                action,
+                ts: Date.now(),
+                ...(data || {}),
+            };
             setTimeout(() => {
                 try {
-                    navigator.sendBeacon(
-                        _analyticsWorkerUrl + '/events',
-                        JSON.stringify(event)
-                    );
-                } catch (_) { /* endpoint may not exist yet — silent */ }
+                    navigator.sendBeacon(_analyticsWorkerUrl + '/events', JSON.stringify(event));
+                } catch (_) { /* worker may still be deploying */ }
             }, 0);
         }
 
+        function flushWatch() {
+            if (!_watchState.videoId || _watchState.accumulated < 1) {
+                _watchState.accumulated = 0;
+                return;
+            }
+            trackEvent('video_heartbeat', {
+                videoId: _watchState.videoId,
+                seconds: Math.round(_watchState.accumulated),
+                playing: isPlaying,
+                muted: isMuted,
+            });
+            _watchState.accumulated = 0;
+        }
+
         function startWatchTimer(videoId) {
-            if (_videoWatchTimers[videoId]) return;
-            _videoWatchTimers[videoId] = setTimeout(() => {
-                const section = document.querySelector(`[data-video-id="${videoId}"]`);
-                const category = section ? section.getAttribute('data-category') : 'landing';
-                trackEvent('video_watched', { videoId, category });
-                delete _videoWatchTimers[videoId];
-            }, 3000);
+            if (_watchState.videoId && _watchState.videoId !== videoId) {
+                const now = Date.now();
+                const current = document.getElementById(_watchState.videoId);
+                if (current && !current.paused && document.visibilityState === 'visible') {
+                    _watchState.accumulated += (now - _watchState.lastTick) / 1000;
+                }
+                flushWatch();
+            }
+
+            _watchState.videoId = videoId;
+            _watchState.lastTick = Date.now();
+
+            if (!_watchState.viewed.has(videoId)) {
+                _watchState.viewed.add(videoId);
+                const lookupId = videoId === 'landing-video' ? 'landing' : videoId;
+                const section = document.querySelector(`[data-video-id="${lookupId}"]`)
+                    || document.querySelector(`[data-video-id="${videoId}"]`);
+                trackEvent('video_view', {
+                    videoId,
+                    category: section ? (section.getAttribute('data-category') || 'landing') : 'landing',
+                });
+            }
+
+            const video = document.getElementById(videoId);
+            if (video && !video._rfWatchEnd) {
+                video.addEventListener('ended', () => {
+                    if (_watchState.videoId !== videoId) return;
+                    const now = Date.now();
+                    if (document.visibilityState === 'visible') {
+                        _watchState.accumulated += (now - _watchState.lastTick) / 1000;
+                    }
+                    flushWatch();
+                    _watchState.lastTick = Date.now();
+                });
+                video._rfWatchEnd = true;
+            }
+
+            if (_watchState.interval) clearInterval(_watchState.interval);
+            _watchState.interval = setInterval(() => {
+                if (document.visibilityState !== 'visible' || !_watchState.videoId) return;
+                const active = document.getElementById(_watchState.videoId);
+                if (!active || active.paused) {
+                    _watchState.lastTick = Date.now();
+                    return;
+                }
+                const now = Date.now();
+                _watchState.accumulated += (now - _watchState.lastTick) / 1000;
+                _watchState.lastTick = now;
+            }, 1000);
         }
 
         function cancelWatchTimer(videoId) {
-            if (_videoWatchTimers[videoId]) {
-                clearTimeout(_videoWatchTimers[videoId]);
-                delete _videoWatchTimers[videoId];
+            if (_watchState.videoId !== videoId) return;
+            const now = Date.now();
+            const video = document.getElementById(videoId);
+            if (video && !video.paused && document.visibilityState === 'visible') {
+                _watchState.accumulated += (now - _watchState.lastTick) / 1000;
+            }
+            flushWatch();
+            _watchState.videoId = null;
+            if (_watchState.interval) {
+                clearInterval(_watchState.interval);
+                _watchState.interval = null;
             }
         }
+
+        function startAnalyticsSession() {
+            try {
+                if (sessionStorage.getItem('rf_session_started')) return;
+            } catch (_) { /* continue */ }
+            const send = () => {
+                try { sessionStorage.setItem('rf_session_started', '1'); } catch (_) { /* ignore */ }
+                trackEvent('session_start', { session: collectSessionSnapshot() });
+            };
+            if (document.readyState === 'complete') send();
+            else window.addEventListener('load', () => setTimeout(send, 0), { once: true });
+        }
+
+        document.addEventListener('click', event => {
+            const link = event.target.closest('.landing-action, .content-link');
+            if (!link || link.classList.contains('is-placeholder')) return;
+            const href = link.getAttribute('href') || '';
+            if (!href || href === '#') return;
+            const label = link.classList.contains('landing-resume-action') ? 'resume'
+                : link.classList.contains('landing-linkedin-action') ? 'linkedin'
+                : link.classList.contains('landing-x-action') ? 'x'
+                : link.classList.contains('landing-email-action') ? 'email'
+                : (link.textContent || '').replace(/\s+/g, ' ').trim() || 'link';
+            trackEvent('outbound_click', { label, href });
+        });
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') flushWatch();
+            _watchState.lastTick = Date.now();
+        });
+
+        window.addEventListener('pagehide', () => flushWatch());
+        startAnalyticsSession();
 
         // Safety: Clear warping flag on user interaction to ensure UI updates resume
         window.addEventListener('wheel', () => { if (isWarping) isWarping = false; }, { passive: true });

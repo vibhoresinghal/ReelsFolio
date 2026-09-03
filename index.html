@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#051F13">
+    <meta name="theme-color" content="#091A12">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="description"
@@ -50,7 +50,7 @@
         html {
             height: 100%;
             overflow: hidden;
-            background-color: #051F13;
+            background-color: #091A12;
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             touch-action: manipulation;
             /* Prevent text/element selection site-wide */
@@ -63,11 +63,11 @@
         @property --active-bg-color {
             syntax: '<color>';
             inherits: true;
-            initial-value: #051F13;
+            initial-value: #091A12;
         }
 
         :root {
-            --active-bg-color: #051F13;
+            --active-bg-color: #091A12;
             --play-halo-size: 72px;
             --play-halo-darkness: 0.66;
             --play-halo-blur: 30px;
@@ -78,6 +78,14 @@
             --resume-padding-x: 16px;
             --landing-actions-gap: 8px;
             --landing-action-height: 48px;
+            --landing-resume-from: #06371e;
+            --landing-resume-to: #011e0a;
+            --landing-linkedin-from: #083f54;
+            --landing-linkedin-to: #012b3c;
+            --landing-x-from: #303030;
+            --landing-x-to: #000000;
+            --landing-email-from: #321f21;
+            --landing-email-to: #241418;
             --project-title-font-size: 48px;
             --project-title-font-weight: 400;
             --project-title-letter-spacing: -1.6px;
@@ -135,7 +143,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: #051F13;
+            background-color: #091A12;
             transition: background-color 0.6s ease-in-out;
             z-index: 0;
             will-change: background-color;
@@ -432,7 +440,7 @@
         /* Video frame container - 9:16 aspect ratio (phone-like) */
         .video-frame {
             position: relative;
-            width: min(calc(92vh * 9 / 16), 95vw);
+            width: min(calc(91vh * 9 / 16), 95vw);
             aspect-ratio: 9/16;
             border-radius: 8px;
             overflow: hidden;
@@ -448,7 +456,7 @@
         .video-nav-arrows {
             position: fixed;
             /* Position just to the right of video frame */
-            left: calc(50% + min(calc(92vh * 9 / 16), 95vw) / 2 + 24px);
+            left: calc(50% + min(calc(91vh * 9 / 16), 95vw) / 2 + 24px);
             top: 50%;
             transform: translateY(-50%);
             display: flex;
@@ -460,7 +468,7 @@
 
         /* Adjust arrow position for landscape videos */
         .video-nav-arrows.landscape {
-            left: calc(50% + min(calc(92vh * 16 / 9), calc(100vw - 152px)) / 2 + 24px);
+            left: calc(50% + min(calc(91vh * 16 / 9), calc(100vw - 152px)) / 2 + 24px);
         }
 
         .fullscreen-btn .fullscreen-exit-icon {
@@ -507,6 +515,7 @@
         }
 
         body.desktop-fullscreen-mode .video-frame,
+        body.desktop-fullscreen-mode .landing-video-shell,
         body.desktop-fullscreen-mode .landing-video-frame,
         body.desktop-fullscreen-mode .video-section.landscape-mode .video-frame {
             width: 100vw !important;
@@ -580,7 +589,7 @@
             }
 
             body.desktop-immersive-layer-active .video-section.active .video-content-wrapper,
-            body.desktop-immersive-layer-active .landing-section.active .landing-video-frame {
+            body.desktop-immersive-layer-active .landing-section.active .landing-video-shell {
                 position: relative;
                 z-index: 901 !important;
             }
@@ -883,7 +892,7 @@
 
         .video-section.landscape-mode .video-frame {
             aspect-ratio: 16/9;
-            width: min(calc(92vh * 16 / 9), calc(100vw - 152px));
+            width: min(calc(91vh * 16 / 9), calc(100vw - 152px));
             border-radius: 8px;
             margin-right: 0;
             margin-bottom: 0;
@@ -929,7 +938,7 @@
 
         .video-section.active .video-frame {
             opacity: 1;
-            transform: scale(1);
+            transform: none;
         }
 
         /* R2/HTML5 video - scale to fill vertical 9:16 frame */
@@ -2230,7 +2239,75 @@
             align-items: center;
             justify-content: center;
             position: relative;
-            overflow: hidden;
+            overflow: visible;
+        }
+
+        @media (prefers-reduced-motion: no-preference) {
+            body.intro-pending .landing-video-shell,
+            body.intro-pending .landing-bio,
+            body.intro-pending .landing-name,
+            body.intro-pending .landing-locations,
+            body.intro-pending .landing-actions,
+            body.intro-pending .video-nav-arrows {
+                opacity: 0;
+            }
+
+            body.intro-pending .landing-video-shell {
+                transform: translateY(18px) scale(0.984);
+            }
+
+            body.intro-pending .landing-bio,
+            body.intro-pending .landing-name,
+            body.intro-pending .landing-locations,
+            body.intro-pending .landing-actions {
+                transform: translateY(10px);
+            }
+
+            body.intro-pending .video-nav-arrows {
+                transform: translateY(calc(-50% + 12px));
+            }
+
+            body.intro-ready .landing-video-shell,
+            body.intro-ready .landing-bio,
+            body.intro-ready .landing-name,
+            body.intro-ready .landing-locations,
+            body.intro-ready .landing-actions,
+            body.intro-ready .video-nav-arrows {
+                opacity: 1;
+                transition:
+                    opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1),
+                    transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+            }
+
+            body.intro-ready .landing-video-shell {
+                transform: none;
+                transition-delay: 60ms;
+            }
+
+            body.intro-ready .landing-bio {
+                transform: none;
+                transition-delay: 180ms;
+            }
+
+            body.intro-ready .landing-name {
+                transform: none;
+                transition-delay: 260ms;
+            }
+
+            body.intro-ready .landing-locations {
+                transform: none;
+                transition-delay: 340ms;
+            }
+
+            body.intro-ready .landing-actions {
+                transform: none;
+                transition-delay: 420ms;
+            }
+
+            body.intro-ready .video-nav-arrows {
+                transform: translateY(-50%);
+                transition-delay: 500ms;
+            }
         }
 
         /* Landing Profile Info - Left Side */
@@ -2405,19 +2482,23 @@
             background:
                 linear-gradient(
                     180deg,
-                    #21483a 0%,
-                    #102b21 100%
+                    var(--landing-resume-from) 0%,
+                    var(--landing-resume-to) 100%
                 );
             color: #d9e8df;
         }
 
         .landing-resume-action:hover {
-            background: linear-gradient(180deg, #2b5a49 0%, #16382b 100%);
+            background: linear-gradient(
+                180deg,
+                color-mix(in srgb, var(--landing-resume-from) 78%, #ffffff) 0%,
+                color-mix(in srgb, var(--landing-resume-to) 82%, #ffffff) 100%
+            );
             color: #f0faf4;
         }
 
         .landing-resume-action:active {
-            background: linear-gradient(180deg, #10281f, #1b4033);
+            background: linear-gradient(180deg, var(--landing-resume-to), var(--landing-resume-from));
         }
 
         .landing-social-action {
@@ -2425,33 +2506,45 @@
             flex: 0 0 var(--landing-action-height);
         }
 
-        .landing-social-action:nth-child(2) {
-            background: linear-gradient(180deg, #293c43 0%, #19292f 100%);
+        .landing-linkedin-action {
+            background: linear-gradient(180deg, var(--landing-linkedin-from) 0%, var(--landing-linkedin-to) 100%);
             color: #bfd0d5;
         }
 
-        .landing-social-action:nth-child(2):hover {
-            background: linear-gradient(180deg, #344b53 0%, #20343b 100%);
+        .landing-linkedin-action:hover {
+            background: linear-gradient(
+                180deg,
+                color-mix(in srgb, var(--landing-linkedin-from) 78%, #ffffff) 0%,
+                color-mix(in srgb, var(--landing-linkedin-to) 82%, #ffffff) 100%
+            );
             color: #e0edf0;
         }
 
-        .landing-social-action:nth-child(3) {
-            background: linear-gradient(180deg, #302c29 0%, #1d1a18 100%);
+        .landing-x-action {
+            background: linear-gradient(180deg, var(--landing-x-from) 0%, var(--landing-x-to) 100%);
             color: #d8cfc5;
         }
 
-        .landing-social-action:nth-child(3):hover {
-            background: linear-gradient(180deg, #3c3733 0%, #272321 100%);
+        .landing-x-action:hover {
+            background: linear-gradient(
+                180deg,
+                color-mix(in srgb, var(--landing-x-from) 78%, #ffffff) 0%,
+                color-mix(in srgb, var(--landing-x-to) 82%, #ffffff) 100%
+            );
             color: #fffaf2;
         }
 
-        .landing-social-action:nth-child(4) {
-            background: linear-gradient(180deg, #452d27 0%, #2b1b18 100%);
+        .landing-email-action {
+            background: linear-gradient(180deg, var(--landing-email-from) 0%, var(--landing-email-to) 100%);
             color: #d8bdb2;
         }
 
-        .landing-social-action:nth-child(4):hover {
-            background: linear-gradient(180deg, #573a32 0%, #35221e 100%);
+        .landing-email-action:hover {
+            background: linear-gradient(
+                180deg,
+                color-mix(in srgb, var(--landing-email-from) 78%, #ffffff) 0%,
+                color-mix(in srgb, var(--landing-email-to) 82%, #ffffff) 100%
+            );
             color: #f4dcd2;
         }
 
@@ -2469,14 +2562,19 @@
         }
 
         /* Landing Video Frame - Center */
+        .landing-video-shell {
+            position: relative;
+            z-index: 5;
+            border-radius: 8px;
+            box-shadow: 0 clamp(15px, 3vh, 25px) clamp(40px, 8vh, 80px) rgba(0, 0, 0, 0.5);
+        }
+
         .landing-video-frame {
             position: relative;
-            width: min(calc(92vh * 9 / 16), 95vw);
+            width: min(calc(91vh * 9 / 16), 95vw);
             aspect-ratio: 9/16;
             border-radius: 8px;
             overflow: hidden;
-            box-shadow: 0 clamp(15px, 3vh, 25px) clamp(40px, 8vh, 80px) rgba(0, 0, 0, 0.5);
-            z-index: 5;
             /* Skeleton placeholder background */
             background: linear-gradient(110deg,
                     rgba(255, 255, 255, 0.1) 0%,
@@ -2949,7 +3047,7 @@
                 right: auto !important;
                 transform: translateX(-50%) !important;
                 width: auto !important;
-                max-width: min(calc(min(calc(92vh * 9 / 16), 95vw) - 32px), 80vw) !important;
+                max-width: min(calc(min(calc(91vh * 9 / 16), 95vw) - 32px), 80vw) !important;
                 z-index: 200 !important;
                 opacity: 0 !important;
                 visibility: hidden !important;
@@ -3249,6 +3347,13 @@
             }
 
             /* Landing frame: fills the shortened section */
+            .landing-video-shell {
+                width: 100%;
+                height: 100%;
+                border-radius: 0;
+                box-shadow: none;
+            }
+
             .landing-video-frame {
                 width: 100vw !important;
                 height: 100% !important;
@@ -4030,13 +4135,25 @@
                     }
                 }
 
+                const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                if (!reduceMotion) document.body.classList.add('intro-pending');
                 renderApp();
                 initLikeButton(); // Initialize like button state
                 initSoundHint(); // Show 'Tap for sound' hint on first visit
                 initMobileFirstReelNudge();
                 initDesktopMuteHover();
+                if (!reduceMotion) {
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => {
+                            document.body.classList.remove('intro-pending');
+                            document.body.classList.add('intro-ready');
+                            window.setTimeout(() => document.body.classList.remove('intro-ready'), 1600);
+                        });
+                    });
+                }
             } catch (error) {
                 console.error('Failed to load videos:', error);
+                document.body.classList.remove('intro-pending');
             }
         }
 
@@ -4146,7 +4263,7 @@
             // Structure: Landing -> Zeta -> Personal -> Films -> Life
             let allSectionsHTML = `
                 <!-- LANDING SECTION -->
-                <div class="landing-section active" id="section-landing" data-video-id="landing" data-bg-color="${landing.bgColor || '#051F13'}">
+                <div class="landing-section active" id="section-landing" data-video-id="landing" data-bg-color="${landing.bgColor || '#091A12'}">
                     <div class="landing-profile-info">
                         <p class="landing-bio">${landing.bio || ''}</p>
                         <h1 class="landing-name">${formatProjectTitle(landing.name || 'Vibhore Singhal')}</h1>
@@ -4163,19 +4280,19 @@
                                 </svg>
                                 <span>Download Resume</span>
                             </a>
-                            <a class="landing-action landing-social-action" href="https://www.linkedin.com/in/vibhoresinghal"
+                            <a class="landing-action landing-social-action landing-linkedin-action" href="https://www.linkedin.com/in/vibhoresinghal"
                                target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" title="LinkedIn">
                                 <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                                     <path d="M6.5 8.25H3.25V21H6.5V8.25ZM4.875 3A1.88 1.88 0 1 0 4.875 6.76 1.88 1.88 0 0 0 4.875 3ZM21 13.7c0-3.84-2.05-5.63-4.79-5.63-2.2 0-3.19 1.21-3.74 2.06V8.25H9.22V21h3.25v-6.32c0-1.67.32-3.29 2.39-3.29 2.04 0 2.06 1.91 2.06 3.4V21H21v-7.3Z" />
                                 </svg>
                             </a>
-                            <a class="landing-action landing-social-action is-placeholder" href="#"
+                            <a class="landing-action landing-social-action landing-x-action is-placeholder" href="#"
                                onclick="return false;" aria-disabled="true" aria-label="X, coming soon" title="X profile coming soon">
                                 <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                                     <path d="M18.9 2H22l-6.77 7.74L23.2 22h-6.24l-4.89-6.39L6.48 22H3.36l7.26-8.3L2.98 2h6.4l4.42 5.84L18.9 2Zm-1.09 17.84h1.72L8.44 4.05H6.59l11.22 15.79Z" />
                                 </svg>
                             </a>
-                            <a class="landing-action landing-social-action" href="mailto:vibhoresinghal60@gmail.com"
+                            <a class="landing-action landing-social-action landing-email-action" href="mailto:vibhoresinghal60@gmail.com"
                                aria-label="Email Vibhore" title="Email">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                     <rect x="3" y="5" width="18" height="14" rx="2" />
@@ -4184,6 +4301,7 @@
                             </a>
                         </div>
                     </div>
+                    <div class="landing-video-shell">
                     <div class="landing-video-frame" data-tap-video="landing-video">
                         ${landing.thumbnail ? `<img class="video-poster" src="${landing.thumbnail}" alt="" decoding="async">` : ''}
                         <video id="landing-video" src="${landing.profileVideo || ''}" muted playsinline loop preload="auto"></video>
@@ -4200,6 +4318,7 @@
                                 <div class="video-seekbar-fill" id="seekbar-landing-video"></div>
                             </div>
                         </div>
+                    </div>
                     </div>
                 </div>
             `;
@@ -4287,7 +4406,7 @@
             }
 
             // Initialize background with landing color
-            setBackgroundColor(landing.bgColor || '#051F13');
+            setBackgroundColor(landing.bgColor || '#091A12');
 
             // Initialize Observer for single container
             initObserver();
@@ -6888,14 +7007,24 @@
 
     </script>
     <script>
-        if (new URLSearchParams(window.location.search).has('controls')) {
-            const experimentController = document.createElement('script');
-            experimentController.src = 'experiment-controller.js';
-            document.body.appendChild(experimentController);
-        }
-        const gridController = document.createElement('script');
-        gridController.src = 'background-grid-controller.js';
-        document.body.appendChild(gridController);
+        const labParams = new URLSearchParams(window.location.search);
+        const showLabs = (labParams.has('lab') || labParams.has('controls') || labParams.has('grid-controls'))
+            && !labParams.has('experiment-preview');
+        const loadScript = src => new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = src;
+            script.onload = resolve;
+            script.onerror = reject;
+            document.body.appendChild(script);
+        });
+        (async () => {
+            if (showLabs) {
+                await loadScript('lab-shell.js');
+                await loadScript('landing-button-lab.js');
+                await loadScript('experiment-controller.js');
+            }
+            await loadScript('background-grid-controller.js');
+        })();
     </script>
 </body>
 

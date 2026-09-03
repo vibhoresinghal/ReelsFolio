@@ -2,7 +2,7 @@
     "landingSection": {
         "profileVideo": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/Just%20A%20Start.mp4",
         "thumbnail": "posters/landing.jpg",
-        "bgColor": "#051F13",
+        "bgColor": "#091A12",
         "name": "Vibhore Singhal",
         "bio": "I like to make things. Currently a Sr. UX Designer @ Zeta",
         "locations": [
@@ -97,7 +97,7 @@
                     "id": "t1v1",
                     "src": "https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev/PZ_2.mp4",
                     "thumbnail": "posters/t1v1.jpg",
-                    "bgColor": "#091426",
+                    "bgColor": "#09121F",
                     "title": "Acquisition on PayZapp",
                     "description": "Redesigned the core app experience. Simplified onboarding and navigation. Reworked key user journeys.",
                     "comments": []

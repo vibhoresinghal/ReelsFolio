@@ -7,7 +7,8 @@
     const STYLE_ID = 'reelfolio-grid-experiment-styles';
     const HOST_ID = 'reelfolio-grid-controller';
     const searchParams = new URLSearchParams(window.location.search);
-    const showController = searchParams.has('grid-controls') && !searchParams.has('experiment-preview');
+    const showPanel = (searchParams.has('lab') || searchParams.has('controls') || searchParams.has('grid-controls'))
+        && !searchParams.has('experiment-preview');
     const defaults = {
         pattern: 'cutting-mat',
         color: '#f2dbcf',
@@ -206,14 +207,30 @@
 
     const host = document.createElement('div');
     host.id = HOST_ID;
-    host.style.cssText = `position:fixed;left:16px;top:16px;z-index:20000;${showController ? '' : 'display:none;'}`;
+    host.style.cssText = 'position:static;display:block;width:100%;';
     document.body.appendChild(host);
+    if (!showPanel && !window.ReelFolioLab) host.style.display = 'none';
 
     const shadow = host.attachShadow({ mode: 'open' });
     shadow.innerHTML = `
         <style>
             :host { color-scheme: dark; font-family: Inter, system-ui, sans-serif; }
             * { box-sizing: border-box; }
+            :host-context(.rf-lab-window) .header,
+            :host([data-lab-hosted]) .header {
+                display: none;
+            }
+            :host-context(.rf-lab-window) .panel,
+            :host([data-lab-hosted]) .panel {
+                width: 100%;
+                max-height: none;
+                overflow: visible;
+                background: transparent;
+                border: 0;
+                border-radius: 0;
+                box-shadow: none;
+                backdrop-filter: none;
+            }
             .panel {
                 width: 300px;
                 max-height: calc(100vh - 32px);
@@ -563,6 +580,18 @@
             </div>
         </section>
     `;
+
+    if (window.ReelFolioLab) {
+        window.ReelFolioLab.register({
+            id: 'background',
+            title: 'Background grid',
+            hint: 'Mat, grain, and sunlight',
+            width: 320,
+            host
+        });
+    } else if (!showPanel) {
+        host.style.display = 'none';
+    }
 
     const panel = shadow.querySelector('.panel');
     const status = shadow.querySelector('.status');

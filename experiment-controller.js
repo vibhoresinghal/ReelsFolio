@@ -283,10 +283,9 @@
             <style>
                 :host {
                     all: initial;
-                    position: fixed;
-                    top: 16px;
-                    right: 16px;
-                    z-index: 2147483647;
+                    position: static;
+                    display: block;
+                    width: 100%;
                     color-scheme: dark;
                     font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
                 }
@@ -306,6 +305,23 @@
                     box-shadow: 0 18px 60px rgba(0, 0, 0, 0.45);
                     backdrop-filter: blur(18px);
                     -webkit-backdrop-filter: blur(18px);
+                }
+
+                :host-context(.rf-lab-window) .header,
+                :host([data-lab-hosted]) .header {
+                    display: none;
+                }
+
+                :host-context(.rf-lab-window) .panel,
+                :host([data-lab-hosted]) .panel {
+                    width: 100%;
+                    max-height: none;
+                    overflow: visible;
+                    background: transparent;
+                    border: 0;
+                    border-radius: 0;
+                    box-shadow: none;
+                    backdrop-filter: none;
                 }
 
                 .header {
@@ -1148,6 +1164,17 @@
                 </div>
             </div>
         `;
+
+        if (window.ReelFolioLab) {
+            window.ReelFolioLab.register({
+                id: 'visual',
+                title: 'Visual experiments',
+                hint: 'Halo, titles, frames, mobile',
+                width: 340,
+                height: Math.min(740, window.innerHeight - 24),
+                host
+            });
+        }
 
         const panel = shadow.querySelector('.panel');
         const collapseButton = shadow.querySelector('.collapse');

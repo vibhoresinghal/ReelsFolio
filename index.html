@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#0D210F">
+    <meta name="theme-color" content="#051F13">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="description"
@@ -50,7 +50,7 @@
         html {
             height: 100%;
             overflow: hidden;
-            background-color: #0D210F;
+            background-color: #051F13;
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             touch-action: manipulation;
             /* Prevent text/element selection site-wide */
@@ -63,11 +63,11 @@
         @property --active-bg-color {
             syntax: '<color>';
             inherits: true;
-            initial-value: #0D210F;
+            initial-value: #051F13;
         }
 
         :root {
-            --active-bg-color: #0D210F;
+            --active-bg-color: #051F13;
             --play-halo-size: 72px;
             --play-halo-darkness: 0.66;
             --play-halo-blur: 30px;
@@ -135,7 +135,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: #0D210F;
+            background-color: #051F13;
             transition: background-color 0.6s ease-in-out;
             z-index: 0;
             will-change: background-color;
@@ -622,7 +622,7 @@
             align-items: center;
             justify-content: center;
             transition:
-                background-color 0.22s ease,
+                background 0.22s ease,
                 transform 0.22s ease,
                 box-shadow 0.22s ease,
                 opacity 0.22s ease;
@@ -647,7 +647,6 @@
                         color-mix(in srgb, var(--active-bg-color) 70%, #100c0a) 100%
                     );
                 opacity: 1;
-                transform: translate(-1px, -2px);
                 box-shadow:
                     inset 0 1px 0 rgba(255, 255, 255, 0.2),
                     inset 0 -5px 10px rgba(0, 0, 0, 0.18),
@@ -658,6 +657,13 @@
         }
 
         .nav-arrow-btn:active {
+            background:
+                radial-gradient(circle at 72% 18%, rgba(255, 224, 183, 0.06), transparent 50%),
+                linear-gradient(
+                    180deg,
+                    color-mix(in srgb, var(--active-bg-color) 62%, #1c1814) 0%,
+                    color-mix(in srgb, var(--active-bg-color) 88%, #030201) 100%
+                );
             transform: translate(1px, 2px) scale(0.97);
             box-shadow:
                 inset 0 3px 8px rgba(0, 0, 0, 0.32),
@@ -665,6 +671,12 @@
                 0 0 0 1px rgba(0, 0, 0, 0.28),
                 -3px 4px 8px rgba(0, 0, 0, 0.22);
             transition-duration: 0.08s;
+        }
+
+        .nav-arrow-btn.like-btn.liked:active {
+            background:
+                radial-gradient(ellipse at 72% 12%, rgba(255, 224, 183, 0.06), transparent 52%),
+                linear-gradient(180deg, #2a1a22 0%, #160e14 100%);
         }
 
         .nav-arrow-btn svg {
@@ -682,12 +694,35 @@
             margin-bottom: 0;
         }
 
-        .nav-arrow-btn.hidden {
-            opacity: 0;
-            pointer-events: none;
+        #navArrowUp,
+        #navArrowDown {
+            overflow: hidden;
+            flex-shrink: 0;
+            transition:
+                background 0.22s ease,
+                transform 0.22s ease,
+                box-shadow 0.22s ease,
+                height 0.48s cubic-bezier(0.22, 1, 0.36, 1),
+                margin-bottom 0.48s cubic-bezier(0.22, 1, 0.36, 1),
+                opacity 0.28s ease 0.16s,
+                visibility 0s linear;
+        }
+
+        #navArrowUp.hidden,
+        #navArrowDown.hidden {
             height: 0;
+            min-height: 0;
             margin-bottom: 0;
-            border-width: 0;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            box-shadow: none;
+            transition:
+                opacity 0.18s ease,
+                visibility 0s linear 0.18s,
+                box-shadow 0.18s ease,
+                height 0.42s cubic-bezier(0.22, 1, 0.36, 1) 0.08s,
+                margin-bottom 0.42s cubic-bezier(0.22, 1, 0.36, 1) 0.08s;
         }
 
         /* Like Button Styles - starts as circle, expands to pill with count */
@@ -1341,7 +1376,6 @@
 
         .content-link:hover {
             color: rgba(255, 255, 255, 0.96);
-            transform: translateY(-2px);
             box-shadow:
                 inset 0 1px 0 rgba(255, 255, 255, 0.22),
                 inset 0 -5px 10px rgba(0, 0, 0, 0.18),
@@ -2337,7 +2371,6 @@
 
         .landing-action:hover {
             color: rgba(255, 255, 255, 0.96);
-            transform: translate(-1px, -2px);
             box-shadow:
                 inset 0 1px 0 rgba(255, 255, 255, 0.2),
                 inset 0 -5px 10px rgba(0, 0, 0, 0.18),
@@ -4113,7 +4146,7 @@
             // Structure: Landing -> Zeta -> Personal -> Films -> Life
             let allSectionsHTML = `
                 <!-- LANDING SECTION -->
-                <div class="landing-section active" id="section-landing" data-video-id="landing" data-bg-color="${landing.bgColor || '#2d1b4e'}">
+                <div class="landing-section active" id="section-landing" data-video-id="landing" data-bg-color="${landing.bgColor || '#051F13'}">
                     <div class="landing-profile-info">
                         <p class="landing-bio">${landing.bio || ''}</p>
                         <h1 class="landing-name">${formatProjectTitle(landing.name || 'Vibhore Singhal')}</h1>
@@ -4254,7 +4287,7 @@
             }
 
             // Initialize background with landing color
-            setBackgroundColor(landing.bgColor || '#2d1b4e');
+            setBackgroundColor(landing.bgColor || '#051F13');
 
             // Initialize Observer for single container
             initObserver();

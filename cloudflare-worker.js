@@ -624,8 +624,9 @@ async function handleOverview(url, env, headers) {
     const watchSeconds = watchRows.reduce((sum, row) => sum + (Number(row.seconds) || 0), 0);
     const prevWatchSeconds = Number(prevWatch.results[0]?.seconds) || 0;
     const outboundRows = outbound.results || [];
+    const outboundTotal = outboundRows.reduce((sum, row) => sum + (Number(row.n) || 0), 0);
+    const prevOutboundTotal = (prevOutbound.results || []).reduce((sum, row) => sum + (Number(row.n) || 0), 0);
     const linkedin = outboundRows.find((row) => String(row.label || '').toLowerCase() === 'linkedin')?.n || 0;
-    const prevLinkedin = (prevOutbound.results || []).find((row) => String(row.label || '').toLowerCase() === 'linkedin')?.n || 0;
     const avgMs = Number(avgSession.results[0]?.ms) || 0;
     const prevAvgMs = Number(prevAvg.results[0]?.ms) || 0;
     const visitorCount = people.results[0]?.n || 0;
@@ -644,11 +645,13 @@ async function handleOverview(url, env, headers) {
         watchSeconds,
         avgSessionMs: Math.round(avgMs),
         linkedin,
+        outboundTotal,
         deltas: {
             visitors: changePct(visitorCount, prevVisitorCount),
             watch: changePct(watchSeconds, prevWatchSeconds),
             avgSession: changePct(avgMs, prevAvgMs),
-            linkedin: changePct(linkedin, prevLinkedin),
+            outbound: changePct(outboundTotal, prevOutboundTotal),
+            linkedin: changePct(linkedin, (prevOutbound.results || []).find((row) => String(row.label || '').toLowerCase() === 'linkedin')?.n || 0),
         },
         daily: daily.results || [],
         clips: clips.results || [],

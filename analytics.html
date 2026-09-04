@@ -177,6 +177,19 @@
         .delta { color: var(--faint); font-size: 9px; }
         .delta.is-up { color: var(--up); }
         .delta.is-down { color: var(--down); }
+        .outbound-split {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2px 9px;
+            margin-top: 6px;
+            color: var(--faint);
+            font-size: 9px;
+        }
+        .outbound-split em {
+            font-style: normal;
+            color: var(--mute);
+            font-variant-numeric: tabular-nums;
+        }
 
         .section { padding: 18px 20px 16px; margin-bottom: 12px; }
         .section h2, .split h2 { font-size: 13px; font-weight: 500; margin-bottom: 15px; }
@@ -772,19 +785,48 @@
             return '• NEW';
         }
 
+        function outboundCounts(overview) {
+            const rows = overview.outbound || [];
+            const count = (label) => Number((rows.find((row) => String(row.label || '').toLowerCase() === label) || {}).n) || 0;
+            const resume = count('resume');
+            const linkedin = rows.length ? count('linkedin') : Number(overview.linkedin) || 0;
+            const x = count('x');
+            const email = count('email');
+            const named = resume + linkedin + x + email;
+            const other = rows.reduce((sum, row) => sum + (Number(row.n) || 0), 0) - named;
+            const total = overview.outboundTotal != null ? Number(overview.outboundTotal) : named + Math.max(0, other);
+            return { resume, linkedin, x, email, other: Math.max(0, other), total };
+        }
+
         function renderKpis(overview) {
             const watchSeconds = overview.watchSeconds
                 ?? (overview.watch || []).reduce((sum, row) => sum + (Number(row.seconds) || 0), 0);
             const deltas = overview.deltas || {};
+            const clicks = outboundCounts(overview);
+            const parts = [
+                ['Resume', clicks.resume],
+                ['LinkedIn', clicks.linkedin],
+                ['X', clicks.x],
+                ['Email', clicks.email],
+            ];
+            if (clicks.other) parts.push(['Other', clicks.other]);
             const cells = [
                 ['VISITORS', overview.visitors || overview.visits || 0, deltas.visitors],
                 ['WATCH TIME', watchSeconds ? watchLabel(watchSeconds) : '0s', deltas.watch],
                 ['AVG. SESSION', overview.avgSessionMs ? watchLabel(overview.avgSessionMs / 1000) : '—', deltas.avgSession],
-                ['LINKEDIN CLICKS', overview.linkedin != null ? overview.linkedin : (((overview.outbound || []).find((row) => row.label === 'linkedin') || {}).n || 0), deltas.linkedin],
             ];
+            const clickDelta = deltas.outbound ?? deltas.linkedin;
             $('kpis').innerHTML = cells.map(([label, value, delta]) => (
                 `<article><p>${label}</p><b>${esc(value)}</b>${deltaLabel(delta)}</article>`
-            )).join('');
+            )).join('') + `
+                <article>
+                    <p>OUTBOUND CLICKS</p>
+                    <b>${esc(clicks.total)}</b>${deltaLabel(clickDelta)}
+                    <div class="outbound-split">${parts.map(([label, value]) => (
+                        `<span>${esc(label)} <em>${esc(value)}</em></span>`
+                    )).join('')}</div>
+                </article>
+            `;
         }
 
         function renderChart(overview) {

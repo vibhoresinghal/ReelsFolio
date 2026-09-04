@@ -34,3 +34,8 @@ CREATE INDEX IF NOT EXISTS idx_events_action ON events(action);
 CREATE INDEX IF NOT EXISTS idx_events_ts ON events(ts);
 CREATE INDEX IF NOT EXISTS idx_sessions_started ON sessions(started_at);
 CREATE INDEX IF NOT EXISTS idx_sessions_visitor ON sessions(visitor_id);
+
+CREATE TABLE IF NOT EXISTS likes (
+  video_id TEXT PRIMARY KEY,
+  count INTEGER NOT NULL DEFAULT 0
+);

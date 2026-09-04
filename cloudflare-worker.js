@@ -1,7 +1,7 @@
 /**
  * Cloudflare Worker for ReelsFolio likes + first-party analytics
  *
- * Likes stay in KV (LIKES). Visit stories live in D1 (ANALYTICS).
+ * Likes and visit stories both live in D1. KV is only read once to copy old counts.
  *
  * One-time Cloudflare setup:
  * 1. Workers & Pages → D1 → Create database `reelfolio-analytics`
@@ -31,6 +31,11 @@ const ALLOWED_ACTIONS = new Set([
     'outbound_click',
 ]);
 
+const LIKES_DOC = '__counts';
+const LIKE_ID_RE = /^[a-zA-Z0-9._-]{1,64}$/;
+let likesMemo = { value: null, at: 0 };
+let kvImportDone = false;
+
 const PAYLOAD_KEYS = new Set([
     'videoId',
     'category',
@@ -58,29 +63,22 @@ export default {
         try {
             if (request.method === 'GET' && url.pathname === '/likes') {
                 const videoId = url.searchParams.get('videoId');
-                if (!videoId) return json({ error: 'videoId required' }, 400, headers);
-                const count = await env.LIKES.get(videoId);
-                return json({ videoId, count: count ? parseInt(count, 10) : 0 }, 200, headers);
+                if (!LIKE_ID_RE.test(videoId || '')) return json({ error: 'videoId required' }, 400, headers);
+                const likes = await loadLikeCounts(env);
+                return json({ videoId, count: Number(likes[videoId]) || 0 }, 200, cachedHeaders(headers));
             }
 
             if (request.method === 'POST' && url.pathname === '/likes') {
                 const body = await readJson(request);
-                const { videoId, increment = 1 } = body || {};
-                if (!videoId) return json({ error: 'videoId required' }, 400, headers);
-                const currentCount = await env.LIKES.get(videoId);
-                const newCount = (currentCount ? parseInt(currentCount, 10) : 0) + increment;
-                await env.LIKES.put(videoId, newCount.toString());
-                return json({ videoId, count: newCount }, 200, headers);
+                const videoId = body && body.videoId;
+                if (!LIKE_ID_RE.test(videoId || '')) return json({ error: 'videoId required' }, 400, headers);
+                const count = await incrementLike(env, videoId, body.increment);
+                return json({ videoId, count }, 200, headers);
             }
 
             if (request.method === 'GET' && url.pathname === '/likes/all') {
-                const list = await env.LIKES.list();
-                const likes = {};
-                for (const key of list.keys) {
-                    const count = await env.LIKES.get(key.name);
-                    likes[key.name] = parseInt(count, 10) || 0;
-                }
-                return json(likes, 200, headers);
+                const likes = await loadLikeCounts(env);
+                return json(likes, 200, cachedHeaders(headers));
             }
 
             if (request.method === 'POST' && url.pathname === '/events') {
@@ -127,6 +125,91 @@ export default {
 
 function json(data, status, headers) {
     return new Response(JSON.stringify(data), { status, headers });
+}
+
+function cachedHeaders(headers) {
+    return { ...headers, 'Cache-Control': 'public, max-age=30' };
+}
+
+async function ensureLikesTable(env) {
+    if (!env.ANALYTICS) throw new Error('D1 binding ANALYTICS is missing');
+    await env.ANALYTICS.prepare(`
+        CREATE TABLE IF NOT EXISTS likes (
+            video_id TEXT PRIMARY KEY,
+            count INTEGER NOT NULL DEFAULT 0
+        )
+    `).run();
+    await importLikesFromKv(env);
+}
+
+async function kvSnapshot(env) {
+    if (!env.LIKES) return {};
+    try {
+        const raw = await env.LIKES.get(LIKES_DOC);
+        if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) return parsed;
+        }
+        const listed = await env.LIKES.list({ limit: 1000 });
+        const likes = {};
+        for (const key of listed.keys || []) {
+            if (key.name === LIKES_DOC) continue;
+            likes[key.name] = parseInt(await env.LIKES.get(key.name), 10) || 0;
+        }
+        return likes;
+    } catch {
+        return {};
+    }
+}
+
+async function importLikesFromKv(env) {
+    if (kvImportDone) return;
+    kvImportDone = true;
+    const existing = await env.ANALYTICS.prepare('SELECT COUNT(*) AS n FROM likes').first();
+    if (existing && Number(existing.n) > 0) return;
+
+    const fromKv = await kvSnapshot(env);
+    const rows = Object.entries(fromKv).filter(([id, count]) => LIKE_ID_RE.test(id) && Number(count) > 0);
+    if (!rows.length) return;
+
+    await env.ANALYTICS.batch(rows.map(([id, count]) => (
+        env.ANALYTICS.prepare(`
+            INSERT INTO likes (video_id, count) VALUES (?, ?)
+            ON CONFLICT(video_id) DO UPDATE SET count = MAX(likes.count, excluded.count)
+        `).bind(id, Math.max(0, Math.round(Number(count) || 0)))
+    )));
+}
+
+async function loadLikeCounts(env) {
+    await ensureLikesTable(env);
+    const now = Date.now();
+    if (likesMemo.value && now - likesMemo.at < 5000) return { ...likesMemo.value };
+
+    const result = await env.ANALYTICS.prepare('SELECT video_id, count FROM likes').all();
+    const likes = {};
+    for (const row of result.results || []) {
+        likes[row.video_id] = Number(row.count) || 0;
+    }
+    likesMemo = { value: likes, at: now };
+    return { ...likes };
+}
+
+async function incrementLike(env, videoId, increment) {
+    await ensureLikesTable(env);
+    const delta = Math.trunc(Number(increment));
+    if (!Number.isFinite(delta) || delta === 0) {
+        const row = await env.ANALYTICS.prepare('SELECT count FROM likes WHERE video_id = ?').bind(videoId).first();
+        return Number(row?.count) || 0;
+    }
+
+    await env.ANALYTICS.prepare(`
+        INSERT INTO likes (video_id, count) VALUES (?, MAX(0, ?))
+        ON CONFLICT(video_id) DO UPDATE SET count = MAX(0, likes.count + ?)
+    `).bind(videoId, delta, delta).run();
+
+    likesMemo = { value: null, at: 0 };
+    const row = await env.ANALYTICS.prepare('SELECT count FROM likes WHERE video_id = ?').bind(videoId).first();
+    return Number(row?.count) || 0;
 }
 
 async function readJson(request) {
@@ -195,6 +278,12 @@ async function ensureSchema(db) {
         db.prepare('CREATE INDEX IF NOT EXISTS idx_events_action ON events(action)'),
         db.prepare('CREATE INDEX IF NOT EXISTS idx_events_ts ON events(ts)'),
         db.prepare('CREATE INDEX IF NOT EXISTS idx_sessions_started ON sessions(started_at)'),
+        db.prepare(`
+            CREATE TABLE IF NOT EXISTS likes (
+                video_id TEXT PRIMARY KEY,
+                count INTEGER NOT NULL DEFAULT 0
+            )
+        `),
     ]);
 
     try {

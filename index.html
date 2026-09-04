@@ -5609,6 +5609,7 @@
         let likesCache = {}; // Cache of video likes { videoId: count }
         let pendingLikes = {}; // Pending likes to sync { videoId: count }
         let likeDebounceTimer = null;
+        let likesFullyLoaded = false;
 
         function getCurrentVideoId() {
             const container = document.getElementById('mainScrollContainer');
@@ -5930,7 +5931,7 @@
                 likesCache[videoId] = count;
 
                 // Background Fetch
-                if (LIKES_WORKER_URL) {
+                if (LIKES_WORKER_URL && !likesFullyLoaded) {
                     fetch(`${LIKES_WORKER_URL}/likes?videoId=${encodeURIComponent(videoId)}`)
                         .then(r => r.json())
                         .then(data => {
@@ -5964,6 +5965,7 @@
             // Try to load from server first
             const serverLikes = await loadLikesFromServer();
             if (serverLikes) {
+                likesFullyLoaded = true;
                 likesCache = serverLikes;
                 // Merge with localStorage (keep higher counts)
                 const localLikes = JSON.parse(localStorage.getItem('videoLikes') || '{}');

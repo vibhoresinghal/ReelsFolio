@@ -148,13 +148,14 @@
                     },
                     "comments": [
                         {
-                            "text": "This was my first vibe-coded project, used ChatGPT 4o",
+                            "text": "This was my first ever vibe coded project back in early 2025",
                             "type": "avatar",
                             "avatarColor": "#8e44ad"
                         },
                         {
-                            "text": "Love by 234 people on Figma Community",
-                            "type": "heart"
+                            "text": "Loved by 500+ people on Figma community",
+                            "type": "heart",
+                            "avatarColor": "#b45a67"
                         }
                     ]
                 }

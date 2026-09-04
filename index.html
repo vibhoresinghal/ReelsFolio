@@ -4605,7 +4605,7 @@
                                 <div class="content-info-right">
                                     ${video.comments ? video.comments.map(comment => `
                                         <div class="comment-pill">
-                                            <div class="comment-icon" style="background: ${comment.type === 'avatar' ? (comment.avatarColor || '#3498db') : 'rgba(255,255,255,0.2)'};">
+                                            <div class="comment-icon" style="background: ${comment.avatarColor || (comment.type === 'avatar' ? '#3498db' : 'rgba(255,255,255,0.2)')};">
                                                 ${getCommentIcon(comment.type)}
                                             </div>
                                             <span>${comment.text}</span>
@@ -7049,7 +7049,7 @@
                 if (videoData.comments && videoData.comments.length > 0) {
                     html += '<p class="info-panel-comments-heading">Comments</p>';
                     videoData.comments.forEach(c => {
-                        const bg = c.type === 'avatar' ? (c.avatarColor || '#3498db') : 'rgba(255,255,255,0.12)';
+                        const bg = c.avatarColor || (c.type === 'avatar' ? '#3498db' : 'rgba(255,255,255,0.12)');
                         html += `<div class="info-panel-comment">
                             <div class="info-panel-comment-icon" style="background:${bg}">${getCommentIcon(c.type)}</div>
                             <div class="info-panel-comment-text">${c.text}</div>

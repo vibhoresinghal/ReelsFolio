@@ -455,16 +455,26 @@ async function handleEvent(request, env, headers) {
     return json({ ok: true }, 200, headers);
 }
 
-function sinceFromRange(range) {
+function timezoneOffset(url) {
+    const value = Number(url.searchParams.get('tz'));
+    return Number.isFinite(value) ? Math.max(-840, Math.min(840, Math.trunc(value))) : 0;
+}
+
+function sinceFromRange(range, tzOffset = 0) {
     const now = Date.now();
+    if (range === 'today') {
+        const day = 24 * 60 * 60 * 1000;
+        const offsetMs = tzOffset * 60 * 1000;
+        return Math.floor((now - offsetMs) / day) * day + offsetMs;
+    }
     if (range === '30d') return now - 30 * 24 * 60 * 60 * 1000;
     if (range === 'all') return 0;
     return now - 7 * 24 * 60 * 60 * 1000;
 }
 
-function periodBounds(range) {
+function periodBounds(range, tzOffset = 0) {
     const now = Date.now();
-    const since = sinceFromRange(range);
+    const since = sinceFromRange(range, tzOffset);
     const span = since === 0 ? 30 * 24 * 60 * 60 * 1000 : now - since;
     const prevUntil = since === 0 ? now - span : since;
     const prevSince = prevUntil - span;
@@ -509,7 +519,9 @@ function arrivalBucket(referrer, landingPath) {
 
 async function handleOverview(url, env, headers) {
     const range = url.searchParams.get('range') || '7d';
-    const { since, prevSince, prevUntil } = periodBounds(range);
+    const tzOffset = timezoneOffset(url);
+    const tzModifier = `${-tzOffset} minutes`;
+    const { since, prevSince, prevUntil } = periodBounds(range, tzOffset);
     const visitorKey = "COALESCE(NULLIF(visitor_id, ''), id)";
 
     const [
@@ -588,13 +600,13 @@ async function handleOverview(url, env, headers) {
             FROM sessions WHERE started_at >= ? AND started_at < ?
         `).bind(prevSince, prevUntil),
         env.ANALYTICS.prepare(`
-            SELECT strftime('%Y-%m-%d', started_at / 1000, 'unixepoch') AS day,
+            SELECT strftime('%Y-%m-%d', started_at / 1000, 'unixepoch', ?) AS day,
                    COUNT(DISTINCT ${visitorKey}) AS n
             FROM sessions
             WHERE started_at >= ?
             GROUP BY day
             ORDER BY day
-        `).bind(since),
+        `).bind(tzModifier, since),
         env.ANALYTICS.prepare(`
             SELECT referrer, landing_path, COUNT(*) AS n
             FROM sessions
@@ -656,7 +668,7 @@ function visitorKeySql() {
 }
 
 async function handleVisitorList(url, env, headers) {
-    const since = sinceFromRange(url.searchParams.get('range') || '7d');
+    const since = sinceFromRange(url.searchParams.get('range') || '7d', timezoneOffset(url));
     const limit = Math.min(50, Math.max(10, parseInt(url.searchParams.get('limit') || '25', 10) || 25));
     const offset = Math.max(0, parseInt(url.searchParams.get('offset') || '0', 10) || 0);
     const device = cleanText(url.searchParams.get('device') || '', 16);
@@ -722,7 +734,7 @@ async function handleVisitorDetail(visitorId, url, env, headers) {
         return json({ error: 'Invalid visitor' }, 400, headers);
     }
 
-    const since = sinceFromRange(url.searchParams.get('range') || '7d');
+    const since = sinceFromRange(url.searchParams.get('range') || '7d', timezoneOffset(url));
     const key = visitorKeySql();
     const sessions = await env.ANALYTICS.prepare(`
         SELECT
@@ -779,7 +791,7 @@ async function handleVisitorDetail(visitorId, url, env, headers) {
 }
 
 async function handleSessionList(url, env, headers) {
-    const since = sinceFromRange(url.searchParams.get('range') || '7d');
+    const since = sinceFromRange(url.searchParams.get('range') || '7d', timezoneOffset(url));
     const limit = Math.min(80, Math.max(10, parseInt(url.searchParams.get('limit') || '40', 10) || 40));
     const offset = Math.max(0, parseInt(url.searchParams.get('offset') || '0', 10) || 0);
     const device = cleanText(url.searchParams.get('device') || '', 16);

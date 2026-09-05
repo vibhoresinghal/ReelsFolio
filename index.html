@@ -14,9 +14,7 @@
     <!-- Preconnect to external domains -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev" crossorigin>
-    <link rel="preconnect" href="https://pub-876fdc3996be4fb3810906343b32d993.r2.dev" crossorigin>
-    <link rel="preconnect" href="https://pub-145d32622a7e4d2586d93017e4e1221c.r2.dev" crossorigin>
+    <link rel="preconnect" href="https://video.vibhoresinghal.com" crossorigin>
 
     <!-- Preload critical resources -->
     <link rel="preload" href="videos.json" as="fetch" crossorigin>
@@ -128,7 +126,6 @@
         :where(
             .landing-name,
             .content-title,
-            .floating-modal-title,
             .info-panel-title
         ) {
             font-family: 'Momo Trust Display', 'Inter', sans-serif;
@@ -489,7 +486,6 @@
         body.desktop-fullscreen-mode .content-info-left,
         body.desktop-fullscreen-mode .content-info-right,
         body.desktop-fullscreen-mode .landing-profile-info,
-        body.desktop-fullscreen-mode .floating-item,
         body.desktop-fullscreen-mode .landing-sticker {
             opacity: 0 !important;
             visibility: hidden !important;
@@ -604,7 +600,6 @@
             }
 
             body.desktop-immersive-mode .landing-profile-info,
-            body.desktop-immersive-mode .floating-item,
             body.desktop-immersive-mode .landing-sticker {
                 opacity: 0.08 !important;
                 transition: opacity 1.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
@@ -1546,22 +1541,6 @@
             box-shadow:
                 inset 0 2px 4px rgba(0, 0, 0, 0.38),
                 inset 0 -1px 0 rgba(255, 255, 255, 0.08);
-        }
-
-        @keyframes float-floater {
-
-            0%,
-            100% {
-                transform: translate(0, 0) rotate(var(--init-rotation, 0deg));
-            }
-
-            33% {
-                transform: translate(5px, -10px) rotate(calc(var(--init-rotation, 0deg) + 2deg));
-            }
-
-            66% {
-                transform: translate(-5px, -5px) rotate(calc(var(--init-rotation, 0deg) - 2deg));
-            }
         }
 
         /* Removed 1024px hiding rule to avoid dead zone before 768px mobile mode */
@@ -2779,72 +2758,6 @@
             margin-left: 0;
         }
 
-        /* Floating Items */
-        .floating-item {
-            position: absolute;
-            cursor: pointer;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            transition: box-shadow 0.3s ease;
-            z-index: 8;
-            /* Initially hidden until image loads */
-            opacity: 0;
-            transform: scale(0);
-            /* Prevent browser selection when dragging */
-            user-select: none;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-        }
-
-        /* Pop animation when image is loaded */
-        .floating-item.loaded {
-            opacity: 1;
-            transform: scale(1) rotate(var(--init-rotation, 0deg));
-            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, float-floater 8s ease-in-out 0.5s infinite;
-        }
-
-        @keyframes popIn {
-            0% {
-                opacity: 0;
-                transform: scale(0);
-            }
-
-            100% {
-                opacity: 1;
-                transform: scale(1) rotate(var(--init-rotation, 0deg));
-            }
-        }
-
-        .floating-item:hover {
-            transform: scale(1.08) rotate(var(--init-rotation, 0deg)) !important;
-            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4);
-            z-index: 15;
-            animation-play-state: paused;
-        }
-
-        .floating-item.size-small {
-            width: clamp(80px, 10vw, 120px);
-            height: clamp(80px, 10vw, 120px);
-        }
-
-        .floating-item.size-medium {
-            width: clamp(100px, 12vw, 150px);
-            height: clamp(100px, 12vw, 150px);
-        }
-
-        .floating-item.size-large {
-            width: clamp(120px, 14vw, 180px);
-            height: clamp(120px, 14vw, 180px);
-        }
-
-        .floating-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
         @keyframes shimmer {
             0% {
                 background-position: 200% 0;
@@ -2911,117 +2824,6 @@
             }
         }
 
-        /* ========== FLOATING ITEM MODAL STYLES ========== */
-
-        .floating-modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 12000;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
-        }
-
-        .floating-modal-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .floating-modal {
-            background: white;
-            border-radius: 24px;
-            display: flex;
-            max-width: 90vw;
-            max-height: 85vh;
-            overflow: hidden;
-            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.4);
-            transform: scale(0.9) translateY(20px);
-            transition: transform 0.3s ease;
-        }
-
-        .floating-modal-overlay.active .floating-modal {
-            transform: scale(1) translateY(0);
-        }
-
-        .floating-modal-image {
-            flex: 0 0 auto;
-            max-width: 55%;
-            max-height: 85vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #f5f5f5;
-        }
-
-        .floating-modal-image img {
-            max-width: 100%;
-            max-height: 85vh;
-            object-fit: contain;
-            border-radius: 16px 0 0 16px;
-        }
-
-        .floating-modal-content {
-            flex: 1;
-            padding: clamp(30px, 5vw, 50px);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            min-width: 280px;
-            max-width: 400px;
-        }
-
-        .floating-modal-title {
-            color: #1a1a1a;
-            font-size: clamp(24px, 3vw, 36px);
-            font-weight: 700;
-            margin: 0 0 16px 0;
-            line-height: 1.2;
-        }
-
-        .floating-modal-description {
-            color: #666;
-            font-size: clamp(14px, 1.5vw, 16px);
-            line-height: 1.6;
-            margin: 0;
-        }
-
-        .floating-modal-close {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            width: 40px;
-            height: 40px;
-            background: rgba(255, 255, 255, 0.9);
-            border: none;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-
-        .floating-modal-close:hover {
-            background: white;
-            transform: scale(1.1);
-        }
-
-        .floating-modal-close svg {
-            width: 20px;
-            height: 20px;
-            color: #333;
-        }
-
         /* Mobile Bottom Navigation — hidden by default, shown at <=600px */
         .mobile-bottom-nav {
             display: none;
@@ -3070,32 +2872,6 @@
 
         .mobile-nav-item:active {
             transform: scale(0.92);
-        }
-
-        /* Mobile responsive for modal */
-        @media (max-width: 768px) {
-            .floating-modal {
-                flex-direction: column;
-                max-width: 95vw;
-            }
-
-            .floating-modal-image {
-                max-width: 100%;
-                max-height: 50vh;
-            }
-
-            .floating-modal-image img {
-                border-radius: 24px 24px 0 0;
-            }
-
-            .floating-modal-content {
-                min-width: unset;
-                max-width: unset;
-            }
-
-            .floating-item {
-                display: none;
-            }
         }
 
         /* ===== TABLET: 601px–1024px ===== */
@@ -3842,18 +3618,6 @@
             }
         }
 
-        /* Hide floating items on smaller screens */
-        @media (max-width: 1200px) {
-            .floating-item.size-small {
-                width: clamp(60px, 8vw, 90px);
-                height: clamp(60px, 8vw, 90px);
-            }
-
-            .floating-item.size-medium {
-                width: clamp(80px, 10vw, 120px);
-                height: clamp(80px, 10vw, 120px);
-            }
-        }
     </style>
 </head>
 
@@ -3911,26 +3675,6 @@
             <nav class="grid-tab-nav" id="gridTabNav"></nav>
         </div>
         <div id="gridPanelsContainer"></div>
-    </div>
-
-    <!-- Floating Item Modal -->
-    <div class="floating-modal-overlay" id="floatingModal">
-        <button class="floating-modal-close" onclick="closeFloatingModal()">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                <path fill-rule="evenodd"
-                    d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 01-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z"
-                    clip-rule="evenodd" />
-            </svg>
-        </button>
-        <div class="floating-modal">
-            <div class="floating-modal-image">
-                <img src="" alt="" id="floatingModalImage">
-            </div>
-            <div class="floating-modal-content">
-                <h2 class="floating-modal-title" id="floatingModalTitle"></h2>
-                <p class="floating-modal-description" id="floatingModalDescription"></p>
-            </div>
-        </div>
     </div>
 
     <!-- Grid Button at Top (hidden, replaced by tabs) -->
@@ -4346,11 +4090,48 @@
             });
         }
 
+        // Office filters block *.r2.dev. Videos stay in the same R2 bucket;
+        // this rewrites the old public host to the custom domain.
+        const R2_MEDIA_ORIGINS = {
+            'pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev': 'video.vibhoresinghal.com',
+        };
+
+        function rewriteMediaUrl(value) {
+            if (typeof value !== 'string' || !value.includes('.r2.dev')) return value;
+            try {
+                const url = new URL(value);
+                const nextHost = R2_MEDIA_ORIGINS[url.host];
+                if (!nextHost) return value;
+                url.protocol = 'https:';
+                url.host = nextHost.replace(/^https?:\/\//, '').replace(/\/$/, '');
+                return url.toString();
+            } catch {
+                return value;
+            }
+        }
+
+        function rewriteMediaTree(node) {
+            if (Array.isArray(node)) return node.map(rewriteMediaTree);
+            if (node && typeof node === 'object') {
+                for (const key of Object.keys(node)) node[key] = rewriteMediaTree(node[key]);
+                return node;
+            }
+            return rewriteMediaUrl(node);
+        }
+
+        function applyMediaOriginPreconnects() {
+            document.querySelectorAll('link[rel="preconnect"]').forEach((link) => {
+                const next = rewriteMediaUrl(link.getAttribute('href') || '');
+                if (next) link.setAttribute('href', next);
+            });
+        }
+
         // Initialize
         async function initApp() {
             try {
                 const response = await fetch('videos.json');
-                videosData = await response.json();
+                videosData = rewriteMediaTree(await response.json());
+                applyMediaOriginPreconnects();
 
                 // Dynamically preload critical landing resources
                 const landing = videosData.landingSection;
@@ -4692,9 +4473,6 @@
             if (mainContainer) {
                 mainContainer.addEventListener('scroll', throttle(handleScroll, 100));
             }
-
-            // Initialize Draggable items
-            initDraggable();
 
             // Mark landing video frame as loaded when video is ready
             const landingFrame = document.querySelector('.landing-video-frame');
@@ -5268,7 +5046,7 @@
         function canEnterDesktopImmersiveMode() {
             if (window.innerWidth <= 600 || document.hidden || document.fullscreenElement) return false;
             if (isWarping || isScrolling) return false;
-            if (document.querySelector('.grid-overlay.visible, .floating-modal-overlay.active')) return false;
+            if (document.querySelector('.grid-overlay.visible')) return false;
 
             const video = getActiveVideoForFullscreen();
             return !!video && !video.paused && !video.ended;
@@ -5986,46 +5764,9 @@
             // for more reliable section tracking during scroll snap.
         }
 
-        // --- Floating Item Modal Functions ---
-
-        function openFloatingModal(itemId) {
-            const landing = videosData.landingSection;
-            if (!landing || !landing.floatingItems) return;
-
-            const item = landing.floatingItems.find(i => i.id === itemId);
-            if (!item) return;
-
-            const modal = document.getElementById('floatingModal');
-            const image = document.getElementById('floatingModalImage');
-            const title = document.getElementById('floatingModalTitle');
-            const description = document.getElementById('floatingModalDescription');
-
-            image.src = item.src;
-            image.alt = item.title;
-            title.textContent = item.title;
-            description.textContent = item.description;
-
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeFloatingModal() {
-            const modal = document.getElementById('floatingModal');
-            modal.classList.remove('active');
-            document.body.style.overflow = '';
-        }
-
-        // Close modal on overlay click
-        document.getElementById('floatingModal')?.addEventListener('click', (e) => {
-            if (e.target.classList.contains('floating-modal-overlay')) {
-                closeFloatingModal();
-            }
-        });
-
-        // Close modal on Escape key
+        // Close overlay on Escape key
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
-                closeFloatingModal();
                 closeGridOverlay();
             }
         });
@@ -6540,7 +6281,7 @@
             if (!container) return;
 
             container.addEventListener('touchstart', (e) => {
-                if (e.target.closest('.video-seekbar') || e.target.closest('.floating-item')) return;
+                if (e.target.closest('.video-seekbar')) return;
                 swipeStartX = e.touches[0].clientX;
                 swipeStartY = e.touches[0].clientY;
                 swiping = true;
@@ -6606,107 +6347,6 @@
         });
 
         // Touch handling removed - native scroll handles single page navigation
-
-        // --- Draggable Utility ---
-
-        function makeDraggable(el) {
-            let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-            let dragOccurred = false;
-            let startX, startY;
-
-            // Use both mouse and touch events
-            el.addEventListener('mousedown', dragStart);
-            el.addEventListener('touchstart', dragStart, { passive: false });
-
-            // Intercept and cancel the 'click' event if we were dragging
-            el.addEventListener('click', (e) => {
-                if (dragOccurred) {
-                    e.stopImmediatePropagation();
-                    e.preventDefault();
-                    dragOccurred = false;
-                }
-            }, true); // Capture phase is key to blocking inline onclick
-
-            function dragStart(e) {
-                // Ignore right clicks
-                if (e.type === 'mousedown' && e.button !== 0) return;
-
-                const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
-                const clientY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
-
-                startX = clientX;
-                startY = clientY;
-                pos3 = clientX;
-                pos4 = clientY;
-
-                // Reset drag flag at start of interaction
-                dragOccurred = false;
-
-                // Sync the element's top/left to its current visual position before dragging
-                const rect = el.getBoundingClientRect();
-                const parentRect = el.parentElement.getBoundingClientRect();
-
-                // Set explicit top/left and clear bottom/right/margins
-                el.style.top = (rect.top - parentRect.top) + "px";
-                el.style.left = (rect.left - parentRect.left) + "px";
-                el.style.bottom = 'auto';
-                el.style.right = 'auto';
-                el.style.margin = '0';
-
-                // Remove transition and animation during drag for responsiveness
-                el.style.transition = 'none';
-                el.style.animation = 'none';
-                el.style.zIndex = '1000'; // Bring to front
-
-                if (e.type === 'mousedown') {
-                    document.addEventListener('mousemove', elementDrag);
-                    document.addEventListener('mouseup', dragEnd);
-                } else {
-                    document.addEventListener('touchmove', elementDrag, { passive: false });
-                    document.addEventListener('touchend', dragEnd);
-                }
-            }
-
-            function elementDrag(e) {
-                const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
-                const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
-
-                if (e.type === 'touchmove') e.preventDefault(); // Prevent scrolling while dragging
-
-                pos1 = pos3 - clientX;
-                pos2 = pos4 - clientY;
-                pos3 = clientX;
-                pos4 = clientY;
-
-                // Move threshold to distinguish click from drag
-                if (!dragOccurred && (Math.abs(clientX - startX) > 5 || Math.abs(clientY - startY) > 5)) {
-                    dragOccurred = true;
-                }
-
-                el.style.top = (el.offsetTop - pos2) + "px";
-                el.style.left = (el.offsetLeft - pos1) + "px";
-            }
-
-            function dragEnd() {
-                document.removeEventListener('mousemove', elementDrag);
-                document.removeEventListener('mouseup', dragEnd);
-                document.removeEventListener('touchmove', elementDrag);
-                document.removeEventListener('touchend', dragEnd);
-
-                el.style.transition = '';
-                // Note: dragOccurred remains true if it was a drag, 
-                // until the 'click' event fires and our listener resets it.
-            }
-        }
-
-        function initDraggable() {
-            const draggables = document.querySelectorAll('.floating-item');
-            draggables.forEach(el => {
-                makeDraggable(el);
-                // Change cursor to indicate draggability
-                el.style.cursor = 'move';
-            });
-        }
 
         // Double-tap to like. On mobile, a single tap reveals playback
         // controls; only the center control changes the playback state.

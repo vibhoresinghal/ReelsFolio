@@ -509,28 +509,40 @@
             width: 100vw !important;
             height: 100vh !important;
             height: 100dvh !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
         }
 
         body.desktop-fullscreen-mode .video-frame,
         body.desktop-fullscreen-mode .landing-video-shell,
-        body.desktop-fullscreen-mode .landing-video-frame,
-        body.desktop-fullscreen-mode .video-section.landscape-mode .video-frame {
-            width: 100vw !important;
-            height: 100vh !important;
-            height: 100dvh !important;
-            aspect-ratio: unset !important;
-            border-radius: 0 !important;
-            box-shadow: none !important;
-            margin: 0 !important;
+        body.desktop-fullscreen-mode .landing-video-frame {
+            width: min(calc(92vh * 9 / 16), 92vw) !important;
+            height: auto !important;
+            aspect-ratio: 9/16 !important;
+            border-radius: 8px !important;
+            box-shadow: 0 16px 64px rgba(0, 0, 0, 0.55) !important;
+            margin: 0 auto !important;
             opacity: 1 !important;
             transform: none !important;
         }
 
+        body.desktop-fullscreen-mode .video-section.landscape-mode .video-frame {
+            width: min(calc(92vh * 16 / 9), calc(100vw - 80px)) !important;
+            aspect-ratio: 16/9 !important;
+        }
+
         body.desktop-fullscreen-mode .video-frame video,
         body.desktop-fullscreen-mode .landing-video-frame video,
-        body.desktop-fullscreen-mode .video-section.landscape-mode .video-frame video {
-            width: 100% !important;
-            height: 100% !important;
+        body.desktop-fullscreen-mode .video-poster,
+        body.desktop-fullscreen-mode .landing-video-frame img,
+        body.desktop-fullscreen-mode .landing-video-frame .video-poster {
+            object-fit: cover !important;
+            object-position: center !important;
+        }
+
+        body.desktop-fullscreen-mode .video-section.landscape-mode .video-frame video,
+        body.desktop-fullscreen-mode .video-section.landscape-mode .video-poster {
             object-fit: contain !important;
             object-position: center !important;
             background: #000 !important;
@@ -541,8 +553,7 @@
             display: none !important;
         }
 
-        body.desktop-fullscreen-mode .play-overlay-btn.paused,
-        body.desktop-fullscreen-mode .landing-video-frame .play-overlay-btn:not(.playing) {
+        body.desktop-fullscreen-mode .play-overlay-btn.paused {
             display: flex !important;
             z-index: 14000;
         }
@@ -972,6 +983,51 @@
         .landing-video-frame.has-decoded-frame .video-poster {
             opacity: 0;
             visibility: hidden;
+        }
+
+        .video-buffering {
+            position: absolute;
+            inset: 0;
+            z-index: 90;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 0.2s ease, visibility 0s linear 0.2s;
+        }
+
+        .video-frame.is-buffering .video-buffering,
+        .landing-video-frame.is-buffering .video-buffering {
+            opacity: 1;
+            visibility: visible;
+            transition: opacity 0.2s ease, visibility 0s;
+        }
+
+        .video-buffering-ring {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 2px solid rgba(244, 239, 230, 0.22);
+            border-top-color: rgba(244, 239, 230, 0.92);
+            animation: videoBufferSpin 0.7s linear infinite;
+        }
+
+        @keyframes videoBufferSpin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .video-buffering-ring {
+                animation: videoBufferPulse 1.2s ease-in-out infinite;
+                border-color: rgba(244, 239, 230, 0.5);
+            }
+
+            @keyframes videoBufferPulse {
+                0%, 100% { opacity: 0.35; }
+                50% { opacity: 1; }
+            }
         }
 
         /* R2 video play button overlay - matches control bar style */
@@ -3844,6 +3900,7 @@
         let userPaused = {}; // Track which videos were paused by the user
         let totalSectionsCount = 0; // Total sections for nav arrow visibility
         let playVideoDebounceTimer = null; // Debounce video playback during scroll
+        let suppressObserverPlayback = false;
 
 
         function getSectionHeight() {
@@ -4161,6 +4218,7 @@
                 initSoundHint(); // Show 'Tap for sound' hint on first visit
                 initMobileFirstReelNudge();
                 initDesktopMuteHover();
+                initBufferingIndicators();
                 if (!reduceMotion) {
                     requestAnimationFrame(() => {
                         requestAnimationFrame(() => {
@@ -4324,6 +4382,7 @@
                     <div class="landing-video-frame" data-tap-video="landing-video">
                         ${landing.thumbnail ? `<img class="video-poster" src="${landing.thumbnail}" alt="" decoding="async">` : ''}
                         <video id="landing-video" src="${landing.profileVideo || ''}" muted playsinline loop preload="auto"></video>
+                        <div class="video-buffering" aria-hidden="true"><span class="video-buffering-ring"></span></div>
                         <div class="play-overlay-btn" id="btn-landing-video">
                             <svg class="play-overlay-icon" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" /></svg>
                             <svg class="pause-overlay-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6.2" y="4.6" width="4.2" height="14.8" rx="1.5"/><rect x="13.6" y="4.6" width="4.2" height="14.8" rx="1.5"/></svg>
@@ -4375,6 +4434,7 @@
                                 <div class="video-frame" data-tap-video="${video.id}">
                                     ${video.thumbnail ? `<img class="video-poster" src="${video.thumbnail}" alt="" decoding="async">` : ''}
                                     <video id="${video.id}" ${isFirstVideo ? `src="${video.src}"` : ''} data-src="${video.src}" muted playsinline loop preload="${preloadStrategy}"></video>
+                                    <div class="video-buffering" aria-hidden="true"><span class="video-buffering-ring"></span></div>
                                     <div class="play-overlay-btn" id="btn-${video.id}">
                                         <svg class="play-overlay-icon" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" /></svg>
                                         <svg class="pause-overlay-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6.2" y="4.6" width="4.2" height="14.8" rx="1.5"/><rect x="13.6" y="4.6" width="4.2" height="14.8" rx="1.5"/></svg>
@@ -4584,7 +4644,8 @@
                             if (logoBtn) logoBtn.classList.add('active');
                             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
                             updateMobileNav('home');
-                            if (!isWarping && hasStartedExperience) debouncedPlayVideo('landing-video');
+                            if (!suppressObserverPlayback && !isWarping && hasStartedExperience) debouncedPlayVideo('landing-video');
+                            if (document.fullscreenElement) fullscreenVideoId = 'landing-video';
                             if (!isWarping) updateLikeButtonForCurrentVideo('landing', false, true);
                         } else if (isVideo) {
                             if (controlBar) controlBar.classList.toggle('hidden', !hasStartedExperience);
@@ -4599,10 +4660,12 @@
                             updateMobileNav(category);
 
                             const videoId = entry.target.getAttribute('data-video-id');
-                            if (!isWarping && hasStartedExperience) debouncedPlayVideo(videoId);
+                            if (!suppressObserverPlayback && !isWarping && hasStartedExperience) debouncedPlayVideo(videoId);
+                            if (document.fullscreenElement && videoId) fullscreenVideoId = videoId;
                             if (!isWarping) updateLikeButtonForCurrentVideo(videoId, false, true);
                         }
                     } else {
+                        if (suppressObserverPlayback) return;
                         entry.target.classList.remove('active');
                         if (entry.target.classList.contains('video-section')) {
                             const videoId = entry.target.getAttribute('data-video-id');
@@ -4682,6 +4745,61 @@
         }
 
 
+        const BUFFERING_SHOW_DELAY = 280;
+
+        function getVideoFrame(video) {
+            return video?.closest('.video-frame, .landing-video-frame');
+        }
+
+        function hideBuffering(video) {
+            if (!video) return;
+            clearTimeout(video._bufferingTimer);
+            video._bufferingTimer = null;
+            video._bufferingWanted = false;
+            getVideoFrame(video)?.classList.remove('is-buffering');
+        }
+
+        function isDefinitelyBuffering(video) {
+            if (!video || !hasStartedExperience || video.paused || video.ended) return false;
+            return video.readyState < 3 || video.seeking;
+        }
+
+        function showBufferingSoon(video) {
+            if (!isDefinitelyBuffering(video)) {
+                hideBuffering(video);
+                return;
+            }
+            video._bufferingWanted = true;
+            if (video._bufferingTimer) return;
+            video._bufferingTimer = setTimeout(() => {
+                video._bufferingTimer = null;
+                if (!video._bufferingWanted || !isDefinitelyBuffering(video)) return;
+                getVideoFrame(video)?.classList.add('is-buffering');
+            }, BUFFERING_SHOW_DELAY);
+        }
+
+        function bindBufferingIndicator(video) {
+            if (!video || video._bufferingBound) return;
+            video._bufferingBound = true;
+
+            video.addEventListener('waiting', () => showBufferingSoon(video));
+            video.addEventListener('playing', () => hideBuffering(video));
+            video.addEventListener('canplay', () => {
+                if (video.readyState >= 3 && !video.seeking) hideBuffering(video);
+            });
+            video.addEventListener('seeked', () => {
+                if (video.readyState >= 3) hideBuffering(video);
+                else showBufferingSoon(video);
+            });
+            video.addEventListener('pause', () => hideBuffering(video));
+            video.addEventListener('ended', () => hideBuffering(video));
+            video.addEventListener('error', () => hideBuffering(video));
+        }
+
+        function initBufferingIndicators() {
+            document.querySelectorAll('.video-section video, .landing-section video').forEach(bindBufferingIndicator);
+        }
+
         function revealVideoOverPoster(video) {
             const frame = video.closest('.video-frame, .landing-video-frame');
             if (!frame || frame.classList.contains('has-decoded-frame')) return;
@@ -4727,7 +4845,12 @@
             if (video.currentTime > 0.2) video.currentTime = 0;
             video.muted = isMuted;
             revealVideoOverPoster(video);
-            video.play().catch(e => console.log('Autoplay blocked:', e));
+            bindBufferingIndicator(video);
+            if (video.readyState < 3) showBufferingSoon(video);
+            video.play().catch(e => {
+                console.log('Autoplay blocked:', e);
+                hideBuffering(video);
+            });
 
             if (isMuted) showMuteIndicator(); else hideMuteIndicator();
             syncMutePulse();
@@ -4745,15 +4868,14 @@
                 video._seekbarAttached = true;
             }
 
-            // Update overlay button
+            syncPlayOverlay(videoId, true);
+        }
+
+        function syncPlayOverlay(videoId, playing) {
             const btn = document.getElementById('btn-' + videoId);
-            if (btn) {
-                if (videoId === 'landing-video') {
-                    btn.classList.add('playing'); // Hide button when playing
-                } else {
-                    btn.classList.remove('paused');
-                }
-            }
+            if (!btn) return;
+            btn.classList.toggle('playing', !!playing);
+            btn.classList.toggle('paused', !playing);
         }
 
         function startExperienceWithSound(videoId) {
@@ -4891,7 +5013,6 @@
 
         function toggleVideo(videoId, fromVideoTap = true) {
             const video = document.getElementById(videoId);
-            const btn = document.getElementById('btn-' + videoId);
             if (!video) return;
 
             // If muted (from autoplay policy, not user choice) and video is playing,
@@ -4902,30 +5023,16 @@
                 return;
             }
 
-            const isLandingVideo = videoId === 'landing-video';
-
             if (video.paused) {
                 video.play();
-                if (btn) {
-                    if (isLandingVideo) {
-                        btn.classList.add('playing');
-                    } else {
-                        btn.classList.remove('paused');
-                    }
-                }
+                syncPlayOverlay(videoId, true);
                 userPaused[videoId] = false;
                 isPlaying = true;
                 document.getElementById('pauseIcon').style.display = 'block';
                 document.getElementById('playIcon').style.display = 'none';
             } else {
                 video.pause();
-                if (btn) {
-                    if (isLandingVideo) {
-                        btn.classList.remove('playing');
-                    } else {
-                        btn.classList.add('paused');
-                    }
-                }
+                syncPlayOverlay(videoId, false);
                 userPaused[videoId] = true;
                 isPlaying = false;
                 document.getElementById('pauseIcon').style.display = 'none';
@@ -4987,7 +5094,17 @@
             isPlaying = true;
             userPaused[video.id] = false;
             video.muted = isMuted;
-            video.play().catch(error => console.log('Fullscreen playback blocked:', error));
+            syncPlayOverlay(video.id, true);
+            bindBufferingIndicator(video);
+            if (video.readyState < 3) showBufferingSoon(video);
+            video.play().then(() => {
+                syncPlayOverlay(video.id, !video.paused);
+                if (video.readyState >= 3 && !video.seeking) hideBuffering(video);
+            }).catch(error => {
+                console.log('Fullscreen playback blocked:', error);
+                syncPlayOverlay(video.id, false);
+                hideBuffering(video);
+            });
 
             const pauseIcon = document.getElementById('pauseIcon');
             const playIcon = document.getElementById('playIcon');
@@ -4995,15 +5112,23 @@
             if (playIcon) playIcon.style.display = 'none';
         }
 
+        function releaseObserverPlaybackSoon() {
+            setTimeout(() => {
+                suppressObserverPlayback = false;
+            }, 400);
+        }
+
         async function toggleDesktopFullscreen() {
             if (window.innerWidth <= 600 || !document.fullscreenEnabled) return;
 
             try {
                 if (document.fullscreenElement) {
+                    suppressObserverPlayback = true;
                     await document.exitFullscreen();
                 } else {
                     const activeVideo = getActiveVideoForFullscreen();
                     if (!activeVideo) return;
+                    suppressObserverPlayback = true;
                     fullscreenVideoId = activeVideo.id;
                     document.body.classList.add('desktop-fullscreen-mode');
                     startPlaybackForFullscreen(fullscreenVideoId);
@@ -5012,6 +5137,7 @@
             } catch (error) {
                 document.body.classList.remove('desktop-fullscreen-mode');
                 fullscreenVideoId = null;
+                suppressObserverPlayback = false;
                 console.warn('Fullscreen mode could not be changed:', error);
             }
         }
@@ -5019,6 +5145,7 @@
         function syncDesktopFullscreenMode() {
             const isFullscreen = document.fullscreenElement === document.documentElement;
             document.body.classList.toggle('desktop-fullscreen-mode', isFullscreen);
+            suppressObserverPlayback = true;
 
             const button = document.getElementById('fullscreenBtn');
             if (button) {
@@ -5028,12 +5155,17 @@
                 button.title = isFullscreen ? 'Exit fullscreen' : 'Fullscreen video';
             }
 
+            const videoId = fullscreenVideoId;
             if (isFullscreen) {
-                startPlaybackForFullscreen(fullscreenVideoId);
-                alignSectionForVideo(fullscreenVideoId);
+                startPlaybackForFullscreen(videoId);
+                alignSectionForVideo(videoId);
+                releaseObserverPlaybackSoon();
             } else {
-                alignSectionForVideo(fullscreenVideoId);
+                alignSectionForVideo(videoId);
+                const video = document.getElementById(videoId);
+                if (video) syncPlayOverlay(video.id, !video.paused);
                 fullscreenVideoId = null;
+                releaseObserverPlaybackSoon();
             }
         }
 
@@ -5829,8 +5961,7 @@
                     isPlaying = true;
                     userPaused['landing-video'] = false;
 
-                    const btn = document.getElementById('btn-landing-video');
-                    if (btn) btn.classList.add('playing');
+                    syncPlayOverlay('landing-video', true);
 
                     document.getElementById('pauseIcon').style.display = 'block';
                     document.getElementById('playIcon').style.display = 'none';

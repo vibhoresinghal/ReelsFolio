@@ -15,6 +15,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://video.vibhoresinghal.com" crossorigin>
+    <link rel="preconnect" href="https://img.vibhoresinghal.com" crossorigin>
 
     <!-- Preload critical resources -->
     <link rel="preload" href="videos.json" as="fetch" crossorigin>
@@ -4092,6 +4093,7 @@
 
         // Office filters block *.r2.dev. Videos stay in the same R2 bucket;
         // this rewrites the old public host to the custom domain.
+        // New images should use https://img.vibhoresinghal.com/... directly.
         const R2_MEDIA_ORIGINS = {
             'pub-a6a75e45309c4da7bb1fb6c3aea78409.r2.dev': 'video.vibhoresinghal.com',
         };
